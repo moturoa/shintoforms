@@ -6,16 +6,18 @@ shintoshiny::check_for_version("shintousers","0.4-2")
 shintoshiny::load_modules()
 
 # Sources
+source("R/registrationDataWarehouseR6.R")
 
+# Database connection
 
-# data definition ("admin tables")
-#.db <- dataDefinition$new(sqlite = "data/db.sqlite")
+.reg <- registrationDataWarehouseR6$new(sqlite = "data/registraties.sqlite")
+
 
 # End.
-#onStop(function() {
-  #.db$close()
+onStop(function() {
+  .reg$close()
   #dbDisconnect(con)
-#})
+})
 
 
 
