@@ -12,7 +12,6 @@ source("R/registrationDataWarehouseR6.R")
 
 .reg <- registrationDataWarehouseR6$new(sqlite = "data/registraties.sqlite")
 
-
 # End.
 onStop(function() {
   .reg$close()

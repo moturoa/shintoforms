@@ -15,9 +15,29 @@ adminUI <- function(id){
                    column(12,
                           softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
                                                 status = "secondary", icon = bsicon("plus")),
-                          softui::action_button(ns("btn_edit_formfield"), "Wijzig invoerveld", 
-                                                class = "btn-info",
-                                                icon = bsicon("pencil-square"))
+                          shinyjs::hidden(
+                            tags$span(id = ns("span_edit_formfield"),
+                                      softui::action_button(ns("btn_edit_formfield"), "Wijzig invoerveld", 
+                                                            class = "btn-info",
+                                                            icon = bsicon("pencil-square"))
+                            )
+                          ),
+                          
+                          
+                          shinyjs::hidden(
+                            tags$span(id = ns("span_edit_options"),
+                                      jsonEditModuleUI(ns("edit_options"), 
+                                                       icon = bsicon("pencil-square"),
+                                                       label = "Opties",
+                                                       class = "bg-gradient-primary")  
+                            )
+                          ),
+                          shinyjs::hidden(
+                            tags$span(id = ns("span_edit_colors"),
+                                      colorVectorPickModuleUI(ns("edit_colors"))  
+                            )
+                          ),
+                          
                    )
                  ),
                  softui::fluid_row(
@@ -79,6 +99,16 @@ adminModule <- function(input, output, session){
     form_invul_data() %>% slice(ii)
   })
   
+  selected_id <- reactive({
+    req(selected_row())
+    selected_row()$id_formulierveld
+  })
+  
+  selected_type <- reactive({
+    req(selected_row())
+    selected_row()$type_veld
+  })
+  
   observeEvent(input$btn_add_formfield, {
     showModal(
       softui::modal(
@@ -110,11 +140,25 @@ adminModule <- function(input, output, session){
     
   })
   
+  observe({
+    
+    sel <- selected_row()
+    type <- selected_type()
+    if(type == "freetext" || type == "numeric" || type == "boolean"){
+      show_edit_options <- FALSE
+    } else {
+      show_edit_options <- TRUE
+    }
+    shinyjs::toggleElement("span_edit_formfield", condition = !is.null(sel))
+    shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options))
+    shinyjs::toggleElement("span_edit_colors", condition = (!is.null(sel) && show_edit_options))
+  })
+  
   observeEvent(input$btn_edit_formfield, {
     
     showModal(
       softui::modal(
-        title = glue("Kolom label: {selected_row()$label_veld}"),
+        title = glue("Kolom label: {selected_row()$kolomnaam_veld}"),
         
         textInput(session$ns("txt_edit_formfield_label"), "Label", 
                   value = selected_row()$label_veld),
@@ -126,11 +170,42 @@ adminModule <- function(input, output, session){
   
   observeEvent(input$btn_confirm_edit_label, {
     
-    #.reg$set_label(selected_id(), input$txt_column_label)
-    #db_ping(runif(1))
-    #removeModal()
+    .reg$edit_label_invulveld(selected_id(), input$txt_edit_formfield_label)
+    db_ping(runif(1))
+    removeModal()
     
   })
   
+  opties <- callModule(jsonEditModule, "edit_options", 
+             options = reactive("add"),   # nooit categorieen verwijderen, anders DB problemen!
+             edit = reactive("value"),
+             widths = c(2,10),
+             value = reactive(selected_row()$opties))
+  
+  observeEvent(opties(), {
+
+    .reg$edit_opties_invulveld(selected_id(), opties())
+    .reg$amend_optie_order(selected_id(), opties())
+    .reg$amend_optie_colors(selected_id(), opties())
+    db_ping(runif(1))
+
+  })
+  
+  current_colors <- reactive({
+    from_json(selected_row()$kleuren)
+  })
+  
+  colors <- callModule(colorVectorPickModule, "edit_colors",
+                       n_colors = reactive(length(current_colors())), 
+                       current_colors = current_colors,
+                       labels = reactive(from_json(selected_row()$opties)),
+                       show_order = reactive(from_json(selected_row()$volgorde_opties)))
+  
+  observeEvent(colors(), {
+    
+    .reg$set_optie_colors(selected_id(), colors())
+    
+    db_ping(runif(1))
+  })
   
 }

@@ -8,14 +8,16 @@ registrationDataWarehouseR6 <- R6::R6Class(
     dbuser = NULL,
     pool = NULL,
     dbtype = NULL,
+    default_color = NULL, 
     
     initialize = function(config_file = "conf/config.yml", 
                           what,
                           schema = NULL,
                           pool = TRUE,
-                          sqlite = NULL){
+                          sqlite = NULL,
+                          default_color = "#3333cc"){
 
-      
+      self$default_color <- default_color
       self$connect_to_database(config_file, schema, what, pool, sqlite)
       
     },
@@ -114,7 +116,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     get_invulvelden = function(zichtbaarheid = TRUE){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self.schema}.formulier_velden WHERE zichtbaar = {zichtbaarheid}")
+        qu <- glue::glue("SELECT * FROM {self$schema}.formulier_velden WHERE zichtbaar = {zichtbaarheid}")
       } else {
         qu <- glue::glue("SELECT * FROM formulier_velden WHERE zichtbaar = {zichtbaarheid}")
       }
@@ -123,7 +125,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     
     get_next_formorder_number = function(kant_formulier = c("links", "rechts")){
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self.schema}.formulier_velden WHERE formulier_kant = '{kant_formulier}'")
+        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self$schema}.formulier_velden WHERE formulier_kant = '{kant_formulier}'")
       } else {
         qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM formulier_velden WHERE formulier_kant = '{kant_formulier}'")
       }
@@ -143,13 +145,163 @@ registrationDataWarehouseR6 <- R6::R6Class(
       form_kant <- formulier_kant
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("INSERT INTO {self.schema}.formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, TRUE) ")
+        qu <- glue::glue("INSERT INTO {self$schema}.formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '[]', '[]', '[]', TRUE) ")
       } else {
-        qu <- glue::glue("INSERT INTO formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, TRUE) ")
+        qu <- glue::glue("INSERT INTO formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '[]', '[]', '[]', TRUE) ")
       }
       dbExecute(self$con, qu)
+    },
+    
+    edit_label_invulveld = function(id_formveld, new_label){
+      if(!is.null(self$schema)){
+        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
+      } else {
+        qu <- glue::glue("UPDATE formulier_velden SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
+      }
+      dbExecute(self$con, qu)
+      
+    },
+    
+    from_json = function(x, ...){
+      
+      shintocatman::from_json(x, ...)
+      
+    },
+    
+    to_json = function(x, ...){
+      
+      shintocatman::to_json(x, ...)
+      
+    },
+    
+    edit_opties_invulveld = function(id_formfield, new_opties){
+      
+      if(!is.character(new_opties)){
+        new_opties <- self$to_json(new_opties)  
+      }
+      
+      if(is.null(names(self$from_json(new_opties)))){
+        stop("JSON new_opties MUST have names (1:n) (edit_opties_invulveld)")
+      }
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET opties = '{new_opties}' WHERE id_formulierveld = '{id_formfield}'")
+      } else {
+        qu <- glue::glue("UPDATE formulier_velden SET opties = '{new_opties}' WHERE id_formulierveld = '{id_formfield}'")
+      }
+      
+      dbExecute(self$con, qu)
+      
+      
+    },
+    
+    is_color = function(colors){
+      
+      sapply(colors, function(x) {
+        tryCatch(!is.na(x) && is.matrix(col2rgb(x)), 
+                 error = function(e) FALSE)
+      }, USE.NAMES = FALSE)
+      
+    },
+    
+    set_optie_colors = function(id_formfield, new_colors){
+      
+      if(any(!self$is_color(new_colors))){
+        stop("Invalid colors!")
+      }
+      
+      new_colors <- self$to_json(as.list(new_colors) %>% setNames(1:length(new_colors)))
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET kleuren = '{new_colors}' WHERE id_formulierveld = '{id_formfield}'")
+      } else {
+        qu <- glue::glue("UPDATE formulier_velden SET kleuren = '{new_colors}' WHERE id_formulierveld = '{id_formfield}'")
+      }
+      
+      dbExecute(self$con, qu)
+      
+    },
+    
+    #' @description If new options added, make sure the color vector is amended
+    amend_optie_colors = function(id_formfield, opties){
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("SELECT kleuren FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
+      } else {
+        qu <- glue::glue("SELECT kleuren FROM formulier_velden WHERE id_formulierveld = '{id_formfield}'")
+      }
+      
+      cur_color <- dbGetQuery(self$con, qu) %>%
+        pull(kleuren)
+      
+      cur_color <- self$from_json(cur_color)
+      opties <- self$from_json(opties)
+      
+      if(length(cur_color) != length(opties)){
+        
+        nc <- length(cur_color)
+        n <- length(opties) - nc
+        
+        new_cols <- as.list(rep(self$default_color,n))
+        
+        self$set_optie_colors(id_formfield, c(cur_color, new_cols))
+        
+      }
+      
+      
+    },
+    
+    set_optie_order = function(id_formfield, new_order){
+      browser()
+      if(!is.null(names(new_order))){
+        warning("Dropping names : set_category_order")
+        names(new_order) <- NULL
+      }
+      
+      if(length(new_order) > 1){
+        new_order <- self$to_json(new_order)
+      }
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET volgorde_opties = '{new_order}' WHERE id_formulierveld = '{id_formfield}'")
+      } else {
+        qu <- glue::glue("UPDATE formulier_velden SET volgorde_opties = '{new_order}' WHERE id_formulierveld = '{id_formfield}'")
+      }
+      
+      dbExecute(self$con, qu)
+      
+    },
+    
+    #' @description If new categories added, make sure the order vector is amended
+    amend_optie_order = function(id_formfield, opties){
+      browser()
+      if(!is.null(self$schema)){
+        qu <- glue::glue("SELECT volgorde_opties FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
+      } else {
+        qu <- glue::glue("SELECT volgorde_opties FROM formulier_velden WHERE id_formulierveld = '{id_formfield}'")
+      }
+      
+      cur_order <- dbGetQuery(self$con, qu) %>%
+        pull(volgorde_opties)
+      
+      cur_order <- self$from_json(cur_order)
+      opties <- self$from_json(opties)
+      
+      if(length(cur_order) != length(opties)){
+        
+        nc <- length(cur_order)
+        n <- length(opties) - nc
+        
+        new_order <- c(cur_order, (nc+1):(nc+n))
+        .reg$set_optie_order(id_formfield, new_order)
+        
+      }
+      
+      
     }
     
+
+
   )
   
 )
