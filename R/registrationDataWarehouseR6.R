@@ -113,6 +113,23 @@ registrationDataWarehouseR6 <- R6::R6Class(
       }
     },
     
+    make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
+      
+      data <- data %>%
+        distinct(!!sym(values_from), !!sym(names_from))
+      
+      out <- data[[values_from]] %>% 
+        setNames(data[[names_from]])
+      
+      # Sorteer op labels, niet op waardes
+      if(sort){
+        out <- out[order(names(out))]
+      }
+      
+      return(out)
+      
+    },
+    
     get_invulvelden = function(zichtbaarheid = TRUE){
       
       if(!is.null(self$schema)){
@@ -254,7 +271,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     set_optie_order = function(id_formfield, new_order){
       browser()
       if(!is.null(names(new_order))){
-        warning("Dropping names : set_category_order")
+        warning("Dropping names : set_optie_order")
         names(new_order) <- NULL
       }
       
@@ -274,7 +291,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     
     #' @description If new categories added, make sure the order vector is amended
     amend_optie_order = function(id_formfield, opties){
-      browser()
+      
       if(!is.null(self$schema)){
         qu <- glue::glue("SELECT volgorde_opties FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
       } else {

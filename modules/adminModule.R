@@ -15,6 +15,14 @@ adminUI <- function(id){
                    column(12,
                           softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
                                                 status = "secondary", icon = bsicon("plus")),
+                          
+                          tags$span(id = ns("span_edit_formorder"),
+                                    jsonFormSetupUI(ns("edit_formorder"), 
+                                                    icon = bsicon("pencil-square"),
+                                                    label = "Wijzig formulier",
+                                                    class = "bg-gradient-primary")
+                          ),
+                          
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_formfield"),
                                       softui::action_button(ns("btn_edit_formfield"), "Wijzig invoerveld", 
@@ -37,6 +45,10 @@ adminUI <- function(id){
                                       colorVectorPickModuleUI(ns("edit_colors"))  
                             )
                           ),
+                          shinyjs::hidden(
+                            tags$span(id = ns("span_edit_order_options"),
+                                      jsonOrderModuleUI(ns("edit_order_options"), class = "warning")
+                            )),
                           
                    )
                  ),
@@ -140,6 +152,16 @@ adminModule <- function(input, output, session){
     
   })
   
+  callModule(jsonFormSetupModule, "edit_formorder", 
+             data = form_invul_data,
+             side_column = reactive("formulier_kant"),
+             order_column = reactive("volgorde_veld"),
+             id_column = reactive("id_formulierveld"),
+             label_column = reactive("label_veld")
+  )
+  
+  
+  
   observe({
     
     sel <- selected_row()
@@ -152,7 +174,10 @@ adminModule <- function(input, output, session){
     shinyjs::toggleElement("span_edit_formfield", condition = !is.null(sel))
     shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options))
     shinyjs::toggleElement("span_edit_colors", condition = (!is.null(sel) && show_edit_options))
+    shinyjs::toggleElement("span_edit_order_options", condition = (!is.null(sel) && show_edit_options))
   })
+  
+  
   
   observeEvent(input$btn_edit_formfield, {
     
@@ -177,18 +202,18 @@ adminModule <- function(input, output, session){
   })
   
   opties <- callModule(jsonEditModule, "edit_options", 
-             options = reactive("add"),   # nooit categorieen verwijderen, anders DB problemen!
-             edit = reactive("value"),
-             widths = c(2,10),
-             value = reactive(selected_row()$opties))
+                       options = reactive("add"),   # nooit categorieen verwijderen, anders DB problemen!
+                       edit = reactive("value"),
+                       widths = c(2,10),
+                       value = reactive(selected_row()$opties))
   
   observeEvent(opties(), {
-
+    
     .reg$edit_opties_invulveld(selected_id(), opties())
     .reg$amend_optie_order(selected_id(), opties())
     .reg$amend_optie_colors(selected_id(), opties())
     db_ping(runif(1))
-
+    
   })
   
   current_colors <- reactive({
@@ -205,6 +230,19 @@ adminModule <- function(input, output, session){
     
     .reg$set_optie_colors(selected_id(), colors())
     
+    db_ping(runif(1))
+  })
+  
+  
+  ordering_opties <- callModule(jsonOrderModule, "edit_order_options",
+                                data = selected_row,
+                                order_column = reactive("volgorde_opties"),
+                                label_column = reactive("opties")
+  )
+  
+  observeEvent(ordering_opties(), {
+    
+    .reg$set_optie_order(selected_id(), ordering_opties())
     db_ping(runif(1))
   })
   
