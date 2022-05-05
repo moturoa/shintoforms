@@ -16,7 +16,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
                           pool = TRUE,
                           sqlite = NULL,
                           default_color = "#3333cc"){
-
+      
       self$default_color <- default_color
       self$connect_to_database(config_file, schema, what, pool, sqlite)
       
@@ -140,11 +140,12 @@ registrationDataWarehouseR6 <- R6::R6Class(
       dbGetQuery(self$con, qu)
     },
     
+    # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
     get_next_formorder_number = function(kant_formulier = c("links", "rechts")){
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self$schema}.formulier_velden WHERE formulier_kant = '{kant_formulier}'")
+        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self$schema}.formulier_velden WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
       } else {
-        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM formulier_velden WHERE formulier_kant = '{kant_formulier}'")
+        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM formulier_velden WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
       }
       
       count <- dbGetQuery(self$con, qu)
@@ -156,18 +157,41 @@ registrationDataWarehouseR6 <- R6::R6Class(
       
       id <- uuid::UUIDgenerate()
       kol_nm_veld <- janitor::make_clean_names(tolower(label_veld), parsing_option = 1)
-      lbl_veld <- label_veld
-      tp_veld <- type_veld
-      volg_veld <- self$get_next_formorder_number(formulier_kant)
-      form_kant <- formulier_kant
+      if(!is.na(as.numeric(substr(kol_nm_veld, 1,1)))){
+        kol_nm_veld <- paste0("x",kol_nm_veld)
+      }
+      if(self$check_uniqueness_kolomnaam(kol_nm_veld)){
+        lbl_veld <- label_veld
+        tp_veld <- type_veld
+        volg_veld <- self$get_next_formorder_number(formulier_kant)
+        form_kant <- formulier_kant
+        
+        if(!is.null(self$schema)){
+          qu <- glue::glue("INSERT INTO {self$schema}.formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '[]', '[]', '[]', TRUE) ")
+        } else {
+          qu <- glue::glue("INSERT INTO formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '[]', '[]', '[]', TRUE) ")
+        }
+        dbExecute(self$con, qu)
+      } else {
+        toastr_error("Dit label zorgt voor een kolomnaam die al bestaat. Voer een ander label in.")
+      }
+      
+      
+    },
+    
+    check_uniqueness_kolomnaam =  function(kolomnaam){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("INSERT INTO {self$schema}.formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '[]', '[]', '[]', TRUE) ")
+        qu <- glue::glue("SELECT * FROM {self$schema}.formulier_velden WHERE kolomnaam_veld = '{kolomnaam}'")
       } else {
-        qu <- glue::glue("INSERT INTO formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '[]', '[]', '[]', TRUE) ")
+        qu <- glue::glue("SELECT * FROM formulier_velden WHERE kolomnaam_veld = '{kolomnaam}'")
       }
-      dbExecute(self$con, qu)
+      
+      res <- dbGetQuery(self$con, qu)
+      return(nrow(res)==0)
+      
     },
+    
     
     edit_label_invulveld = function(id_formveld, new_label){
       if(!is.null(self$schema)){
@@ -269,7 +293,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     },
     
     set_optie_order = function(id_formfield, new_order){
-      browser()
+      
       if(!is.null(names(new_order))){
         warning("Dropping names : set_optie_order")
         names(new_order) <- NULL
@@ -315,10 +339,77 @@ registrationDataWarehouseR6 <- R6::R6Class(
       }
       
       
+    },
+    
+    edit_formulier_setup = function(new_setup){
+      
+      lapply(1:nrow(new_setup), function(x){
+        
+        id <- new_setup$id[x]
+        side <- new_setup$side[x]
+        order <- new_setup$order[x]
+        
+        if(!is.null(self$schema)){
+          qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET formulier_kant = '{side}', volgorde_veld = '{order}'  WHERE id_formulierveld = '{id}'")
+        } else {
+          qu <- glue::glue("UPDATE formulier_velden SET formulier_kant = '{side}', volgorde_veld = '{order}'  WHERE id_formulierveld = '{id}'")
+        }
+        
+        dbExecute(self$con, qu)
+        
+      })
+      
+    },
+    
+    edit_zichtbaarheid_invoerveld = function(id_formfield, new_zichtbaarheid){
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET zichtbaar = {new_zichtbaarheid} WHERE id_formulierveld = '{id_formfield}'")
+      } else {
+        qu <- glue::glue("UPDATE formulier_velden SET zichtbaar = {new_zichtbaarheid} WHERE id_formulierveld = '{id_formfield}'")
+      }
+      
+      dbExecute(self$con, qu)
+      
+    },
+    
+    edit_verwijder_datum = function(id_formfield, new_date){
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET datum_uitgeschakeld = '{new_date}' WHERE id_formulierveld = '{id_formfield}'")
+      } else {
+        qu <- glue::glue("UPDATE formulier_velden SET datum_uitgeschakeld = '{new_date}' WHERE id_formulierveld = '{id_formfield}'")
+      }
+      
+      dbExecute(self$con, qu)
+      
+    },
+    
+    # hoeft alleen voor zichtbare velden
+    amend_formfield_order = function(formside, deleted_number){
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET volgorde_veld = volgorde_veld - 1 WHERE formulier_kant = '{formside}' AND volgorde_veld > {deleted_number} AND zichtbaar = TRUE")
+      } else {
+        qu <- glue::glue("UPDATE formulier_velden SET volgorde_veld = volgorde_veld - 1 WHERE formulier_kant = '{formside}' AND volgorde_veld > {deleted_number} AND zichtbaar = TRUE")
+      }
+      
+      dbExecute(self$con, qu)
+      
+    },
+    
+    reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
+      if(!is.null(self$schema)){
+        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET volgorde_veld = '{new_volgorde_nummer}' WHERE id_formulierveld = '{id_formfield}'")
+      } else {
+        qu <- glue::glue("UPDATE formulier_velden SET volgorde_veld = '{new_volgorde_nummer}' WHERE id_formulierveld = '{id_formfield}'")
+      }
+      
+      dbExecute(self$con, qu)
+      
     }
     
-
-
+    
   )
   
 )
