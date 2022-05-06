@@ -166,12 +166,26 @@ registrationDataWarehouseR6 <- R6::R6Class(
         volg_veld <- self$get_next_formorder_number(formulier_kant)
         form_kant <- formulier_kant
         
-        if(!is.null(self$schema)){
-          qu <- glue::glue("INSERT INTO {self$schema}.formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '[]', '[]', '[]', TRUE) ")
+        if(type_veld == "boolean"){
+          opties <- '{"1":"Ja","2":"Nee"}'
+          #volgorde <- self$to_json('[1,2]')
         } else {
-          qu <- glue::glue("INSERT INTO formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '[]', '[]', '[]', TRUE) ")
+          opties <- "[]"
+          #volgorde <- "[]"
         }
+        
+        if(!is.null(self$schema)){
+          qu <- glue::glue("INSERT INTO {self$schema}.formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
+        } else {
+          qu <- glue::glue("INSERT INTO formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
+        }
+        
         dbExecute(self$con, qu)
+        
+        if(type_veld == "boolean"){
+          self$amend_optie_order(id, opties)
+          self$amend_optie_colors(id, opties)
+        }
       } else {
         toastr_error("Dit label zorgt voor een kolomnaam die al bestaat. Voer een ander label in.")
       }
@@ -265,7 +279,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     
     #' @description If new options added, make sure the color vector is amended
     amend_optie_colors = function(id_formfield, opties){
-      
+      browser()
       if(!is.null(self$schema)){
         qu <- glue::glue("SELECT kleuren FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
       } else {
@@ -315,7 +329,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     
     #' @description If new categories added, make sure the order vector is amended
     amend_optie_order = function(id_formfield, opties){
-      
+      browser()
       if(!is.null(self$schema)){
         qu <- glue::glue("SELECT volgorde_opties FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
       } else {

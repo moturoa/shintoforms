@@ -199,7 +199,7 @@ adminModule <- function(input, output, session){
     
     sel <- selected_row()
     type <- selected_type()
-    if(type == "freetext" || type == "numeric" || type == "boolean"){
+    if(type == "freetext" || type == "numeric"){
       show_edit_options <- FALSE
     } else {
       show_edit_options <- TRUE
@@ -235,8 +235,20 @@ adminModule <- function(input, output, session){
     
   })
   
+  # Reactive maken die de add/delete argument reactively doorgeeft gebaseerd op het type
+  edit_options <- reactive({
+    req(selected_row())
+    if(selected_row()$type_veld == "singleselect" || selected_row()$type_veld == "multiselect"){
+      edit_options <- "add"
+    } else {
+      edit_options <- NULL
+    }
+    
+    edit_options
+  })
+  
   opties <- callModule(jsonEditModule, "edit_options", 
-                       options = reactive("add"),   # nooit categorieen verwijderen, anders DB problemen!
+                       options = edit_options,   # nooit categorieen verwijderen, anders DB problemen!
                        edit = reactive("value"),
                        widths = c(2,10),
                        value = reactive(selected_row()$opties))
