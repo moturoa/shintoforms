@@ -7,7 +7,7 @@ formulierInvoerveldUI <- function(id){
     softui::fluid_page(
       softui::fluid_row(
         column(12,
-               tags$p("Invoerveld") 
+               uiOutput(ns("invoer_ui"))
         )
       )
     )
@@ -16,9 +16,24 @@ formulierInvoerveldUI <- function(id){
   
 }
 
-formulierInvoerveldModule <- function(input, output, session){
+formulierInvoerveldModule <- function(input, output, session, label, nieuwe_registratie_ping = reactive(NULL)){
   
   ns <- session$ns
+  
+  output$invoer_ui <- renderUI({
+    
+    softui::fluid_row(
+      column(12,
+             selectInput(ns("invoer_input"), label = label, choices = c(letters))
+      )
+    )
+    
+  })
+  
+  observeEvent(nieuwe_registratie_ping(), {
+    print(label)
+    print(input$invoer_input)
+  })
   
   
 }

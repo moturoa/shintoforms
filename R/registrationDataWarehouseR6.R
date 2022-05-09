@@ -279,7 +279,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     
     #' @description If new options added, make sure the color vector is amended
     amend_optie_colors = function(id_formfield, opties){
-      browser()
+      
       if(!is.null(self$schema)){
         qu <- glue::glue("SELECT kleuren FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
       } else {
@@ -329,7 +329,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     
     #' @description If new categories added, make sure the order vector is amended
     amend_optie_order = function(id_formfield, opties){
-      browser()
+      
       if(!is.null(self$schema)){
         qu <- glue::glue("SELECT volgorde_opties FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
       } else {
