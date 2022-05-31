@@ -105,10 +105,8 @@ adminModule <- function(input, output, session){
   
   ns <- session$ns
   
-  db_ping <- reactiveVal()
-  
   form_invul_data <- reactive({
-    db_ping()
+    session$userData$db_ping()
     .reg$get_invulvelden(TRUE)
   })
   
@@ -171,7 +169,7 @@ adminModule <- function(input, output, session){
     
     if(str_trim(input$txt_column_name, side = "both") != ""){
       .reg$add_invoerveld_formulier(input$txt_column_name, input$rad_type_formfield, input$rad_side_formfield)
-      db_ping(runif(1))
+      session$userData$db_ping(runif(1))
       removeModal()
     } else {
       toastr_error("Vul een label in")
@@ -192,7 +190,7 @@ adminModule <- function(input, output, session){
   
   observeEvent(form_setup(), {
     .reg$edit_formulier_setup(form_setup())
-    db_ping(runif(1))
+    session$userData$db_ping(runif(1))
   })
   
   observe({
@@ -230,7 +228,7 @@ adminModule <- function(input, output, session){
   observeEvent(input$btn_confirm_edit_label, {
     
     .reg$edit_label_invulveld(selected_id(), input$txt_edit_formfield_label)
-    db_ping(runif(1))
+    session$userData$db_ping(runif(1))
     removeModal()
     
   })
@@ -258,7 +256,7 @@ adminModule <- function(input, output, session){
     .reg$edit_opties_invulveld(selected_id(), opties())
     .reg$amend_optie_order(selected_id(), opties())
     .reg$amend_optie_colors(selected_id(), opties())
-    db_ping(runif(1))
+    session$userData$db_ping(runif(1))
     
   })
   
@@ -276,7 +274,7 @@ adminModule <- function(input, output, session){
     
     .reg$set_optie_colors(selected_id(), colors())
     
-    db_ping(runif(1))
+    session$userData$db_ping(runif(1))
   })
   
   
@@ -289,7 +287,7 @@ adminModule <- function(input, output, session){
   observeEvent(ordering_opties(), {
     
     .reg$set_optie_order(selected_id(), ordering_opties())
-    db_ping(runif(1))
+    session$userData$db_ping(runif(1))
   })
   
   observeEvent(input$btn_delete_formfield, {
@@ -310,12 +308,12 @@ adminModule <- function(input, output, session){
     .reg$edit_zichtbaarheid_invoerveld(selected_id(), FALSE)
     .reg$edit_verwijder_datum(selected_id(), today())
     .reg$amend_formfield_order(selected_row()$formulier_kant, selected_row()$volgorde_veld)
-    db_ping(runif(1))
+    session$userData$db_ping(runif(1))
     
   })
   
   form_deleted_data <- reactive({
-    db_ping()
+    session$userData$db_ping()
     .reg$get_invulvelden(FALSE)
   })
   
@@ -359,7 +357,7 @@ adminModule <- function(input, output, session){
     volg_veld_reset <- .reg$get_next_formorder_number(selected_row_deleted()$formulier_kant)
     .reg$reset_volgorde_invoerveld(selected_id_deleted(), volg_veld_reset)
     .reg$edit_zichtbaarheid_invoerveld(selected_id_deleted(), TRUE)
-    db_ping(runif(1))
+    session$userData$db_ping(runif(1))
   })
   
 }

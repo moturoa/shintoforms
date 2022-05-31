@@ -33,6 +33,8 @@ formulierInvoerveldModule <- function(input, output, session, label, nieuwe_regi
   observeEvent(nieuwe_registratie_ping(), {
     print(label)
     print(input$invoer_input)
+    
+    return(reactive({paste(label, input$invoer_input)}))
   })
   
   

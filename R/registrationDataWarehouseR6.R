@@ -421,6 +421,20 @@ registrationDataWarehouseR6 <- R6::R6Class(
       
       dbExecute(self$con, qu)
       
+    },
+    
+    get_velden_form = function(kant_formulier = c("links", "rechts")){
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("SELECT * FROM {self$schema}.formulier_velden WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+      } else {
+        qu <- glue::glue("SELECT * FROM formulier_velden WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+      }
+      
+      result <- dbGetQuery(self$con, qu)
+      result <- result[order(result$volgorde_veld),]
+      return(result)
+      
     }
     
     
