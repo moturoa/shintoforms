@@ -4,10 +4,9 @@ function(input, output, session){
   
   session$userData$db_ping <- reactiveVal()
   
-  callModule(adminModule, "admin")
-  callModule(formulierModule, "formulier")
-  callModule(dashboardModule, "dashboard")
-  
+  callModule(adminModule, "admin", .reg = .reg)
+  callModule(formulierModule, "formulier",  .reg = .reg)
+
 }
 
 

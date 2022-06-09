@@ -6,10 +6,24 @@ jsonFormSetupUI <- function(id, class = "", icon = NULL, label = "Edit values"){
 }
 
 
-jsonFormSetupModule <- function(input, output, session, data = reactive(NULL), side_column = reactive(NULL), order_column = reactive(NULL), 
-                                id_column = reactive(NULL), label_column = reactive(NULL), callback = function(data){}){
+
+#' @rdname jsonFormSetup
+#' @importFrom 
+#' @export
+jsonFormSetupModule <- function(input, output, session, 
+                                data = reactive(NULL), 
+                                .reg = NULL,
+                                side_column = reactive(NULL), 
+                                order_column = reactive(NULL), 
+                                id_column = reactive(NULL), 
+                                label_column = reactive(NULL), 
+                                callback = function(data){}){
   
   ns <- session$ns
+  
+  if(is.null(.reg)){
+    stop("Provide .reg argument, e.g. .reg <- registrationDataWarehouseR6$new(sqlite = 'data/registraties.sqlite')")
+  }
   
   data_ordered_left <- reactive({
     

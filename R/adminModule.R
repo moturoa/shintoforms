@@ -101,13 +101,13 @@ adminUI <- function(id){
   
 }
 
-adminModule <- function(input, output, session){
+adminModule <- function(input, output, session, .reg = NULL){
   
   ns <- session$ns
   
   form_invul_data <- reactive({
     session$userData$db_ping()
-    .reg$get_invulvelden(TRUE)
+    .reg$get_input_fields(TRUE)
   })
   
   output$dt_form_invoervelden <- DT::renderDataTable({
@@ -168,7 +168,7 @@ adminModule <- function(input, output, session){
   observeEvent(input$btn_confirm_add_formfield, {
     
     if(str_trim(input$txt_column_name, side = "both") != ""){
-      .reg$add_invoerveld_formulier(input$txt_column_name, input$rad_type_formfield, input$rad_side_formfield)
+      .reg$add_input_field_to_form(input$txt_column_name, input$rad_type_formfield, input$rad_side_formfield)
       session$userData$db_ping(runif(1))
       removeModal()
     } else {
@@ -182,6 +182,7 @@ adminModule <- function(input, output, session){
   
   form_setup <- callModule(jsonFormSetupModule, "edit_formorder", 
                            data = form_invul_data,
+                           .reg = .reg,
                            side_column = reactive("formulier_kant"),
                            order_column = reactive("volgorde_veld"),
                            id_column = reactive("id_formulierveld"),
@@ -227,7 +228,7 @@ adminModule <- function(input, output, session){
   
   observeEvent(input$btn_confirm_edit_label, {
     
-    .reg$edit_label_invulveld(selected_id(), input$txt_edit_formfield_label)
+    .reg$edit_label_field(selected_id(), input$txt_edit_formfield_label)
     session$userData$db_ping(runif(1))
     removeModal()
     
@@ -314,7 +315,7 @@ adminModule <- function(input, output, session){
   
   form_deleted_data <- reactive({
     session$userData$db_ping()
-    .reg$get_invulvelden(FALSE)
+    .reg$get_input_fields(FALSE)
   })
   
   output$dt_deleted_invoervelden <- DT::renderDataTable({

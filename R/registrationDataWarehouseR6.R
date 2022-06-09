@@ -130,14 +130,14 @@ registrationDataWarehouseR6 <- R6::R6Class(
       
     },
     
-    get_invulvelden = function(zichtbaarheid = TRUE){
+    get_input_fields = function(zichtbaarheid = TRUE){
       
       if(!is.null(self$schema)){
         qu <- glue::glue("SELECT * FROM {self$schema}.formulier_velden WHERE zichtbaar = {zichtbaarheid}")
       } else {
         qu <- glue::glue("SELECT * FROM formulier_velden WHERE zichtbaar = {zichtbaarheid}")
       }
-      dbGetQuery(self$con, qu)
+      DBI::dbGetQuery(self$con, qu)
     },
     
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
@@ -153,14 +153,14 @@ registrationDataWarehouseR6 <- R6::R6Class(
       
     },
     
-    add_invoerveld_formulier = function(label_veld, type_veld, formulier_kant){
+    add_input_field_to_form = function(label_veld, type_veld, formulier_kant){
       
       id <- uuid::UUIDgenerate()
       kol_nm_veld <- janitor::make_clean_names(tolower(label_veld), parsing_option = 1)
       if(!is.na(as.numeric(substr(kol_nm_veld, 1,1)))){
         kol_nm_veld <- paste0("x",kol_nm_veld)
       }
-      if(self$check_uniqueness_kolomnaam(kol_nm_veld)){
+      if(self$check_uniqueness_column_name(kol_nm_veld)){
         lbl_veld <- label_veld
         tp_veld <- type_veld
         volg_veld <- self$get_next_formorder_number(formulier_kant)
@@ -180,20 +180,30 @@ registrationDataWarehouseR6 <- R6::R6Class(
           qu <- glue::glue("INSERT INTO formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
         }
         
-        dbExecute(self$con, qu)
+        DBI::dbExecute(self$con, qu)
         
         if(type_veld == "boolean"){
           self$amend_optie_order(id, opties)
           self$amend_optie_colors(id, opties)
         }
+        
+        return(0)
+        
       } else {
-        toastr_error("Dit label zorgt voor een kolomnaam die al bestaat. Voer een ander label in.")
+        
+        
+        return(-1)
+        
+        # dit mag niet
+        # goed voorbeeld van onion model idee fout.
+        # deze methode weet niet dat toastr beschikbaar is 
+        #toastr_error("Dit label zorgt voor een kolomnaam die al bestaat. Voer een ander label in.")
       }
       
       
     },
     
-    check_uniqueness_kolomnaam =  function(kolomnaam){
+    check_uniqueness_column_name =  function(kolomnaam){
       
       if(!is.null(self$schema)){
         qu <- glue::glue("SELECT * FROM {self$schema}.formulier_velden WHERE kolomnaam_veld = '{kolomnaam}'")
@@ -207,7 +217,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     },
     
     
-    edit_label_invulveld = function(id_formveld, new_label){
+    edit_label_field = function(id_formveld, new_label){
       if(!is.null(self$schema)){
         qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
       } else {

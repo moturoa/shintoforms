@@ -1,6 +1,8 @@
 
 # Packages
 devtools::load_all()
+# library(shintoregistraties)
+
 
 source("preload/load_packages.R")
 shintoshiny::check_for_version("softui","0.4")

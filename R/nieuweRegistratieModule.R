@@ -47,7 +47,7 @@ nieuweRegistratieUI <- function(id){
   
 }
 
-nieuweRegistratieModule <- function(input, output, session){
+nieuweRegistratieModule <- function(input, output, session, .reg = NULL){
   
   ns <- session$ns
   

@@ -58,7 +58,7 @@ formulierUI <- function(id){
   
 }
 
-formulierModule <- function(input, output, session){
+formulierModule <- function(input, output, session, .reg = NULL){
   
   ns <- session$ns
   
@@ -78,7 +78,8 @@ formulierModule <- function(input, output, session){
     }
   })
   
-  nieuw_registratie_ping <- callModule(nieuweRegistratieModule, "nieuweRegistratie")
+  nieuw_registratie_ping <- callModule(nieuweRegistratieModule, "nieuweRegistratie", 
+                                       .reg = .reg)
   
   
 }
