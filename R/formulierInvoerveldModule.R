@@ -1,5 +1,5 @@
 
-formulierInvoerveldUI <- function(id){
+formulierInvoerveldUI <- function(id, data){
   
   ns <- NS(id)
   
