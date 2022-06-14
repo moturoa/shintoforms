@@ -22,7 +22,7 @@ jsonFormSetupModule <- function(input, output, session,
   ns <- session$ns
   
   if(is.null(.reg)){
-    stop("Provide .reg argument, e.g. .reg <- registrationDataWarehouseR6$new(sqlite = 'data/registraties.sqlite')")
+    stop("Provide .reg argument, e.g. .reg <- registrationClass$new(sqlite = 'data/registraties.sqlite')")
   }
   
   data_ordered_left <- reactive({

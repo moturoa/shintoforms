@@ -17,11 +17,6 @@ nieuweRegistratieUI <- function(id){
       )
     ),
     
-    
-    softui::fluid_row(
-      verbatimTextOutput(ns("txt_out"))
-    ),
-    
     softui::fluid_row(class = "justify-content-end",
       
       column(2,
@@ -80,12 +75,27 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL){
     
   })
   
-  output$txt_out <- renderPrint({
-    edits()
+  ping <- reactiveVal()
+  
+  observeEvent(input$btn_register_new_signal, {
+    
+    ping(runif(1))
+    
+    data <- edits()
+    data[sapply(data,is.null)] <- NA
+    
+    showModal(
+      softui::modal(
+        title = "Debug",
+        
+        HTML(kable(t(as.data.frame(data)), format = "html"))
+      )
+    )
+    
   })
   
-  
-  
+
+return(ping)  
 }
 
 

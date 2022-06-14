@@ -14,7 +14,8 @@ shintoshiny::check_for_version("shintousers","0.4-2")
 
 # Database connection
 
-.reg <- registrationDataWarehouseR6$new(sqlite = "data/registraties.sqlite")
+.reg <- registrationClass$new(sqlite = "data/registraties.sqlite",
+                              table = "formulier_velden")
 
 # End.
 onStop(function() {

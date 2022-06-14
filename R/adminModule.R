@@ -1,5 +1,5 @@
 
-`adminUI` <- function(id){
+adminUI <- function(id){
   
   ns <- NS(id)
   
@@ -20,13 +20,13 @@
                                     jsonFormSetupUI(ns("edit_formorder"), 
                                                     icon = bsicon("pencil-square"),
                                                     label = "Wijzig formulier",
-                                                    class = "bg-gradient-primary")
+                                                    class = "bg-gradient-secondary")
                           ),
                           
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_formfield"),
                                       softui::action_button(ns("btn_edit_formfield"), "Wijzig invoerveld", 
-                                                            class = "btn-info",
+                                                            status = "secondary",
                                                             icon = bsicon("pencil-square"))
                             )
                           ),
@@ -37,24 +37,26 @@
                                       shintocatman::jsonEditModuleUI(ns("edit_options"), 
                                                        icon = bsicon("pencil-square"),
                                                        label = "Opties",
-                                                       class = "bg-gradient-primary")  
+                                                       class = "bg-gradient-secondary")  
                             )
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_colors"),
-                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"))  
+                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"), class = "bg-gradient-secondary")  
                             )
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_order_options"),
-                                      shintocatman::jsonOrderModuleUI(ns("edit_order_options"), label = "Wijzig volgorde opties", 
-                                                        icon = bsicon("pencil-square"), class = "warning")
+                                      shintocatman::jsonOrderModuleUI(ns("edit_order_options"), 
+                                                                      label = "Wijzig volgorde opties", 
+                                                        icon = bsicon("pencil-square"), 
+                                                        class = "bg-gradient-warning")
                             )
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_delete_formfield"),
                                       softui::action_button(ns("btn_delete_formfield"), "Verwijder invoerveld", 
-                                                            class = "btn-danger",
+                                                            status = "danger",
                                                             icon = bsicon("trash3"))
                             )
                           )

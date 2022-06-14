@@ -1,24 +1,19 @@
-registrationDataWarehouseR6 <- R6::R6Class(
-  
-  public = list(
+registrationClass <- R6::R6Class(
+  lock_objects = FALSE,
     
-    con = NULL,
-    schema = NULL,
-    dbname = NULL,
-    dbuser = NULL,
-    pool = NULL,
-    dbtype = NULL,
-    default_color = NULL, 
+  public = list(
     
     initialize = function(config_file = "conf/config.yml", 
                           what,
                           schema = NULL,
+                          table = "formulier_velden",
                           pool = TRUE,
                           sqlite = NULL,
                           default_color = "#3333cc"){
       
       self$default_color <- default_color
       self$connect_to_database(config_file, schema, what, pool, sqlite)
+      self$table <- table
       
     },
     
@@ -27,7 +22,6 @@ registrationDataWarehouseR6 <- R6::R6Class(
                                    what = NULL, 
                                    pool = TRUE, 
                                    sqlite = NULL){
-      
       
       if(!is.null(sqlite)){
         
@@ -159,6 +153,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
       DBI::dbGetQuery(self$con, qu)
     },
     
+    
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
     get_next_formorder_number = function(kant_formulier = c("links", "rechts")){
       if(!is.null(self$schema)){
@@ -229,7 +224,7 @@ registrationDataWarehouseR6 <- R6::R6Class(
     check_uniqueness_column_name =  function(kolomnaam){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.formulier_velden WHERE kolomnaam_veld = '{kolomnaam}'")
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE kolomnaam_veld = '{kolomnaam}'")
       } else {
         qu <- glue::glue("SELECT * FROM formulier_velden WHERE kolomnaam_veld = '{kolomnaam}'")
       }
@@ -242,9 +237,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
     
     edit_label_field = function(id_formveld, new_label){
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
       } else {
-        qu <- glue::glue("UPDATE formulier_velden SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
+        qu <- glue::glue("UPDATE {self$table} SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
       }
       dbExecute(self$con, qu)
       
@@ -273,9 +268,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
       }
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET opties = '{new_opties}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET opties = '{new_opties}' WHERE id_formulierveld = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE formulier_velden SET opties = '{new_opties}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET opties = '{new_opties}' WHERE id_formulierveld = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -301,9 +296,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
       new_colors <- self$to_json(as.list(new_colors) %>% setNames(1:length(new_colors)))
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET kleuren = '{new_colors}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET kleuren = '{new_colors}' WHERE id_formulierveld = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE formulier_velden SET kleuren = '{new_colors}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET kleuren = '{new_colors}' WHERE id_formulierveld = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -314,9 +309,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
     amend_optie_colors = function(id_formfield, opties){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT kleuren FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("SELECT kleuren FROM {self$schema}.{self$table} WHERE id_formulierveld = '{id_formfield}'")
       } else {
-        qu <- glue::glue("SELECT kleuren FROM formulier_velden WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("SELECT kleuren FROM {self$table} WHERE id_formulierveld = '{id_formfield}'")
       }
       
       cur_color <- dbGetQuery(self$con, qu) %>%
@@ -351,9 +346,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
       }
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET volgorde_opties = '{new_order}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET volgorde_opties = '{new_order}' WHERE id_formulierveld = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE formulier_velden SET volgorde_opties = '{new_order}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET volgorde_opties = '{new_order}' WHERE id_formulierveld = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -364,9 +359,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
     amend_optie_order = function(id_formfield, opties){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT volgorde_opties FROM {self$schema}.formulier_velden WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("SELECT volgorde_opties FROM {self$schema}.{self$table} WHERE id_formulierveld = '{id_formfield}'")
       } else {
-        qu <- glue::glue("SELECT volgorde_opties FROM formulier_velden WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("SELECT volgorde_opties FROM {self$table} WHERE id_formulierveld = '{id_formfield}'")
       }
       
       cur_order <- dbGetQuery(self$con, qu) %>%
@@ -397,9 +392,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
         order <- new_setup$order[x]
         
         if(!is.null(self$schema)){
-          qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET formulier_kant = '{side}', volgorde_veld = '{order}'  WHERE id_formulierveld = '{id}'")
+          qu <- glue::glue("UPDATE {self$schema}.{self$table} SET formulier_kant = '{side}', volgorde_veld = '{order}'  WHERE id_formulierveld = '{id}'")
         } else {
-          qu <- glue::glue("UPDATE formulier_velden SET formulier_kant = '{side}', volgorde_veld = '{order}'  WHERE id_formulierveld = '{id}'")
+          qu <- glue::glue("UPDATE {self$table} SET formulier_kant = '{side}', volgorde_veld = '{order}'  WHERE id_formulierveld = '{id}'")
         }
         
         dbExecute(self$con, qu)
@@ -411,9 +406,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
     edit_zichtbaarheid_invoerveld = function(id_formfield, new_zichtbaarheid){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET zichtbaar = {new_zichtbaarheid} WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET zichtbaar = {new_zichtbaarheid} WHERE id_formulierveld = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE formulier_velden SET zichtbaar = {new_zichtbaarheid} WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET zichtbaar = {new_zichtbaarheid} WHERE id_formulierveld = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -423,9 +418,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
     edit_verwijder_datum = function(id_formfield, new_date){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET datum_uitgeschakeld = '{new_date}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET datum_uitgeschakeld = '{new_date}' WHERE id_formulierveld = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE formulier_velden SET datum_uitgeschakeld = '{new_date}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET datum_uitgeschakeld = '{new_date}' WHERE id_formulierveld = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -436,9 +431,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
     amend_formfield_order = function(formside, deleted_number){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET volgorde_veld = volgorde_veld - 1 WHERE formulier_kant = '{formside}' AND volgorde_veld > {deleted_number} AND zichtbaar = TRUE")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET volgorde_veld = volgorde_veld - 1 WHERE formulier_kant = '{formside}' AND volgorde_veld > {deleted_number} AND zichtbaar = TRUE")
       } else {
-        qu <- glue::glue("UPDATE formulier_velden SET volgorde_veld = volgorde_veld - 1 WHERE formulier_kant = '{formside}' AND volgorde_veld > {deleted_number} AND zichtbaar = TRUE")
+        qu <- glue::glue("UPDATE {self$table} SET volgorde_veld = volgorde_veld - 1 WHERE formulier_kant = '{formside}' AND volgorde_veld > {deleted_number} AND zichtbaar = TRUE")
       }
       
       dbExecute(self$con, qu)
@@ -447,9 +442,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
     
     reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.formulier_velden SET volgorde_veld = '{new_volgorde_nummer}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET volgorde_veld = '{new_volgorde_nummer}' WHERE id_formulierveld = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE formulier_velden SET volgorde_veld = '{new_volgorde_nummer}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET volgorde_veld = '{new_volgorde_nummer}' WHERE id_formulierveld = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -459,9 +454,9 @@ registrationDataWarehouseR6 <- R6::R6Class(
     get_velden_form = function(kant_formulier = c("links", "rechts")){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.formulier_velden WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
       } else {
-        qu <- glue::glue("SELECT * FROM formulier_velden WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+        qu <- glue::glue("SELECT * FROM {self$table} WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
       }
       
       result <- dbGetQuery(self$con, qu)

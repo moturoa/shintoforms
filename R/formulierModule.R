@@ -2,21 +2,27 @@
 #' Formulier Shiny Module
 #' @rdname formulier
 #' @export
-formulierUI <- function(id){
+formulierUI <- function(id,
+                        title = "Formulier",
+                        icon = softui::bsicon("ui_checks"),
+                        header_ui = NULL,
+                        tag = "Opties",
+                        new_existing_labels = c("Nieuwe registratie invoeren","Bestaande registratie bekijken")
+                        ){
   
   ns <- NS(id)
   
   softui::fluid_page(
     softui::fluid_row(
       
-       softui::box(title = "Formulier", icon = bsicon("ui_checks"), tag = "Opties",
+       softui::box(title = title, icon = icon, tag = tag,
          
+          header_ui,
           radioButtons(ns("rad_nieuw_wijzigen_registratie"), 
-                       label = "Wilt u een nieuwe registratie invoeren of een bestaande registratie bekijken/wijzigen?", 
-                       choices = c("Nieuwe registratie invoeren" = "nieuw", 
-                                   "Bestaande registratie bekijken" = "bestaand"), 
+                       label = NULL, 
+                       choices = setNames(c("nieuw", "bestaand"), new_existing_labels),
                        selected = "nieuw",
-                       inline = TRUE)
+                       inline = FALSE)
        )
       
     ),
@@ -36,6 +42,7 @@ formulierUI <- function(id){
                       softui::box(
                         width = 12,
                         title = "",
+                        tag = "Formulier",
                         
                         nieuweRegistratieUI(ns("nieuweRegistratie"))
                       )
@@ -74,3 +81,8 @@ formulierModule <- function(input, output, session, .reg = NULL){
   
 return(ping)
 }
+
+
+
+
+
