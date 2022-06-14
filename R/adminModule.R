@@ -42,7 +42,7 @@ adminUI <- function(id){
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_colors"),
-                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"), class = "bg-gradient-secondary")  
+                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"), status = "secondary")  
                             )
                           ),
                           shinyjs::hidden(
