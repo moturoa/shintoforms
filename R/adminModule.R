@@ -1,5 +1,5 @@
 
-adminUI <- function(id){
+`adminUI` <- function(id){
   
   ns <- NS(id)
   
@@ -34,7 +34,7 @@ adminUI <- function(id){
                           
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_options"),
-                                      jsonEditModuleUI(ns("edit_options"), 
+                                      shintocatman::jsonEditModuleUI(ns("edit_options"), 
                                                        icon = bsicon("pencil-square"),
                                                        label = "Opties",
                                                        class = "bg-gradient-primary")  
@@ -42,12 +42,12 @@ adminUI <- function(id){
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_colors"),
-                                      colorVectorPickModuleUI(ns("edit_colors"))  
+                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"))  
                             )
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_order_options"),
-                                      jsonOrderModuleUI(ns("edit_order_options"), label = "Wijzig volgorde opties", 
+                                      shintocatman::jsonOrderModuleUI(ns("edit_order_options"), label = "Wijzig volgorde opties", 
                                                         icon = bsicon("pencil-square"), class = "warning")
                             )
                           ),
@@ -149,13 +149,15 @@ adminModule <- function(input, output, session, .reg = NULL){
         title = "Invoerveld toevoegen aan formulier",
         
         textInput(session$ns("txt_column_name"), "Naam invoerveld"),
-        radioButtons(session$ns("rad_type_formfield"), "Selecteer het soort invoerveld",
+        radioButtons(session$ns("rad_type_formfield"), "Type invoerveld",
                      choices = c("Tekstinvoer" = "freetext",
                                  "Numerieke invoer" = "numeric",
                                  "Ja/Nee" = "boolean",
                                  "Keuzemenu (enkele optie)" = "singleselect",
-                                 "Keuzemenu (meerdere opties)" = "multiselect")),
-        radioButtons(session$ns("rad_side_formfield"), "Selecteer de zijde van het invoerveld op het formulier",
+                                 "Keuzemenu (meerdere opties)" = "multiselect",
+                                 "Datum" = "date"
+                                 )),
+        radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
                      choices = c("Links" = "links",
                                  "Rechts" = "rechts")),
         
@@ -174,9 +176,6 @@ adminModule <- function(input, output, session, .reg = NULL){
     } else {
       toastr_error("Vul een label in")
     }
-    
-    
-    
     
   })
   
@@ -246,7 +245,7 @@ adminModule <- function(input, output, session, .reg = NULL){
     edit_options
   })
   
-  opties <- callModule(jsonEditModule, "edit_options", 
+  opties <- callModule(shintocatman::jsonEditModule, "edit_options", 
                        options = edit_options,   # nooit categorieen verwijderen, anders DB problemen!
                        edit = reactive("value"),
                        widths = c(2,10),
@@ -265,7 +264,7 @@ adminModule <- function(input, output, session, .reg = NULL){
     from_json(selected_row()$kleuren)
   })
   
-  colors <- callModule(colorVectorPickModule, "edit_colors",
+  colors <- callModule(shintocatman::colorVectorPickModule, "edit_colors",
                        n_colors = reactive(length(current_colors())), 
                        current_colors = current_colors,
                        labels = reactive(from_json(selected_row()$opties)),
@@ -279,7 +278,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   })
   
   
-  ordering_opties <- callModule(jsonOrderModule, "edit_order_options",
+  ordering_opties <- callModule(shintocatman::jsonOrderModule, "edit_order_options",
                                 data = selected_row,
                                 order_column = reactive("volgorde_opties"),
                                 label_column = reactive("opties")

@@ -7,7 +7,9 @@ devtools::load_all()
 source("preload/load_packages.R")
 shintoshiny::check_for_version("softui","0.4")
 shintoshiny::check_for_version("shintousers","0.4-2")
-shintoshiny::load_modules()
+
+
+#shintoshiny::load_modules()
 
 
 # Database connection

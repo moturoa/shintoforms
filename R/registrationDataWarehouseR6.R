@@ -130,6 +130,25 @@ registrationDataWarehouseR6 <- R6::R6Class(
       
     },
     
+    choices_from_json = function(x){
+      
+      val <- self$from_json(x)
+      nms <- unlist(unname(val))
+      
+      out <- setNames(names(val), nms)
+      
+      out2 <- suppressWarnings({
+        setNames(as.integer(out), nms)
+      })
+      
+      if(!any(is.na(out2))){
+        out <- out2
+      }
+      
+      out
+    },
+    
+    
     get_input_fields = function(zichtbaarheid = TRUE){
       
       if(!is.null(self$schema)){
@@ -156,10 +175,14 @@ registrationDataWarehouseR6 <- R6::R6Class(
     add_input_field_to_form = function(label_veld, type_veld, formulier_kant){
       
       id <- uuid::UUIDgenerate()
+      
       kol_nm_veld <- janitor::make_clean_names(tolower(label_veld), parsing_option = 1)
+      
+      # ?
       if(!is.na(as.numeric(substr(kol_nm_veld, 1,1)))){
         kol_nm_veld <- paste0("x",kol_nm_veld)
       }
+      
       if(self$check_uniqueness_column_name(kol_nm_veld)){
         lbl_veld <- label_veld
         tp_veld <- type_veld

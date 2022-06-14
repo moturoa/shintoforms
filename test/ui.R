@@ -3,8 +3,7 @@
 sidebar <- softui::dashboard_sidebar(
   softui::sidebar_menu(
     softui::menu_item("Admin", tabName = "admin", icon = bsicon("gear-fill")),
-    softui::menu_item("Formulier", tabName = "formulier", icon = bsicon("ui-checks")),
-    softui::menu_item("Dashboard", tabName = "dashboard", icon = bsicon("speedometer2"))
+    softui::menu_item("Formulier", tabName = "formulier", icon = bsicon("ui-checks"))
   )
 )
 
@@ -21,11 +20,8 @@ body <- softui::dashboard_body(
 
     softui::tab_item("formulier",
                      formulierUI("formulier")
-    ),
-
-    softui::tab_item("dashboard",
-                     dashboardUI("dashboard")
     )
+    
   )
 )
 
