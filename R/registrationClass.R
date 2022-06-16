@@ -35,7 +35,7 @@ registrationClass <- R6::R6Class(
                           data_table = "registrations",
                           data_columns = list(
                             id = "id_registratie",
-                            name = "naam_registration",
+                            name = "naam_registratie",
                             time_created = "invoerdatum",
                             time_modified = "wijzigdatum",
                             user = "user_id"
@@ -739,10 +739,13 @@ registrationClass <- R6::R6Class(
       
       data <- as.data.frame(
         lapply(data, function(x){
+
+          # jsonify arrays
           if(length(x) > 1){
             x <- as.character(self$to_json(x))
           }
 
+          # needed for empty json strings; not sure why
           if(class(x) == "json"){
             x <- as.character(x)
           }
@@ -750,7 +753,9 @@ registrationClass <- R6::R6Class(
         })
       )
       
-      self$append_data(self$data_table, data)
+      data_all <- cbind(data_pre, data)
+      
+      self$append_data(self$data_table, data_all)
       
       
     }

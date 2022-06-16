@@ -265,6 +265,8 @@ editFieldModule <- function(input, output, session, .reg, type){
       
       out <- .reg$to_json(out)
       
+    } else if(type == "date"){
+      out <- as.character(out)
     }
     
     out
