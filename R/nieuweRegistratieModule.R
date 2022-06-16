@@ -88,10 +88,13 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
     
     data <- lapply(data, function(x){
       if(length(x) > 1){
-        as.character(.reg$to_json(x))
-      } else {
-        x
+        x <- as.character(.reg$to_json(x))
+      } 
+    
+      if(class(x) == "json"){
+        x <- as.character(x)
       }
+      x
     })
     
     showModal(
@@ -275,14 +278,13 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg){
 
 formSectionModule <- function(input, output, session, cfg, .reg){
   
-  values <- list()
-  
   values <- lapply(split(cfg, 1:nrow(cfg)), function(el){
     col <- el$column_field
     id <- el$id_form
     callModule(editFieldModule, id, .reg = .reg, type = el$type_field)
   })
   
+  names(values) <- cfg$column_field
   
   return(reactive(values))
   
