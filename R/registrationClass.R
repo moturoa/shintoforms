@@ -18,6 +18,22 @@ registrationClass <- R6::R6Class(
                           what,
                           schema = NULL,
                           table = "formulier_velden",
+                          
+                          def_columns = list(
+                            id_form = "id_formulierveld",
+                            column_field = "kolomnaam_veld",
+                            label_field = "label_veld",
+                            type_field = "type_veld",
+                            order_field = "volgorde_veld",
+                            form_side = "formulier_kant",
+                            visible = "zichtbaar",
+                            date_deleted = "datum_uitgeschakeld",
+                            options = "opties",
+                            order_options = "volgorde_opties",
+                            colors = "kleuren",
+                            removable = "kan_worden_verwijderd"
+                          ),
+                          
                           pool = TRUE,
                           sqlite = NULL,
                           default_color = "#3333cc"){
@@ -25,8 +41,11 @@ registrationClass <- R6::R6Class(
       self$default_color <- default_color
       self$connect_to_database(config_file, schema, what, pool, sqlite)
       self$table <- table
+      self$def <- def_columns
       
     },
+    
+    #----- Generic database methods
     
     #' @description Connect to a database
     connect_to_database = function(config_file = NULL, 
@@ -119,6 +138,127 @@ registrationClass <- R6::R6Class(
       }
     },
     
+    
+    make_column = function(table, column, type = "varchar"){
+      
+      qu <- glue::glue("alter table {self$schema}.{table} add column {column} {type}")
+      dbExecute(self$con, qu)
+      
+    },
+    
+    
+    read_table = function(table, lazy = FALSE){
+      
+      #tictoc::tic(glue("tbl({table})"))
+      
+      if(!is.null(self$schema)){
+        out <- tbl(self$con, in_schema(self$schema, table))  
+      } else {
+        out <- tbl(self$con, table)
+      }
+      
+      
+      if(!lazy){
+        out <- collect(out)
+      }
+      
+      #tictoc::toc()
+      
+      out
+      
+    },
+    
+    append_data = function(table, data){
+      
+      #flog.info(glue("dbWriteTable({table})"), append = TRUE, name = "DBR6")
+      
+      if(!is.null(self$schema)){
+        
+        try(
+          dbWriteTable(self$con,
+                       name = DBI::Id(schema = self$schema, table = table),
+                       value = data,
+                       append = TRUE)
+        )  
+        
+      } else {
+        
+        try(
+          dbWriteTable(self$con,
+                       name = table,
+                       value = data,
+                       append = TRUE)
+        )
+        
+      }
+      
+      
+    },
+    
+    
+    
+    query = function(txt, glue = TRUE, quiet = FALSE){
+      
+      if(glue)txt <- glue::glue(txt)
+      # if(!quiet){
+      #   flog.info(glue("query({txt})"), name = "DBR6")  
+      # }
+      # 
+      
+      try(
+        dbGetQuery(self$con, txt)
+      )
+      
+    },
+    
+    has_value = function(table, column, value){
+      
+      if(!is.null(self$schema)){
+        out <- self$query(glue("select {column} from {self$schema}.{table} where {column} = '{value}' limit 1"))  
+      } else {
+        out <- self$query(glue("select {column} from {table} where {column} = '{value}' limit 1"))  
+      }
+      
+      nrow(out) > 0
+    },
+    
+    
+    # set verwijderd=1 where naam=gekozennaam.
+    # replace_value_where("table", 'verwijderd', 'true', 'naam', 'gekozennaam')
+    replace_value_where = function(table, col_replace, val_replace, col_compare, val_compare,
+                                   query_only = FALSE, quiet = FALSE){
+      
+      if(!is.null(self$schema)){
+        query <- glue("update {self$schema}.{table} set {col_replace} = ?val_replace where ",
+                      "{col_compare} = ?val_compare") %>% as.character()  
+      } else {
+        query <- glue("update {table} set {col_replace} = ?val_replace where ",
+                      "{col_compare} = ?val_compare") %>% as.character()
+      }
+      
+      query <- sqlInterpolate(DBI::ANSI(), 
+                              query, 
+                              val_replace = val_replace, val_compare = val_compare)
+      
+      if(query_only)return(query)
+      
+      # if(!quiet){
+      #   flog.info(query, name = "DBR6")  
+      # }
+      
+      
+      dbExecute(self$con, query)
+      
+      
+    },
+    
+    
+    
+    
+    
+    #----- Form registration methods
+    
+    
     #' @description Make choices (for selectInput) based on values and names
     make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
       
@@ -159,46 +299,43 @@ registrationClass <- R6::R6Class(
     #' @description Get form input fields
     get_input_fields = function(zichtbaarheid = TRUE){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE zichtbaar = {zichtbaarheid}")
-      } else {
-        qu <- glue::glue("SELECT * FROM {self$table} WHERE zichtbaar = {zichtbaarheid}")
-      }
-      DBI::dbGetQuery(self$con, qu)
+      self$read_table(self$table, lazy = TRUE) %>%
+        dplyr::filter(!!sym(self$def[["visible"]])) %>% 
+        collect
+      
     },
     
     
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
     get_next_formorder_number = function(kant_formulier = c("links", "rechts")){
+      
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self$schema}.{self$table} WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema}.{self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self$table} WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
       }
       
       count <- dbGetQuery(self$con, qu)
-      return(count+1)
+      return(count[[1]]+1)
       
     },
     
-    add_input_field_to_form = function(label_veld, type_veld, formulier_kant){
+    #' @description Adds an input field to a form
+    #' @param label_field Label for the field
+    #' @param type_field Type of field (options : TODO)
+    #' @param form_side Left or right
+    add_input_field_to_form = function(label_field, type_field, form_side){
       
       id <- uuid::UUIDgenerate()
       
-      kol_nm_veld <- janitor::make_clean_names(tolower(label_veld), parsing_option = 1)
-      
-      # ?
-      if(!is.na(as.numeric(substr(kol_nm_veld, 1,1)))){
-        kol_nm_veld <- paste0("x",kol_nm_veld)
-      }
+      # Sanitize column name
+      kol_nm_veld <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
       
       if(self$check_uniqueness_column_name(kol_nm_veld)){
-        lbl_veld <- label_veld
-        tp_veld <- type_veld
-        volg_veld <- self$get_next_formorder_number(formulier_kant)
-        form_kant <- formulier_kant
         
-        if(type_veld == "boolean"){
+        volg_veld <- self$get_next_formorder_number(form_side)
+        
+        if(type_field == "boolean"){
           opties <- '{"1":"Ja","2":"Nee"}'
           #volgorde <- self$to_json('[1,2]')
         } else {
@@ -206,15 +343,28 @@ registrationClass <- R6::R6Class(
           #volgorde <- "[]"
         }
         
-        if(!is.null(self$schema)){
-          qu <- glue::glue("INSERT INTO {self$schema}.{self$table}(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
-        } else {
-          qu <- glue::glue("INSERT INTO {self$table}(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
-        }
+        data <- data.frame(
+          id_form = id,
+          column_field = kol_nm_veld,
+          label_field = label_field,
+          type_field = type_field,
+          order_field = volg_veld,
+          form_side = form_side,
+          visible = TRUE,
+          options = opties,
+          order_options = "[]",
+          colors = '[]',
+          removable = TRUE
+        )
         
-        DBI::dbExecute(self$con, qu)
+        data <- dplyr::rename_with(data, 
+                                   .fn = function(x){
+                                     unname(unlist(self$def[x]))
+                                   })
         
-        if(type_veld == "boolean"){
+        self$append_data(self$table, data)
+        
+        if(type_field == "boolean"){
           self$amend_optie_order(id, opties)
           self$amend_optie_colors(id, opties)
         }
