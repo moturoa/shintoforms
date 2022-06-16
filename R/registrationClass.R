@@ -17,8 +17,7 @@ registrationClass <- R6::R6Class(
     initialize = function(config_file = "conf/config.yml", 
                           what,
                           schema = NULL,
-                          table = "formulier_velden",
-                          
+                          def_table = "formulier_velden",
                           def_columns = list(
                             id_form = "id_formulierveld",
                             column_field = "kolomnaam_veld",
@@ -33,15 +32,26 @@ registrationClass <- R6::R6Class(
                             colors = "kleuren",
                             removable = "kan_worden_verwijderd"
                           ),
-                          
+                          data_table = "registrations",
+                          data_columns = list(
+                            id = "id_registratie",
+                            name = "naam_registration",
+                            time_created = "invoerdatum",
+                            time_modified = "wijzigdatum",
+                            user = "user_id"
+                          ),
                           pool = TRUE,
                           sqlite = NULL,
                           default_color = "#3333cc"){
       
       self$default_color <- default_color
       self$connect_to_database(config_file, schema, what, pool, sqlite)
-      self$table <- table
+      
+      self$def_table <- def_table
       self$def <- def_columns
+      
+      self$data_table <- data_table
+      self$data_columns <- data_columns
       
     },
     
@@ -141,7 +151,12 @@ registrationClass <- R6::R6Class(
     
     make_column = function(table, column, type = "varchar"){
       
-      qu <- glue::glue("alter table {self$schema}.{table} add column {column} {type}")
+      if(is.null(self$schema)){
+        qu <- glue::glue("alter table {table} add column {column} {type}")
+      } else {
+        qu <- glue::glue("alter table {self$schema}.{table} add column {column} {type}")  
+      }
+      
       dbExecute(self$con, qu)
       
     },
@@ -195,7 +210,16 @@ registrationClass <- R6::R6Class(
       
     },
     
-    
+    table_columns = function(table){
+      
+      if(is.null(self$schema)){
+        names(self$query(glue("select * from {table} where false")))
+      } else {
+        names(self$query(glue("select * from {self$schema).{table} where false")))
+      }
+      
+      
+    },
     
     query = function(txt, glue = TRUE, quiet = FALSE){
       
@@ -257,7 +281,7 @@ registrationClass <- R6::R6Class(
     #' @description Get a row from the form definition by the form id.
     get_by_id = function(id_form){
       
-      self$read_table(self$table, lazy = TRUE) %>%
+      self$read_table(self$def_table, lazy = TRUE) %>%
         dplyr::filter(!!sym(self$def[["id_form"]]) == !!id_form) %>%
         collect
       
@@ -325,7 +349,7 @@ registrationClass <- R6::R6Class(
     #' @description Get all non-deleted form input fields
     get_input_fields = function(zichtbaarheid = TRUE){
       
-      out <- self$read_table(self$table, lazy = TRUE) %>%
+      out <- self$read_table(self$def_table, lazy = TRUE) %>%
         dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid) %>% 
         collect
       
@@ -337,9 +361,9 @@ registrationClass <- R6::R6Class(
     get_form_fields = function(kant_formulier = c("links", "rechts")){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$def_table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("SELECT * FROM {self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+        qu <- glue::glue("SELECT * FROM {self$def_table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
       }
       
       out <- dbGetQuery(self$con, qu)
@@ -353,9 +377,9 @@ registrationClass <- R6::R6Class(
     get_next_formorder_number = function(kant_formulier = c("links", "rechts")){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema}.{self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema}.{self$def_table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$def_table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
       }
       
       count <- dbGetQuery(self$con, qu)
@@ -407,7 +431,7 @@ registrationClass <- R6::R6Class(
                                      unname(unlist(self$def[x]))
                                    })
         
-        self$append_data(self$table, data)
+        self$append_data(self$def_table, data)
         
         if(type_field == "boolean"){
           self$amend_options_order(id, opties)
@@ -433,9 +457,9 @@ registrationClass <- R6::R6Class(
     check_uniqueness_column_name =  function(column){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE {self$def$column_field} = '{column}'")
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$def_table} WHERE {self$def$column_field} = '{column}'")
       } else {
-        qu <- glue::glue("SELECT * FROM {self$table} WHERE {self$def$column_field} = '{column}'")
+        qu <- glue::glue("SELECT * FROM {self$def_table} WHERE {self$def$column_field} = '{column}'")
       }
       
       res <- dbGetQuery(self$con, qu)
@@ -447,7 +471,7 @@ registrationClass <- R6::R6Class(
     #' @description Edit the label for an input field
     edit_label_field = function(id_form, new_label){
       
-      self$replace_value_where(self$table, col_compare = self$def$id_form, val_compare = id_form,
+      self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
                                col_replace = self$def$label_field, 
                                val_replace = new_label)
     },
@@ -474,7 +498,7 @@ registrationClass <- R6::R6Class(
         stop("JSON new_options MUST have names (1:n) (edit_options_field)")
       }
       
-      self$replace_value_where(self$table, 
+      self$replace_value_where(self$def_table, 
                                col_compare = self$def$id_form, 
                                val_compare = id_form,
                                col_replace = self$def$options, 
@@ -500,7 +524,7 @@ registrationClass <- R6::R6Class(
       
       new_colors <- self$to_json(as.list(new_colors) %>% setNames(1:length(new_colors)))
       
-      self$replace_value_where(self$table, 
+      self$replace_value_where(self$def_table, 
                                col_compare = self$def$id_form, 
                                val_compare = id_form,
                                col_replace = self$def$colors, 
@@ -542,7 +566,7 @@ registrationClass <- R6::R6Class(
         new_order <- self$to_json(new_order)
       }
       
-      self$replace_value_where(self$table, 
+      self$replace_value_where(self$def_table, 
                                col_compare = self$def$id_form, 
                                val_compare = id_form,
                                col_replace = self$def$order_options, 
@@ -580,9 +604,9 @@ registrationClass <- R6::R6Class(
         order <- new_setup$order[x]
         
         if(!is.null(self$schema)){
-          qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$form_side} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
+          qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$form_side} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
         } else {
-          qu <- glue::glue("UPDATE {self$table} SET {self$def$form_side} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
+          qu <- glue::glue("UPDATE {self$def_table} SET {self$def$form_side} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
         }
         
         dbExecute(self$con, qu)
@@ -594,9 +618,9 @@ registrationClass <- R6::R6Class(
     edit_zichtbaarheid_invoerveld = function(id_formfield, new_zichtbaarheid){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE {self$table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -606,9 +630,9 @@ registrationClass <- R6::R6Class(
     edit_verwijder_datum = function(id_formfield, new_date){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE {self$table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -619,9 +643,9 @@ registrationClass <- R6::R6Class(
     amend_formfield_order = function(formside, deleted_number){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_side} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
+        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_side} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("UPDATE {self$table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_side} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
+        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_side} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
       }
       
       dbExecute(self$con, qu)
@@ -630,14 +654,71 @@ registrationClass <- R6::R6Class(
     
     reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$order_field} = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$order_field} = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE {self$table} SET {self$def$order_field} = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$order_field} = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
       
+    },
+    
+    #' @description Database column type based on field input type
+    column_type_from_field_type = function(type){
+      
+      db <- self$dbtype
+      
+      if(db == "sqlite"){
+        switch(type,
+               freetext = "text",
+               numeric = "real",
+               boolean = "integer",
+               singleselect = "text",
+               multiselect = "text",
+               date = "text"
+        )
+      } else if(db == "postgres"){
+        switch(type,
+               freetext = "text",
+               numeric = "double precision",
+               boolean = "integer",
+               singleselect = "text",
+               multiselect = "text",
+               date = "date"
+        )
+      } else {
+        stop("DB type not supported (column_type_from_field_type)")
+      }
+      
+    },
+    
+    #' @description Make sure the necessary columns are present in the data_table
+    prepare_data_table = function(){
+      
+      tab <- self$get_input_fields()
+      
+      cols_output <- self$table_columns(self$data_table)
+      
+      for(i in seq_len(nrow(tab))){
+        
+        if(!tab$column_field[i] %in% cols_output){
+          
+          new_col_type <- self$column_type_from_field_type(tab$type_field[i])
+          
+          flog.info(glue("Adding column: {tab$column_field[i]}, type : {new_col_type}"))
+          self$make_column(self$data_table, tab$column_field[i], new_col_type)
+          
+        } else {
+          
+          # do nothing.
+          # TODO maybe check that even though the column exists it has the right type
+          
+        }
+        
+      }
+      
     }
+    
     
     
   )
