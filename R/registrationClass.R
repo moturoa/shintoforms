@@ -246,14 +246,9 @@ registrationClass <- R6::R6Class(
       #   flog.info(query, name = "DBR6")  
       # }
       
-      
       dbExecute(self$con, query)
       
-      
     },
-    
-    
-    
     
     
     #----- Form registration methods
@@ -366,7 +361,7 @@ registrationClass <- R6::R6Class(
         
         if(type_field == "boolean"){
           self$amend_optie_order(id, opties)
-          self$amend_optie_colors(id, opties)
+          self$amend_options_colors(id, opties)
         }
         
         return(0)
@@ -464,28 +459,24 @@ registrationClass <- R6::R6Class(
     },
     
     #' @description If new options added, make sure the color vector is amended
-    amend_optie_colors = function(id_formfield, opties){
+    amend_options_colors = function(id_form, options){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT kleuren FROM {self$schema}.{self$table} WHERE id_formulierveld = '{id_formfield}'")
-      } else {
-        qu <- glue::glue("SELECT kleuren FROM {self$table} WHERE id_formulierveld = '{id_formfield}'")
-      }
-      
-      cur_color <- dbGetQuery(self$con, qu) %>%
-        pull(kleuren)
+      cur_color <- self$read_table(self$table, lazy = TRUE) %>%
+        dplyr::filter(!!sym(self$def[["id_form"]]) == !!id_form) %>%
+        collect %>%
+        dplyr::pull(!!sym(self$def[["colors"]]))
       
       cur_color <- self$from_json(cur_color)
-      opties <- self$from_json(opties)
+      options <- self$from_json(options)
       
-      if(length(cur_color) != length(opties)){
+      if(length(cur_color) != length(options)){
         
         nc <- length(cur_color)
-        n <- length(opties) - nc
+        n <- length(options) - nc
         
         new_cols <- as.list(rep(self$default_color,n))
         
-        self$edit_options_colors(id_formfield, c(cur_color, new_cols))
+        self$edit_options_colors(id_form, c(cur_color, new_cols))
         
       }
       

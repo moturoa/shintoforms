@@ -17,13 +17,13 @@ adminUI <- function(id){
                  softui::fluid_row(
                    column(12,
                           softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
-                                                status = "secondary", icon = bsicon("plus")),
+                                                status = "light", icon = bsicon("plus")),
                           
                           tags$span(id = ns("span_edit_formorder"),
                                     jsonFormSetupUI(ns("edit_formorder"), 
-                                                    icon = bsicon("pencil-square"),
-                                                    label = "Wijzig formulier",
-                                                    class = "bg-gradient-secondary")
+                                                    icon = bsicon("columns"),
+                                                    label = "Layout",
+                                                    status = "secondary")
                           ),
                           
                           shinyjs::hidden(
@@ -39,19 +39,21 @@ adminUI <- function(id){
                             tags$span(id = ns("span_edit_options"),
                                       shintocatman::jsonEditModuleUI(ns("edit_options"), 
                                                        icon = bsicon("pencil-square"),
-                                                       label = "Opties",
+                                                       label = "Keuzelijst",
                                                        class = "bg-gradient-secondary")  
                             )
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_colors"),
-                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"), status = "secondary")  
+                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"), 
+                                                                            status = "secondary", 
+                                                                            label = "Kleuren")  
                             )
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_order_options"),
                                       shintocatman::jsonOrderModuleUI(ns("edit_order_options"), 
-                                                                      label = "Volgorde opties", 
+                                                                      label = "Volgorde", 
                                                         icon = bsicon("pencil-square"), 
                                                         class = "bg-gradient-warning")
                             )
@@ -259,7 +261,7 @@ adminModule <- function(input, output, session, .reg = NULL){
 
     .reg$edit_options_field(selected_id(), opties())
     .reg$amend_optie_order(selected_id(), opties())
-    .reg$amend_optie_colors(selected_id(), opties())
+    .reg$amend_options_colors(selected_id(), opties())
     db_ping(runif(1))
 
   })

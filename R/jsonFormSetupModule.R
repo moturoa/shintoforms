@@ -1,10 +1,10 @@
 #' Shiny module to adjust order of a form
 #' @rdname jsonFormSetup
 #' @export
-jsonFormSetupUI <- function(id, class = "", icon = NULL, label = "Edit values"){
+jsonFormSetupUI <- function(id, icon = NULL, label = "Edit values", status = "secondary"){
   
   ns <- NS(id)
-  actionButton(ns("btn"), label, icon = icon, class = class)
+  softui::action_button(ns("btn"), label, icon = icon, status = status)
   
 }
 
