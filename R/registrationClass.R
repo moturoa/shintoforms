@@ -437,6 +437,7 @@ registrationClass <- R6::R6Class(
       
     },
     
+    #' @description Is the provided color(s) valid?
     is_color = function(colors){
       
       sapply(colors, function(x) {
@@ -446,7 +447,7 @@ registrationClass <- R6::R6Class(
       
     },
     
-    set_optie_colors = function(id_formfield, new_colors){
+    edit_options_colors = function(id_form, new_colors){
       
       if(any(!self$is_color(new_colors))){
         stop("Invalid colors!")
@@ -454,13 +455,11 @@ registrationClass <- R6::R6Class(
       
       new_colors <- self$to_json(as.list(new_colors) %>% setNames(1:length(new_colors)))
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET kleuren = '{new_colors}' WHERE id_formulierveld = '{id_formfield}'")
-      } else {
-        qu <- glue::glue("UPDATE {self$table} SET kleuren = '{new_colors}' WHERE id_formulierveld = '{id_formfield}'")
-      }
-      
-      dbExecute(self$con, qu)
+      self$replace_value_where(self$table, 
+                               col_compare = self$def$id_form, 
+                               val_compare = id_form,
+                               col_replace = self$def$colors, 
+                               val_replace = new_colors)
       
     },
     
@@ -486,7 +485,7 @@ registrationClass <- R6::R6Class(
         
         new_cols <- as.list(rep(self$default_color,n))
         
-        self$set_optie_colors(id_formfield, c(cur_color, new_cols))
+        self$edit_options_colors(id_formfield, c(cur_color, new_cols))
         
       }
       

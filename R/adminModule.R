@@ -72,10 +72,6 @@ adminUI <- function(id){
                    )
                  )
                  
-                 
-                 
-                 
-                 
                ),
                softui::tab_panel(
                  title = "Verwijderde invoervelden", icon = bsicon("recycle"),
@@ -140,18 +136,15 @@ adminModule <- function(input, output, session, .reg = NULL){
   
   selected_row <- reactive({
     ii <- input$dt_form_invoervelden_rows_selected
-    req(ii)
+    if(is.null(ii)){
+      return(NULL)
+    }
     form_invul_data() %>% slice(ii)
   })
   
   selected_id <- reactive({
     req(selected_row())
     selected_row()$id_formulierveld
-  })
-  
-  selected_type <- reactive({
-    req(selected_row())
-    selected_row()$type_veld
   })
   
   observeEvent(input$btn_add_formfield, {
@@ -204,15 +197,12 @@ adminModule <- function(input, output, session, .reg = NULL){
     db_ping(runif(1))
   })
   
-  observe({
-    
+  observeEvent(selected_row(), ignoreNULL = FALSE, {
     sel <- selected_row()
-    type <- selected_type()
-    if(type == "freetext" || type == "numeric"){
-      show_edit_options <- FALSE
-    } else {
-      show_edit_options <- TRUE
-    }
+    type <- sel$type_veld
+    
+    show_edit_options <- isTRUE(!type %in% c("freetext","numeric"))
+
     shinyjs::toggleElement("span_edit_formfield", condition = !is.null(sel))
     shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options))
     shinyjs::toggleElement("span_edit_colors", condition = (!is.null(sel) && show_edit_options))
@@ -223,6 +213,8 @@ adminModule <- function(input, output, session, .reg = NULL){
   
   
   observeEvent(input$btn_edit_formfield, {
+    
+    req(selected_row())
     
     showModal(
       softui::modal(
@@ -237,6 +229,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   })
   
   observeEvent(input$btn_confirm_edit_label, {
+    req(selected_row())
     
     .reg$edit_label_field(selected_id(), input$txt_edit_formfield_label)
     db_ping(runif(1))
@@ -256,21 +249,21 @@ adminModule <- function(input, output, session, .reg = NULL){
     edit_options
   })
   
-  opties <- callModule(shintocatman::jsonEditModule, "edit_options", 
+  opties <- callModule(shintocatman::jsonEditModule, "edit_options",
                        options = edit_options,   # nooit categorieen verwijderen, anders DB problemen!
                        edit = reactive("value"),
                        widths = c(2,10),
                        value = reactive(selected_row()$opties))
   
   observeEvent(opties(), {
-    
+
     .reg$edit_options_field(selected_id(), opties())
     .reg$amend_optie_order(selected_id(), opties())
     .reg$amend_optie_colors(selected_id(), opties())
     db_ping(runif(1))
-    
+
   })
-  
+
   current_colors <- reactive({
     from_json(selected_row()$kleuren)
   })
@@ -283,7 +276,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   
   observeEvent(colors(), {
     
-    .reg$set_optie_colors(selected_id(), colors())
+    .reg$edit_options_colors(selected_id(), colors())
     
     db_ping(runif(1))
   })
