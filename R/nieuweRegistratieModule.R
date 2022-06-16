@@ -84,6 +84,14 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL){
     data <- edits()
     data[sapply(data,is.null)] <- NA
     
+    data <- lapply(data, function(x){
+      if(length(x) > 1){
+        as.character(.reg$to_json(x))
+      } else {
+        x
+      }
+    })
+    
     showModal(
       softui::modal(
         title = "Debug",
@@ -252,7 +260,6 @@ editFieldModule <- function(input, output, session, .reg,
 
 #--- formSection: serie input velden onder elkaar (bv. linker kolom van een form)
 
-#' @param cfg One or more rows of the form definition
 formSectionModuleUI <- function(id, cfg, data = NULL, .reg){
   
   ns <- NS(id)

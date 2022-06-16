@@ -1,3 +1,6 @@
+#' Shiny module to adjust order of a form
+#' @rdname jsonFormSetup
+#' @export
 jsonFormSetupUI <- function(id, class = "", icon = NULL, label = "Edit values"){
   
   ns <- NS(id)
@@ -8,7 +11,7 @@ jsonFormSetupUI <- function(id, class = "", icon = NULL, label = "Edit values"){
 
 
 #' @rdname jsonFormSetup
-#' @importFrom 
+#' @importFrom sortable add_rank_list
 #' @export
 jsonFormSetupModule <- function(input, output, session, 
                                 data = reactive(NULL), 
@@ -61,27 +64,25 @@ jsonFormSetupModule <- function(input, output, session,
   observeEvent(input$btn, {
     
     showModal(
-      modalDialog(title = "Drag to change the order and the side of the form", size = "l",
+      softui::modal(title = "Formulier volgorde", size = "l", 
+                    icon = bsicon("ui-checks"),
+                    id_confirm = "btn_confirm",
+                    close_txt = "Annuleren",
+                    tags$p("Pas het formulier aan door de velden te slepen tussen de linker en rechter kolom, en de volgorde van de velden."),
                   sortable::bucket_list(header = NULL,
                                         group_name = ns("bucket_list_form"), 
                                         orientation = "horizontal",
-                                        add_rank_list(
+                                        sortable::add_rank_list(
                                           text = "Linkerkolom formulier",
                                           labels = labels_left(),
                                           input_id = ns("form_kolom_links")
                                         ),
-                                        add_rank_list(
+                                        sortable::add_rank_list(
                                           text = "Rechterkolom formulier",
                                           labels = labels_right(),
                                           input_id = ns("form_kolom_rechts")
                                         )
-                  ),
-                  footer = tagList(actionButton(session$ns("btn_confirm"), 
-                                                "Opslaan", 
-                                                icon = icon("check"), 
-                                                class = "btn-success"), 
-                                   htmltools::tagAppendAttributes(modalButton("Annuleren"), 
-                                                                  class = "btn-danger"))
+                  )
       )
     )
   })
@@ -104,7 +105,7 @@ jsonFormSetupModule <- function(input, output, session,
     
     output_vector(data_res)
     
-    callback()
+    callback(data_res)
     removeModal()
   })
   return(output_vector)

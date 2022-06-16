@@ -1,4 +1,7 @@
 
+#' Shiny module for form configuration
+#' @export
+#' @rdname adminModule
 adminUI <- function(id){
   
   ns <- NS(id)
@@ -103,6 +106,9 @@ adminUI <- function(id){
   
 }
 
+
+#' @export
+#' @rdname adminModule
 adminModule <- function(input, output, session, .reg = NULL){
   
   ns <- session$ns
@@ -115,7 +121,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   output$dt_form_invoervelden <- DT::renderDataTable({
     
     form_invul_data() %>%
-      select("ID" = id_formulierveld, 
+      select(#"ID" = id_formulierveld, 
              "Kolomnaam" = kolomnaam_veld, 
              "Label" = label_veld, 
              "Type" = type_veld, 
@@ -124,8 +130,8 @@ adminModule <- function(input, output, session, .reg = NULL){
              "Opties" = opties, 
              "Volgorde opties" = volgorde_opties, 
              "Kleuren" = kleuren, 
-             "Kan door gebruiker worden verwijderd" = kan_worden_verwijderd) %>%
-      softui::datatafel(selection = "single", dom = "t", pageLength = 30)
+             "Verwijderbaar" = kan_worden_verwijderd) %>%
+      softui::datatafel(selection = "single", dom = "t", pageLength = 30, scrollX = TRUE, extensions = list())
     
   })
   
@@ -322,7 +328,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   output$dt_deleted_invoervelden <- DT::renderDataTable({
     
     form_deleted_data() %>%
-      select("ID" = id_formulierveld, 
+      select(#"ID" = id_formulierveld, 
              "Kolomnaam" = kolomnaam_veld, 
              "Label" = label_veld, 
              "Type" = type_veld, 
@@ -331,8 +337,8 @@ adminModule <- function(input, output, session, .reg = NULL){
              "Opties" = opties, 
              "Volgorde opties" = volgorde_opties, 
              "Kleuren" = kleuren, 
-             "Kan door gebruiker worden verwijderd" = kan_worden_verwijderd) %>%
-      softui::datatafel(selection = "single", dom = "t", pageLength = 30)
+             "Verwijderbaar" = kan_worden_verwijderd) %>%
+      softui::datatafel(selection = "single", dom = "t", pageLength = 30, scrollX = TRUE, extensions = list())
     
   })
   

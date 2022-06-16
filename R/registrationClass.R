@@ -1,8 +1,19 @@
+#' R6 Class voor Registratie formulier
+#' @importFrom R6 R6Class
+#' @export
 registrationClass <- R6::R6Class(
   lock_objects = FALSE,
     
   public = list(
     
+    #' @description Make new form object
+    #' @param config_file Path to DB config
+    #' @param wat Entry in config for DB connection
+    #' @param schema DB schema
+    #' @param table Table in DB (in schema) that holds form config
+    #' @param pool If TRUE, connects with dbPool
+    #' @param sqlite If path to an SQLite file, uses SQLite.
+    #' @param default_color Default color
     initialize = function(config_file = "conf/config.yml", 
                           what,
                           schema = NULL,
@@ -17,6 +28,7 @@ registrationClass <- R6::R6Class(
       
     },
     
+    #' @description Connect to a database
     connect_to_database = function(config_file = NULL, 
                                    schema = NULL, 
                                    what = NULL, 
@@ -87,7 +99,7 @@ registrationClass <- R6::R6Class(
       
     },
     
-    
+    #' @description Close database connection
     close = function(){
       
       if(!is.null(self$con) && dbIsValid(self$con)){
@@ -107,6 +119,7 @@ registrationClass <- R6::R6Class(
       }
     },
     
+    #' @description Make choices (for selectInput) based on values and names
     make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
       
       data <- data %>%
@@ -124,6 +137,7 @@ registrationClass <- R6::R6Class(
       
     },
     
+    #' @description Unpack a JSON field to make a named vector
     choices_from_json = function(x){
       
       val <- self$from_json(x)
@@ -142,13 +156,13 @@ registrationClass <- R6::R6Class(
       out
     },
     
-    
+    #' @description Get form input fields
     get_input_fields = function(zichtbaarheid = TRUE){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.formulier_velden WHERE zichtbaar = {zichtbaarheid}")
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE zichtbaar = {zichtbaarheid}")
       } else {
-        qu <- glue::glue("SELECT * FROM formulier_velden WHERE zichtbaar = {zichtbaarheid}")
+        qu <- glue::glue("SELECT * FROM {self$table} WHERE zichtbaar = {zichtbaarheid}")
       }
       DBI::dbGetQuery(self$con, qu)
     },
@@ -157,9 +171,9 @@ registrationClass <- R6::R6Class(
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
     get_next_formorder_number = function(kant_formulier = c("links", "rechts")){
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self$schema}.formulier_velden WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self$schema}.{self$table} WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
       } else {
-        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM formulier_velden WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+        qu <- glue::glue("SELECT COUNT(DISTINCT id_formulierveld) FROM {self$table} WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
       }
       
       count <- dbGetQuery(self$con, qu)
@@ -193,9 +207,9 @@ registrationClass <- R6::R6Class(
         }
         
         if(!is.null(self$schema)){
-          qu <- glue::glue("INSERT INTO {self$schema}.formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
+          qu <- glue::glue("INSERT INTO {self$schema}.{self$table}(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
         } else {
-          qu <- glue::glue("INSERT INTO formulier_velden(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
+          qu <- glue::glue("INSERT INTO {self$table}(id_formulierveld, kolomnaam_veld, label_veld, type_veld, volgorde_veld, formulier_kant, zichtbaar, opties, volgorde_opties, kleuren, kan_worden_verwijderd) VALUES('{id}', '{kol_nm_veld}', '{lbl_veld}', '{tp_veld}', '{volg_veld}', '{form_kant}', TRUE, '{opties}', '[]', '[]', TRUE) ")
         }
         
         DBI::dbExecute(self$con, qu)
@@ -226,7 +240,7 @@ registrationClass <- R6::R6Class(
       if(!is.null(self$schema)){
         qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE kolomnaam_veld = '{kolomnaam}'")
       } else {
-        qu <- glue::glue("SELECT * FROM formulier_velden WHERE kolomnaam_veld = '{kolomnaam}'")
+        qu <- glue::glue("SELECT * FROM {self$table} WHERE kolomnaam_veld = '{kolomnaam}'")
       }
       
       res <- dbGetQuery(self$con, qu)

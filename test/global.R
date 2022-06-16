@@ -14,7 +14,6 @@ shintoshiny::check_for_version("shintocatman","0.1-4")
 
 
 # Database connection
-
 .reg <- registrationClass$new(sqlite = "data/registraties.sqlite",
                               table = "formulier_velden")
 
