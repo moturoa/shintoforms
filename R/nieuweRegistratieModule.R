@@ -33,7 +33,7 @@ nieuweRegistratieUI <- function(id){
 
 #' @rdname registratie
 #' @export
-nieuweRegistratieModule <- function(input, output, session, .reg = NULL){
+nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL)){
   
   ns <- session$ns
   
@@ -41,11 +41,12 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL){
   
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet. 
   cfg_left <- reactive({
-    #session$userData$db_ping()
+    ping_update()
     .reg$get_velden_form("links")
   })
   
   cfg_right <- reactive({
+    ping_update()
     .reg$get_velden_form("rechts")
   })
   
@@ -75,11 +76,7 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL){
     
   })
   
-  ping <- reactiveVal()
-  
   observeEvent(input$btn_register_new_signal, {
-    
-    ping(runif(1))
     
     data <- edits()
     data[sapply(data,is.null)] <- NA
@@ -102,8 +99,6 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL){
     
   })
   
-
-return(ping)  
 }
 
 

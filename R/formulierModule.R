@@ -57,9 +57,7 @@ formulierUI <- function(id,
 
 #' @rdname formulier
 #' @export
-formulierModule <- function(input, output, session, .reg = NULL){
-  
-  ns <- session$ns
+formulierModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL)){
   
   observe({
     req(input$rad_nieuw_wijzigen_registratie)
@@ -77,9 +75,8 @@ formulierModule <- function(input, output, session, .reg = NULL){
     }
   })
   
-  ping <- callModule(nieuweRegistratieModule, "nieuweRegistratie", .reg = .reg)
+  callModule(nieuweRegistratieModule, "nieuweRegistratie", .reg = .reg, ping_update = ping_update)
   
-return(ping)
 }
 
 
