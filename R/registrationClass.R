@@ -589,9 +589,9 @@ registrationClass <- R6::R6Class(
     
     reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET volgorde_veld = '{new_volgorde_nummer}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$order_field} = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE {self$table} SET volgorde_veld = '{new_volgorde_nummer}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET {self$def$order_field} = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -601,9 +601,9 @@ registrationClass <- R6::R6Class(
     get_velden_form = function(kant_formulier = c("links", "rechts")){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("SELECT * FROM {self$table} WHERE formulier_kant = '{kant_formulier}' AND zichtbaar = TRUE")
+        qu <- glue::glue("SELECT * FROM {self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
       }
       
       result <- dbGetQuery(self$con, qu)
