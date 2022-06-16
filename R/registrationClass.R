@@ -589,7 +589,7 @@ registrationClass <- R6::R6Class(
         n <- length(options) - nc
         
         new_order <- c(cur_order, (nc+1):(nc+n))
-        .reg$set_options_order(id_form, new_order)
+        self$set_options_order(id_form, new_order)
         
       }
       
@@ -717,7 +717,44 @@ registrationClass <- R6::R6Class(
         
       }
       
+    },
+    
+    write_new_registration = function(data, name, user_id){
+      
+      self$prepare_data_table()
+      
+      data_pre <- data.frame(
+        id = uuid::UUIDgenerate(),
+        name = name,
+        time_created = format(Sys.time()),
+        time_modified = format(Sys.time()),
+        user = user_id
+      )
+      
+      # TODO generic renaming method (to/from, data/def tables)
+      data_pre <- dplyr::rename_with(data_pre, 
+                                 .fn = function(x){
+                                   unname(unlist(self$data_columns[x]))
+                                 })  
+      
+      data <- as.data.frame(
+        lapply(data, function(x){
+          if(length(x) > 1){
+            x <- as.character(self$to_json(x))
+          }
+
+          if(class(x) == "json"){
+            x <- as.character(x)
+          }
+          x
+        })
+      )
+      
+      self$append_data(self$data_table, data)
+      
+      
     }
+    
     
     
     

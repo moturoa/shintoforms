@@ -9,10 +9,6 @@ shintoshiny::check_for_version("softui","0.4")
 shintoshiny::check_for_version("shintousers","0.4-2")
 shintoshiny::check_for_version("shintocatman","0.1-5")
 
-
-#shintoshiny::load_modules()
-
-
 # Database connection
 .reg <- registrationClass$new(sqlite = "data/registraties.sqlite",
                               def_table = "formulier_velden",
@@ -21,7 +17,6 @@ shintoshiny::check_for_version("shintocatman","0.1-5")
 # End.
 onStop(function() {
   .reg$close()
-  #dbDisconnect(con)
 })
 
 

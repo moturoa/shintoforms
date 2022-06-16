@@ -38,7 +38,8 @@ nieuweRegistratieUI <- function(id){
 
 #' @rdname registratie
 #' @export
-nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL)){
+nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL),
+                                    current_user){
   
   ns <- session$ns
   
@@ -87,35 +88,52 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
     # database methode om rij aan een tabel toe te voegen
     # dit hier laat in een modal zien wat de huidige edits zijn, alleen om te testen
     
-    data <- edits()
-    data[sapply(data,is.null)] <- NA
-    data[sapply(data,length)==0] <- NA
-    
-    data <- lapply(data, function(x){
-      if(length(x) > 1){
-        x <- as.character(.reg$to_json(x))
-      } 
-    
-      if(class(x) == "json"){
-        x <- as.character(x)
-      }
-      x
-    })
+    # data <- edits()
+    # data[sapply(data,is.null)] <- NA
+    # data[sapply(data,length)==0] <- NA
+    # 
+    # data <- lapply(data, function(x){
+    #   if(length(x) > 1){
+    #     x <- as.character(.reg$to_json(x))
+    #   } 
+    # 
+    #   if(class(x) == "json"){
+    #     x <- as.character(x)
+    #   }
+    #   x
+    # })
     
     showModal(
       softui::modal(
-        title = "Debug",
+        title = "Opslaan",
         id_confirm = "btn_confirm_new_registration",
         
-        HTML(kable(t(as.data.frame(data)), format = "html"))
+        #HTML(kable(t(as.data.frame(data)), format = "html"))
+        
+        tags$p("Je gaat deze registratie opslaan."),
+        tags$p("Geef deze registratie een naam zodat je deze terug kunt vinden in het systeem."),
+        textInput(session$ns("txt_registration_name"), NULL, value = "")
       )
     )
     
   })
   
+  
   out_ping <- reactiveVal()
   observeEvent(input$btn_cancel, out_ping(runif(1)))
-  observeEvent(input$btn_confirm_new_registration, out_ping(runif(1)))
+  
+  observeEvent(input$btn_confirm_new_registration, {
+   
+    
+    .reg$write_new_registration(edits(), input$txt_registration_name, current_user)
+    
+    
+    out_ping(runif(1))
+    
+    
+  })
+  
+  
   
 return(out_ping)
 }

@@ -5,7 +5,8 @@ function(input, output, session){
   db_ping <- callModule(adminModule, "admin", .reg = .reg)
   
   callModule(formulierModule, "formulier",  .reg = .reg,
-             ping_update = db_ping)
+             ping_update = db_ping,
+             current_user = "devuser")
 
 }
 
