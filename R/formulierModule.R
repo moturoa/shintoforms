@@ -7,7 +7,7 @@ formulierUI <- function(id,
                         icon = softui::bsicon("ui_checks"),
                         header_ui = NULL,
                         tag = "Opties",
-                        new_existing_labels = c("Nieuwe registratie invoeren","Bestaande registratie bekijken")
+                        new_existing_labels = c("Nieuwe registratie","Registratie bewerken")
                         ){
   
   ns <- NS(id)
@@ -18,37 +18,21 @@ formulierUI <- function(id,
        softui::box(title = title, icon = icon, tag = tag,
          
           header_ui,
-          radioButtons(ns("rad_nieuw_wijzigen_registratie"), 
-                       label = NULL, 
-                       choices = setNames(c("nieuw", "bestaand"), new_existing_labels),
-                       selected = "nieuw",
-                       inline = FALSE)
+          
+          softui::action_button(ns("btn_new_registration"), new_existing_labels[1],
+                                class = "btn-lg",
+                                status = "success", icon = bsicon("plus-lg")),
+          
+          softui::action_button(ns("btn_old_registration"), new_existing_labels[2],
+                                class = "btn-lg",
+                                status = "info", icon = bsicon("check"))
+          
        )
       
     ),
-    softui::fluid_row(
-      column(12,
-             shinyjs::hidden(
-               tags$div(id = ns("box_bestaande_registratie"),
-                        softui::box(
-                          width = 12,
-                          title = "",
-                          
-                          tags$p("Bestaande registratie")
-                        )
-               )
-             ),
-             tags$div(id = ns("box_nieuwe_registratie"),
-                      softui::box(
-                        width = 12,
-                        title = "",
-                        tag = "Formulier",
-                        
-                        nieuweRegistratieUI(ns("nieuweRegistratie"))
-                      )
-             )
-      )
-    )
+    
+    uiOutput(ns("ui_new_registration"))
+
   )
   
   
@@ -59,23 +43,30 @@ formulierUI <- function(id,
 #' @export
 formulierModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL)){
   
-  observe({
-    req(input$rad_nieuw_wijzigen_registratie)
-    
-    if(input$rad_nieuw_wijzigen_registratie == "bestaand"){
-      
-      shinyjs::show("box_bestaande_registratie")
-      shinyjs::hide("box_nieuwe_registratie")
-      
-    } else {
-      
-      shinyjs::show("box_nieuwe_registratie")
-      shinyjs::hide("box_bestaande_registratie")
-      
-    }
+  show_form <- reactiveVal(FALSE)
+  
+  observeEvent(input$btn_new_registration, {
+    show_form(TRUE)
   })
   
-  callModule(nieuweRegistratieModule, "nieuweRegistratie", .reg = .reg, ping_update = ping_update)
+  observeEvent(new_form_saved_ping(), {
+    show_form(FALSE)
+  })
+  
+  output$ui_new_registration <- renderUI({
+    
+    req(show_form())
+    
+    softui::box(
+       width = 12,
+       title = "",
+       tag = "Formulier",
+       nieuweRegistratieUI(session$ns("nieuweRegistratie"))
+    )
+  })
+  
+  
+  new_form_saved_ping <- callModule(nieuweRegistratieModule, "nieuweRegistratie", .reg = .reg, ping_update = ping_update)
   
 }
 

@@ -19,11 +19,16 @@ nieuweRegistratieUI <- function(id){
     
     softui::fluid_row(class = "justify-content-end",
       
-      column(2,
-       softui::action_button(ns("btn_register_new_signal"), 
-                    "Opslaan", 
-                    icon = bsicon("cloud-arrow-up"), 
-                      status = "success")
+     
+      column(4,
+         softui::action_button(ns("btn_cancel"), 
+                               "Annuleren", 
+                               icon = bsicon("x-lg"), 
+                               status = "danger"),      
+         softui::action_button(ns("btn_register_new_signal"), 
+                      "Opslaan", 
+                      icon = bsicon("cloud-arrow-up"), 
+                        status = "success")
       )
     )
   )
@@ -100,6 +105,7 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
     showModal(
       softui::modal(
         title = "Debug",
+        id_confirm = "btn_confirm_new_registration",
         
         HTML(kable(t(as.data.frame(data)), format = "html"))
       )
@@ -107,6 +113,11 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
     
   })
   
+  out_ping <- reactiveVal()
+  observeEvent(input$btn_cancel, out_ping(runif(1)))
+  observeEvent(input$btn_confirm_new_registration, out_ping(runif(1)))
+  
+return(out_ping)
 }
 
 

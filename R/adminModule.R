@@ -7,106 +7,99 @@ adminUI <- function(id,
   
   ns <- NS(id)
   
-  div(
-    softui::fluid_row(
-      column(12,
-             softui::tab_box(
-               
-               softui::tab_panel(
-                 title = title, 
-                 icon = bsicon("pencil-square"),
-                 
-                 softui::fluid_row(
-                   column(12,
-                          softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
-                                                status = "light", icon = bsicon("plus")),
-                          
-                          tags$span(id = ns("span_edit_formorder"),
-                                    jsonFormSetupUI(ns("edit_formorder"), 
-                                                    icon = bsicon("columns"),
-                                                    label = "Layout",
-                                                    status = "secondary")
-                          ),
-                          
-                          shinyjs::hidden(
-                            tags$span(id = ns("span_edit_formfield"),
-                                      softui::action_button(ns("btn_edit_formfield"), "Label", 
-                                                            status = "secondary",
-                                                            icon = bsicon("pencil-square"))
-                            )
-                          ),
-                          
-                          
-                          shinyjs::hidden(
-                            tags$span(id = ns("span_edit_options"),
-                                      shintocatman::jsonEditModuleUI(ns("edit_options"), 
-                                                       icon = bsicon("pencil-square"),
-                                                       label = "Keuzelijst",
-                                                       status = "secondary")  
-                            )
-                          ),
-                          shinyjs::hidden(
-                            tags$span(id = ns("span_edit_order_options"),
-                                      shintocatman::jsonOrderModuleUI(ns("edit_order_options"), 
-                                                                      label = "Volgorde keuzelijst", 
-                                                                      icon = bsicon("pencil-square"), 
-                                                                      status = "secondary")
-                            )
-                          ),
-                          shinyjs::hidden(
-                            tags$span(id = ns("span_edit_colors"),
-                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"), 
-                                                                            status = "primary", 
-                                                                            label = "Kleuren")  
-                            )
-                          ),
+   softui::tab_box(
+     
+     softui::tab_panel(
+       title = title, 
+       icon = bsicon("pencil-square"),
+       
+       softui::fluid_row(
+         column(12,
+                softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
+                                      status = "light", icon = bsicon("plus")),
+                
+                tags$span(id = ns("span_edit_formorder"),
+                          jsonFormSetupUI(ns("edit_formorder"), 
+                                          icon = bsicon("columns"),
+                                          label = "Layout",
+                                          status = "secondary")
+                ),
+                
+                shinyjs::hidden(
+                  tags$span(id = ns("span_edit_formfield"),
+                            softui::action_button(ns("btn_edit_formfield"), "Label", 
+                                                  status = "secondary",
+                                                  icon = bsicon("pencil-square"))
+                  )
+                ),
+                
+                
+                shinyjs::hidden(
+                  tags$span(id = ns("span_edit_options"),
+                            shintocatman::jsonEditModuleUI(ns("edit_options"), 
+                                             icon = bsicon("pencil-square"),
+                                             label = "Keuzelijst",
+                                             status = "secondary")  
+                  )
+                ),
+                shinyjs::hidden(
+                  tags$span(id = ns("span_edit_order_options"),
+                            shintocatman::jsonOrderModuleUI(ns("edit_order_options"), 
+                                                            label = "Volgorde keuzelijst", 
+                                                            icon = bsicon("pencil-square"), 
+                                                            status = "secondary")
+                  )
+                ),
+                shinyjs::hidden(
+                  tags$span(id = ns("span_edit_colors"),
+                            shintocatman::colorVectorPickModuleUI(ns("edit_colors"), 
+                                                                  status = "primary", 
+                                                                  label = "Kleuren")  
+                  )
+                ),
+  
+                shinyjs::hidden(
+                  tags$span(id = ns("span_delete_formfield"),
+                            softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
+                                                  status = "danger",
+                                                  icon = bsicon("trash3"))
+                  )
+                )
+                
+         )
+       ),
+       softui::fluid_row(
+         column(12,
+                DT::dataTableOutput(ns("dt_form_invoervelden"))
+         )
+       )
+       
+     ),
+     softui::tab_panel(
+       title = "Verwijderde invoervelden", icon = bsicon("recycle"),
+       shinyjs::hidden(
+         tags$span(id = ns("span_restore_formfield"),
+                   softui::fluid_row(
+                     column(12,
+                            softui::action_button(ns("btn_restore_formfield"), 
+                                                  "Invoerveld terugzetten", 
+                                                  status = "secondary", 
+                                                  icon = bsicon("arrow-return-left"))
+                     )
+                   )
+         )
+       ),
+       softui::fluid_row(
+         column(12,
+                DT::dataTableOutput(ns("dt_deleted_invoervelden"))
+         )
+       )
+       
+       
+       
+     )
+   )
 
-                          shinyjs::hidden(
-                            tags$span(id = ns("span_delete_formfield"),
-                                      softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
-                                                            status = "danger",
-                                                            icon = bsicon("trash3"))
-                            )
-                          )
-                          
-                   )
-                 ),
-                 softui::fluid_row(
-                   column(12,
-                          DT::dataTableOutput(ns("dt_form_invoervelden"))
-                   )
-                 )
-                 
-               ),
-               softui::tab_panel(
-                 title = "Verwijderde invoervelden", icon = bsicon("recycle"),
-                 shinyjs::hidden(
-                   tags$span(id = ns("span_restore_formfield"),
-                             softui::fluid_row(
-                               column(12,
-                                      softui::action_button(ns("btn_restore_formfield"), 
-                                                            "Invoerveld terugzetten", 
-                                                            status = "secondary", 
-                                                            icon = bsicon("arrow-return-left"))
-                               )
-                             )
-                   )
-                 ),
-                 softui::fluid_row(
-                   column(12,
-                          DT::dataTableOutput(ns("dt_deleted_invoervelden"))
-                   )
-                 )
-                 
-                 
-                 
-               )
-             )
-      )
-    )
-  )
-  
-  
 }
 
 
