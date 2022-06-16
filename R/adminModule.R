@@ -85,7 +85,7 @@ adminUI <- function(id,
                              softui::fluid_row(
                                column(12,
                                       softui::action_button(ns("btn_restore_formfield"), 
-                                                            "Formulier terugzetten", 
+                                                            "Invoerveld terugzetten", 
                                                             status = "secondary", 
                                                             icon = bsicon("arrow-return-left"))
                                )
@@ -342,7 +342,7 @@ adminModule <- function(input, output, session, .reg = NULL){
         "Label" = label_field, 
         "Type" = type_field, 
         "Kolom" = form_side,
-        "Verwijderd op" = datum_uitgeschakeld,
+        "Verwijderd op" = date_deleted,
         "Volgordenummer" = order_field,
         "Opties" = options, 
         "Volgorde opties" = order_options, 
@@ -355,12 +355,13 @@ adminModule <- function(input, output, session, .reg = NULL){
   
   selected_row_deleted <- reactive({
     ii <- input$dt_deleted_invoervelden_rows_selected
-    req(ii)
+    if(is.null(ii)){
+      return(NULL)
+    }
     form_deleted_data() %>% slice(ii)
   })
   
   selected_id_deleted <- reactive({
-    req(selected_row_deleted())
     selected_row_deleted()$id_form
   })
   
@@ -370,6 +371,8 @@ adminModule <- function(input, output, session, .reg = NULL){
   })
   
   observeEvent(input$btn_restore_formfield, {
+    
+    req(selected_row_deleted())
     
     volg_veld_reset <- .reg$get_next_formorder_number(selected_row_deleted()$form_side)
     .reg$reset_volgorde_invoerveld(selected_id_deleted(), volg_veld_reset)

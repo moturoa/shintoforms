@@ -63,8 +63,8 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
     
   })
   
-  edit_left <- callModule(formSectionModule, "form_left", cfg = isolate(cfg_left()), .reg = .reg)
-  edit_right <- callModule(formSectionModule, "form_right", cfg = isolate(cfg_right()), .reg = .reg)
+  edit_left <- callModule(formSectionModule, "form_left", cfg = cfg_left, .reg = .reg)
+  edit_right <- callModule(formSectionModule, "form_right", cfg = cfg_right, .reg = .reg)
   
   
   edits <- reactive({
@@ -276,17 +276,19 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg){
 }
 
 
-formSectionModule <- function(input, output, session, cfg, .reg){
+formSectionModule <- function(input, output, session, cfg = reactive(NULL), .reg){
   
-  values <- lapply(split(cfg, 1:nrow(cfg)), function(el){
-    col <- el$column_field
-    id <- el$id_form
-    callModule(editFieldModule, id, .reg = .reg, type = el$type_field)
+  values <- reactive({
+    cfg <- cfg()
+    
+    lapply(split(cfg, 1:nrow(cfg)), function(el){
+      col <- el$column_field
+      id <- el$id_form
+      callModule(editFieldModule, id, .reg = .reg, type = el$type_field)
+    }) %>% setNames(cfg$column_field)
   })
   
-  names(values) <- cfg$column_field
-  
-  return(reactive(values))
+  return(values)
   
 }
 
