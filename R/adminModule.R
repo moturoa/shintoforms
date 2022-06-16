@@ -44,20 +44,21 @@ adminUI <- function(id){
                             )
                           ),
                           shinyjs::hidden(
-                            tags$span(id = ns("span_edit_colors"),
-                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"), 
-                                                                            status = "secondary", 
-                                                                            label = "Kleuren")  
+                            tags$span(id = ns("span_edit_order_options"),
+                                      shintocatman::jsonOrderModuleUI(ns("edit_order_options"), 
+                                                                      label = "Volgorde keuzelijst", 
+                                                                      icon = bsicon("pencil-square"), 
+                                                                      status = "secondary")
                             )
                           ),
                           shinyjs::hidden(
-                            tags$span(id = ns("span_edit_order_options"),
-                                      shintocatman::jsonOrderModuleUI(ns("edit_order_options"), 
-                                                                      label = "Volgorde", 
-                                                        icon = bsicon("pencil-square"), 
-                                                        class = "bg-gradient-warning")
+                            tags$span(id = ns("span_edit_colors"),
+                                      shintocatman::colorVectorPickModuleUI(ns("edit_colors"), 
+                                                                            status = "primary", 
+                                                                            label = "Kleuren")  
                             )
                           ),
+
                           shinyjs::hidden(
                             tags$span(id = ns("span_delete_formfield"),
                                       softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
@@ -260,7 +261,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   observeEvent(opties(), {
 
     .reg$edit_options_field(selected_id(), opties())
-    .reg$amend_optie_order(selected_id(), opties())
+    .reg$amend_options_order(selected_id(), opties())
     .reg$amend_options_colors(selected_id(), opties())
     db_ping(runif(1))
 
@@ -286,13 +287,14 @@ adminModule <- function(input, output, session, .reg = NULL){
   
   ordering_opties <- callModule(shintocatman::jsonOrderModule, "edit_order_options",
                                 data = selected_row,
-                                order_column = reactive("volgorde_opties"),
-                                label_column = reactive("opties")
-  )
+                                title = "Volgorde keuzelijst",
+                                header_ui = tags$p("Pas hier de volgorde van de keuzelijst aan voor dit formulierveld"),
+                                label_column = reactive(.reg$def$options),
+                                order_column = reactive(.reg$def$order_options))
   
   observeEvent(ordering_opties(), {
     
-    .reg$set_optie_order(selected_id(), ordering_opties())
+    .reg$set_options_order(selected_id(), ordering_opties())
     db_ping(runif(1))
   })
   

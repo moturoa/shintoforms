@@ -254,6 +254,15 @@ registrationClass <- R6::R6Class(
     #----- Form registration methods
     
     
+    #' @description Get a row from the form definition by the form id.
+    get_by_id = function(id_form){
+      
+      self$read_table(self$table, lazy = TRUE) %>%
+        dplyr::filter(!!sym(self$def[["id_form"]]) == !!id_form) %>%
+        collect
+      
+    },
+    
     #' @description Make choices (for selectInput) based on values and names
     make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
       
@@ -295,7 +304,7 @@ registrationClass <- R6::R6Class(
     get_input_fields = function(zichtbaarheid = TRUE){
       
       self$read_table(self$table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["visible"]])) %>% 
+        dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid) %>% 
         collect
       
     },
@@ -360,7 +369,7 @@ registrationClass <- R6::R6Class(
         self$append_data(self$table, data)
         
         if(type_field == "boolean"){
-          self$amend_optie_order(id, opties)
+          self$amend_options_order(id, opties)
           self$amend_options_colors(id, opties)
         }
         
@@ -461,9 +470,7 @@ registrationClass <- R6::R6Class(
     #' @description If new options added, make sure the color vector is amended
     amend_options_colors = function(id_form, options){
       
-      cur_color <- self$read_table(self$table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["id_form"]]) == !!id_form) %>%
-        collect %>%
+      cur_color <- self$get_by_id(id_form) %>%
         dplyr::pull(!!sym(self$def[["colors"]]))
       
       cur_color <- self$from_json(cur_color)
@@ -483,10 +490,10 @@ registrationClass <- R6::R6Class(
       
     },
     
-    set_optie_order = function(id_formfield, new_order){
+    set_options_order = function(id_form, new_order){
       
       if(!is.null(names(new_order))){
-        warning("Dropping names : set_optie_order")
+        warning("Dropping names : set_options_order")
         names(new_order) <- NULL
       }
       
@@ -494,41 +501,32 @@ registrationClass <- R6::R6Class(
         new_order <- self$to_json(new_order)
       }
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET volgorde_opties = '{new_order}' WHERE id_formulierveld = '{id_formfield}'")
-      } else {
-        qu <- glue::glue("UPDATE {self$table} SET volgorde_opties = '{new_order}' WHERE id_formulierveld = '{id_formfield}'")
-      }
-      
-      dbExecute(self$con, qu)
+      self$replace_value_where(self$table, 
+                               col_compare = self$def$id_form, 
+                               val_compare = id_form,
+                               col_replace = self$def$order_options, 
+                               val_replace = new_order)
       
     },
     
     #' @description If new categories added, make sure the order vector is amended
-    amend_optie_order = function(id_formfield, opties){
+    amend_options_order = function(id_form, options){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT volgorde_opties FROM {self$schema}.{self$table} WHERE id_formulierveld = '{id_formfield}'")
-      } else {
-        qu <- glue::glue("SELECT volgorde_opties FROM {self$table} WHERE id_formulierveld = '{id_formfield}'")
-      }
-      
-      cur_order <- dbGetQuery(self$con, qu) %>%
-        pull(volgorde_opties)
+      cur_order <- self$get_by_id(id_form) %>%
+        dplyr::pull(!!sym(self$def[["options"]]))
       
       cur_order <- self$from_json(cur_order)
-      opties <- self$from_json(opties)
+      options <- self$from_json(options)
       
-      if(length(cur_order) != length(opties)){
+      if(length(cur_order) != length(options)){
         
         nc <- length(cur_order)
-        n <- length(opties) - nc
+        n <- length(options) - nc
         
         new_order <- c(cur_order, (nc+1):(nc+n))
-        .reg$set_optie_order(id_formfield, new_order)
+        .reg$set_options_order(id_form, new_order)
         
       }
-      
       
     },
     
@@ -541,9 +539,9 @@ registrationClass <- R6::R6Class(
         order <- new_setup$order[x]
         
         if(!is.null(self$schema)){
-          qu <- glue::glue("UPDATE {self$schema}.{self$table} SET formulier_kant = '{side}', volgorde_veld = '{order}'  WHERE id_formulierveld = '{id}'")
+          qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$form_side} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
         } else {
-          qu <- glue::glue("UPDATE {self$table} SET formulier_kant = '{side}', volgorde_veld = '{order}'  WHERE id_formulierveld = '{id}'")
+          qu <- glue::glue("UPDATE {self$table} SET {self$def$form_side} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
         }
         
         dbExecute(self$con, qu)
@@ -555,9 +553,9 @@ registrationClass <- R6::R6Class(
     edit_zichtbaarheid_invoerveld = function(id_formfield, new_zichtbaarheid){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET zichtbaar = {new_zichtbaarheid} WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE {self$table} SET zichtbaar = {new_zichtbaarheid} WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -567,9 +565,9 @@ registrationClass <- R6::R6Class(
     edit_verwijder_datum = function(id_formfield, new_date){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET datum_uitgeschakeld = '{new_date}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE {self$table} SET datum_uitgeschakeld = '{new_date}' WHERE id_formulierveld = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
@@ -580,9 +578,9 @@ registrationClass <- R6::R6Class(
     amend_formfield_order = function(formside, deleted_number){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET volgorde_veld = volgorde_veld - 1 WHERE formulier_kant = '{formside}' AND volgorde_veld > {deleted_number} AND zichtbaar = TRUE")
+        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_side} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("UPDATE {self$table} SET volgorde_veld = volgorde_veld - 1 WHERE formulier_kant = '{formside}' AND volgorde_veld > {deleted_number} AND zichtbaar = TRUE")
+        qu <- glue::glue("UPDATE {self$table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_side} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
       }
       
       dbExecute(self$con, qu)
