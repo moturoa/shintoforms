@@ -300,15 +300,54 @@ registrationClass <- R6::R6Class(
       out
     },
     
-    #' @description Get form input fields
-    get_input_fields = function(zichtbaarheid = TRUE){
+    
+    
+    #'@description Rename database table to correct internal column names
+    rename_definition_table = function(data){
       
-      self$read_table(self$table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid) %>% 
-        collect
+      # Rename to standard colnames
+      key <- data.frame(
+        old = unname(unlist(self$def)),
+        new = names(self$def)
+      )
+      
+      if(!all(names(data) %in% key$old)){
+        stop("Not all definition table names configured : check def_columns argument)")
+      }
+      
+      dplyr::rename_with(data, .fn = function(x){
+                                  key$new[match(x, key$old)]
+                                })
       
     },
     
+    
+    #' @description Get all non-deleted form input fields
+    get_input_fields = function(zichtbaarheid = TRUE){
+      
+      out <- self$read_table(self$table, lazy = TRUE) %>%
+        dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid) %>% 
+        collect
+      
+      self$rename_definition_table(out)
+      
+    },
+    
+    #' @description Get form fields for left or right column of the form
+    get_form_fields = function(kant_formulier = c("links", "rechts")){
+      
+      if(!is.null(self$schema)){
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+      } else {
+        qu <- glue::glue("SELECT * FROM {self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+      }
+      
+      out <- dbGetQuery(self$con, qu)
+      out <- out[order(out$volgorde_veld),]
+      
+      self$rename_definition_table(out)
+      
+    },
     
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
     get_next_formorder_number = function(kant_formulier = c("links", "rechts")){
@@ -331,6 +370,8 @@ registrationClass <- R6::R6Class(
     add_input_field_to_form = function(label_field, type_field, form_side){
       
       id <- uuid::UUIDgenerate()
+      
+      assert_input_field_type(type_field)
       
       # Sanitize column name
       kol_nm_veld <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
@@ -595,20 +636,6 @@ registrationClass <- R6::R6Class(
       }
       
       dbExecute(self$con, qu)
-      
-    },
-    
-    get_velden_form = function(kant_formulier = c("links", "rechts")){
-      
-      if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
-      } else {
-        qu <- glue::glue("SELECT * FROM {self$table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
-      }
-      
-      result <- dbGetQuery(self$con, qu)
-      result <- result[order(result$volgorde_veld),]
-      return(result)
       
     }
     

@@ -42,12 +42,12 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet. 
   cfg_left <- reactive({
     ping_update()
-    .reg$get_velden_form("links")
+    .reg$get_form_fields("links")
   })
   
   cfg_right <- reactive({
     ping_update()
-    .reg$get_velden_form("rechts")
+    .reg$get_form_fields("rechts")
   })
   
   
@@ -78,8 +78,13 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
   
   observeEvent(input$btn_register_new_signal, {
     
+    # TODO
+    # database methode om rij aan een tabel toe te voegen
+    # dit hier laat in een modal zien wat de huidige edits zijn, alleen om te testen
+    
     data <- edits()
     data[sapply(data,is.null)] <- NA
+    data[sapply(data,length)==0] <- NA
     
     data <- lapply(data, function(x){
       if(length(x) > 1){
@@ -128,19 +133,15 @@ make_default_value <- function(x, data, default = character(0), array = FALSE){
 }
 
 editFieldModuleUI <- function(id, column, data, 
-                              type = c("freetext",
-                                       "numeric",
-                                       "boolean",
-                                       "singleselect",
-                                       "multiselect",
-                                       "date"), 
+                              type, 
                               default = NULL,
                               options = NULL,
                               label = NULL){
   
   ns <- NS(id)
   
-  type <- match.arg(type)
+  assert_input_field_type(type)
+  
   value <- make_default_value(column, data, 
                               default = default,
                               array = type == "multiselect")
@@ -196,12 +197,8 @@ editFieldModuleUI <- function(id, column, data,
 
 }
 
-editFieldModule <- function(input, output, session, .reg, 
-                            type){                            #data = reactive(NULL)){
+editFieldModule <- function(input, output, session, .reg, type){
   
-  
-  # b <- uncolumn_edit_fields(.cc$get("beheer/edit_fields"))[[column]]
-  # 
   # #---- Input validator
   # val_i <- shinyvalidate::InputValidator$new()
   # 
@@ -259,15 +256,15 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg){
   
   ns <- NS(id)
   
-  els <- split(cfg, 1:nrow(cfg))[cfg$volgorde_veld]
+  els <- split(cfg, 1:nrow(cfg))[cfg$order_field]
   
   lapply(els, function(el){
-    editFieldModuleUI(ns(el$id_formulierveld), 
-                      column = el$kolomnaam_veld, 
-                      label = el$label_veld,
-                      options = .reg$choices_from_json(el$opties),
-                      type = el$type_veld,
-                      default = if(el$type_veld == "boolean")TRUE else "", #el$default,
+    editFieldModuleUI(ns(el$id_form), 
+                      column = el$column_field, 
+                      label = el$label_field,
+                      options = .reg$choices_from_json(el$options),
+                      type = el$type_field,
+                      default = if(el$type_field == "boolean")TRUE else "", #el$default,
                       data = data)
   })  
   
@@ -280,13 +277,11 @@ formSectionModule <- function(input, output, session, cfg, .reg){
   
   values <- list()
   
-  for(el in split(cfg, 1:nrow(cfg))){
-    
-    col <- el$kolomnaam_veld
-    id <- el$id_formulierveld
-    
-    values[[col]] <- callModule(editFieldModule, id, .reg = .reg, type = el$type_veld)
-  }
+  values <- lapply(split(cfg, 1:nrow(cfg)), function(el){
+    col <- el$column_field
+    id <- el$id_form
+    callModule(editFieldModule, id, .reg = .reg, type = el$type_field)
+  })
   
   
   return(reactive(values))
@@ -328,7 +323,7 @@ test_formSection <- function(){
   
   library(withr)
   with_dir("test", source("global.R"))
-  data <- .reg$get_velden_form("links")
+  data <- .reg$get_form_fields("links")
   
   ui <- softui::simple_page(
     
