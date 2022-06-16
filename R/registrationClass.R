@@ -385,12 +385,12 @@ registrationClass <- R6::R6Class(
       
     },
     
-    check_uniqueness_column_name =  function(kolomnaam){
+    check_uniqueness_column_name =  function(column){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE kolomnaam_veld = '{kolomnaam}'")
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$table} WHERE {self$def$column_field} = '{column}'")
       } else {
-        qu <- glue::glue("SELECT * FROM {self$table} WHERE kolomnaam_veld = '{kolomnaam}'")
+        qu <- glue::glue("SELECT * FROM {self$table} WHERE {self$def$column_field} = '{column}'")
       }
       
       res <- dbGetQuery(self$con, qu)
@@ -399,14 +399,12 @@ registrationClass <- R6::R6Class(
     },
     
     
-    edit_label_field = function(id_formveld, new_label){
-      if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
-      } else {
-        qu <- glue::glue("UPDATE {self$table} SET label_veld = '{new_label}' WHERE id_formulierveld = '{id_formveld}'")
-      }
-      dbExecute(self$con, qu)
+    #' @description Edit the label for an input field
+    edit_label_field = function(id_form, new_label){
       
+      self$replace_value_where(self$table, col_compare = self$def$id_form, val_compare = id_form,
+                               col_replace = self$def$label_field, 
+                               val_replace = new_label)
     },
     
     from_json = function(x, ...){
@@ -421,24 +419,21 @@ registrationClass <- R6::R6Class(
       
     },
     
-    edit_opties_invulveld = function(id_formfield, new_opties){
+    edit_options_field = function(id_form, new_options){
       
-      if(!is.character(new_opties)){
-        new_opties <- self$to_json(new_opties)  
+      if(!is.character(new_options)){
+        new_options <- self$to_json(new_options)  
       }
       
-      if(is.null(names(self$from_json(new_opties)))){
-        stop("JSON new_opties MUST have names (1:n) (edit_opties_invulveld)")
+      if(is.null(names(self$from_json(new_options)))){
+        stop("JSON new_options MUST have names (1:n) (edit_options_field)")
       }
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$table} SET opties = '{new_opties}' WHERE id_formulierveld = '{id_formfield}'")
-      } else {
-        qu <- glue::glue("UPDATE {self$table} SET opties = '{new_opties}' WHERE id_formulierveld = '{id_formfield}'")
-      }
-      
-      dbExecute(self$con, qu)
-      
+      self$replace_value_where(self$table, 
+                               col_compare = self$def$id_form, 
+                               val_compare = id_form,
+                               col_replace = self$def$options, 
+                               val_replace = new_options)
       
     },
     

@@ -28,7 +28,7 @@ adminUI <- function(id){
                           
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_formfield"),
-                                      softui::action_button(ns("btn_edit_formfield"), "Wijzig invoerveld", 
+                                      softui::action_button(ns("btn_edit_formfield"), "Label", 
                                                             status = "secondary",
                                                             icon = bsicon("pencil-square"))
                             )
@@ -51,14 +51,14 @@ adminUI <- function(id){
                           shinyjs::hidden(
                             tags$span(id = ns("span_edit_order_options"),
                                       shintocatman::jsonOrderModuleUI(ns("edit_order_options"), 
-                                                                      label = "Wijzig volgorde opties", 
+                                                                      label = "Volgorde opties", 
                                                         icon = bsicon("pencil-square"), 
                                                         class = "bg-gradient-warning")
                             )
                           ),
                           shinyjs::hidden(
                             tags$span(id = ns("span_delete_formfield"),
-                                      softui::action_button(ns("btn_delete_formfield"), "Verwijder invoerveld", 
+                                      softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
                                                             status = "danger",
                                                             icon = bsicon("trash3"))
                             )
@@ -264,7 +264,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   
   observeEvent(opties(), {
     
-    .reg$edit_opties_invulveld(selected_id(), opties())
+    .reg$edit_options_field(selected_id(), opties())
     .reg$amend_optie_order(selected_id(), opties())
     .reg$amend_optie_colors(selected_id(), opties())
     db_ping(runif(1))
