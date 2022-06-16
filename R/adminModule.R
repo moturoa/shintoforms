@@ -131,8 +131,8 @@ adminModule <- function(input, output, session, .reg = NULL){
              "Kolomnaam" = column_field, 
              "Label" = label_field, 
              "Type" = type_field, 
-             "Zijde op formulier" = form_side,
-             "Volgordenummer" = order_field,
+             "Kolom" = form_side,
+             "Volgorde" = order_field,
              "Opties" = options, 
              "Volgorde opties" = order_options, 
              "Kleuren" = colors, 
@@ -207,7 +207,7 @@ adminModule <- function(input, output, session, .reg = NULL){
     type <- sel$type_field
     
     # These fields don't have any editable options
-    show_edit_options <- isTRUE(!type %in% c("freetext","numeric"))
+    show_edit_options <- isTRUE(!type %in% c("freetext","numeric","date"))
 
     shinyjs::toggleElement("span_edit_formfield", condition = !is.null(sel))
     shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options))
@@ -239,7 +239,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   observeEvent(input$btn_confirm_edit_label, {
     req(selected_row())
     
-    if(stringr::str_trim(input$txt_column_name, side = "both") != ""){
+    if(stringr::str_trim(input$txt_edit_formfield_label, side = "both") != ""){
       .reg$edit_label_field(selected_id(), input$txt_edit_formfield_label)
       db_ping(runif(1))
       removeModal()
@@ -297,8 +297,8 @@ adminModule <- function(input, output, session, .reg = NULL){
                                 data = selected_row,
                                 title = "Volgorde keuzelijst",
                                 header_ui = tags$p("Pas hier de volgorde van de keuzelijst aan voor dit formulierveld"),
-                                label_column = reactive(.reg$def$options),
-                                order_column = reactive(.reg$def$order_options))
+                                label_column = reactive("options"),
+                                order_column = reactive("order_options"))
   
   observeEvent(ordering_opties(), {
     
@@ -343,7 +343,7 @@ adminModule <- function(input, output, session, .reg = NULL){
         "Type" = type_field, 
         "Kolom" = form_side,
         "Verwijderd op" = date_deleted,
-        "Volgordenummer" = order_field,
+        "Volgorde" = order_field,
         "Opties" = options, 
         "Volgorde opties" = order_options, 
         "Kleuren" = colors, 

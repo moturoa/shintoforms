@@ -554,7 +554,7 @@ registrationClass <- R6::R6Class(
     amend_options_order = function(id_form, options){
       
       cur_order <- self$get_by_id(id_form) %>%
-        dplyr::pull(!!sym(self$def[["options"]]))
+        dplyr::pull(!!sym(self$def[["order_options"]]))
       
       cur_order <- self$from_json(cur_order)
       options <- self$from_json(options)
