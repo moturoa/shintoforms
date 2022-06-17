@@ -1,7 +1,7 @@
 #' R6 Class voor Registratie formulier
 #' @importFrom R6 R6Class
 #' @export
-registrationClass <- R6::R6Class(
+formClass <- R6::R6Class(
   lock_objects = FALSE,
     
   public = list(

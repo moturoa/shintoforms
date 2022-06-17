@@ -15,11 +15,11 @@ body <- softui::dashboard_body(
 
   softui::tab_items(
     softui::tab_item("admin",
-                     adminUI("admin")
+                     formAdminUI("admin")
     ),
 
     softui::tab_item("formulier",
-                     formulierUI("formulier")
+                     formPageUI("formulier")
     )
     
   )

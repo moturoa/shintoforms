@@ -19,11 +19,11 @@ server <- function(input, output, session) {
     showModal(
       softui::modal(
         title = "Signaal invoeren", size = "xl",confirm_button = FALSE, close_button = FALSE,
-        nieuweRegistratieUI(session$ns("nieuweRegistratie"))
+        formUI(session$ns("nieuweRegistratie"))
       )
     )
     
-    new_form_saved_ping <- callModule(nieuweRegistratieModule, "nieuweRegistratie", 
+    new_form_saved_ping <- callModule(formModule, "nieuweRegistratie", 
                                       .reg = .reg, 
                                       ping_update = reactive(NULL),
                                       current_user = "devuser",

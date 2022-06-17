@@ -2,12 +2,13 @@
 #' Formulier Shiny Module
 #' @rdname formulier
 #' @export
-formulierUI <- function(id,
+formPageUI <- function(id,
                         title = "Formulier",
                         icon = softui::bsicon("ui_checks"),
                         header_ui = NULL,
                         tag = "Opties",
-                        new_existing_labels = c("Nieuwe registratie","Registratie bewerken")
+                        new_existing_labels = c("Nieuwe registratie","Registratie bewerken"),
+                        edit_button = FALSE  # not yet implemented .... 
                         ){
   
   ns <- NS(id)
@@ -23,9 +24,11 @@ formulierUI <- function(id,
                                 class = "btn-lg",
                                 status = "success", icon = bsicon("plus-lg")),
           
-          softui::action_button(ns("btn_old_registration"), new_existing_labels[2],
+          if(edit_button){
+            softui::action_button(ns("btn_old_registration"), new_existing_labels[2],
                                 class = "btn-lg",
                                 status = "info", icon = bsicon("check"))
+          }
           
        )
       
@@ -41,7 +44,7 @@ formulierUI <- function(id,
 
 #' @rdname formulier
 #' @export
-formulierModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL),
+formPageModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL),
                             current_user){
   
   show_form <- reactiveVal(FALSE)
@@ -62,12 +65,12 @@ formulierModule <- function(input, output, session, .reg = NULL, ping_update = r
        width = 12,
        title = "",
        tag = "Formulier",
-       nieuweRegistratieUI(session$ns("nieuweRegistratie"))
+       formUI(session$ns("nieuweRegistratie"))
     )
   })
   
   
-  new_form_saved_ping <- callModule(nieuweRegistratieModule, "nieuweRegistratie", 
+  new_form_saved_ping <- callModule(formModule, "nieuweRegistratie", 
                                     .reg = .reg, 
                                     ping_update = ping_update,
                                     current_user = current_user)

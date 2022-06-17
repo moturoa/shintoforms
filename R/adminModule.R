@@ -1,8 +1,8 @@
 
 #' Shiny module for form configuration
 #' @export
-#' @rdname adminModule
-adminUI <- function(id, 
+#' @rdname formAdminModule
+formAdminUI <- function(id, 
                     title = "Formulieropstelling"){
   
   ns <- NS(id)
@@ -104,8 +104,8 @@ adminUI <- function(id,
 
 
 #' @export
-#' @rdname adminModule
-adminModule <- function(input, output, session, .reg = NULL){
+#' @rdname formAdminModule
+formAdminModule <- function(input, output, session, .reg = NULL){
   
   
   db_ping <- reactiveVal()

@@ -2,7 +2,7 @@
 #' Nieuwe registratie Shiny module
 #' @rdname registratie
 #' @export
-nieuweRegistratieUI <- function(id){
+formUI <- function(id){
   
   ns <- NS(id)
   
@@ -39,7 +39,7 @@ nieuweRegistratieUI <- function(id){
 
 #' @rdname registratie
 #' @export
-nieuweRegistratieModule <- function(input, output, session, .reg = NULL, 
+formModule <- function(input, output, session, .reg = NULL, 
                                     ping_update = reactive(NULL),
                                     current_user, 
                                     data = NULL,
@@ -352,12 +352,12 @@ test_nieuweRegistratie <- function(){
   ui <- softui::simple_page(
     
     softui::box(
-      nieuweRegistratieUI("test")
+      formUI("test")
     )
   )
   
   server <- function(input, output, session) {
-    callModule(nieuweRegistratieModule, "test", .reg = .reg)
+    callModule(formModule, "test", .reg = .reg)
   }
   
   shinyApp(ui, server)

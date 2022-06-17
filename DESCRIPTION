@@ -1,10 +1,10 @@
-Package: shintoregistraties
+Package: shintoforms
 Type: Package
-Title: Shinto Registratie Formulieren
+Title: Configurable Shinto Forms
 Version: 0.1.0
 Author: Wesley Brants
 Maintainer: Remko Duursma <remko@shintolabs.nl>
-Description: Formulieren voor Shinto applicaties
+Description: Forms for shinto shiny applications
 Depends: shiny, softui, dplyr
 License: CC0
 Encoding: UTF-8
