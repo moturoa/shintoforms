@@ -5,6 +5,7 @@ configured_field_types <- c("Tekstinvoer" = "freetext",
                            "Keuzemenu (enkele optie)" = "singleselect",
                            "Keuzemenu (meerdere opties)" = "multiselect",
                            "Datum" = "date")
+                           #"Tekst met opmaak" = "html")
 
 
 assert_input_field_type <- function(type){

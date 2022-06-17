@@ -675,7 +675,8 @@ registrationClass <- R6::R6Class(
                boolean = "integer",
                singleselect = "text",
                multiselect = "text",
-               date = "text"
+               date = "text",
+               "text"   # if not in list
         )
       } else if(db == "postgres"){
         switch(type,
@@ -684,7 +685,8 @@ registrationClass <- R6::R6Class(
                boolean = "integer",
                singleselect = "text",
                multiselect = "text",
-               date = "date"
+               date = "date",
+               "text"   # if not in list
         )
       } else {
         stop("DB type not supported (column_type_from_field_type)")

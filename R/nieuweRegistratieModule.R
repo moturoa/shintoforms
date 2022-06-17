@@ -230,12 +230,13 @@ editFieldModuleUI <- function(id, column, data,
   } else if(type == "date"){
     
     dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
-    
+
   }
-  # else if(b$type == "html_editor"){
-  #   
-  #   freetextEditUI(ns("value"))
-  #   
+
+  # } else if(type == "html"){
+  # 
+  #   shintocatman::htmlInput(ns("value"), value = value)
+  # 
   # }
   
 
