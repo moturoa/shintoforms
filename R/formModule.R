@@ -89,33 +89,11 @@ formModule <- function(input, output, session, .reg = NULL,
   
   observeEvent(input$btn_register_new_signal, {
     
-    # TODO
-    # database methode om rij aan een tabel toe te voegen
-    # dit hier laat in een modal zien wat de huidige edits zijn, alleen om te testen
-    
-    # data <- edits()
-    # data[sapply(data,is.null)] <- NA
-    # data[sapply(data,length)==0] <- NA
-    # 
-    # data <- lapply(data, function(x){
-    #   if(length(x) > 1){
-    #     x <- as.character(.reg$to_json(x))
-    #   } 
-    # 
-    #   if(class(x) == "json"){
-    #     x <- as.character(x)
-    #   }
-    #   x
-    # })
-    
-
     showModal(
       softui::modal(
         title = "Opslaan",
         id_confirm = "btn_confirm_new_registration",
-        
-        #HTML(kable(t(as.data.frame(data)), format = "html"))
-        
+      
         tags$p("Je gaat deze registratie opslaan."),
         tags$p("Geef deze registratie een naam zodat je deze terug kunt vinden in het systeem."),
         textInput(session$ns("txt_registration_name"), NULL, value = "")
@@ -156,196 +134,11 @@ return(out_ping)
 
   
   
-  
-#---- editFieldmodule: module voor een enkele input (bv numeric, text, oid)
-make_default_value <- function(x, data, default = character(0), array = FALSE){
-  
-  val <- data[[x]]
-  
-  if(is.null(val) || length(val) == 0 || is.na(val)){
-    default
-  } else {
-    
-    if(isTRUE(array)){
-      
-      val <- jsonlite::fromJSON(val)
-    }
-    
-    val
-  }
-  
-}
-
-editFieldModuleUI <- function(id, column, data, 
-                              type, 
-                              default = NULL,
-                              options = NULL,
-                              label = NULL){
-  
-  ns <- NS(id)
-  
-  assert_input_field_type(type)
-  
-  value <- make_default_value(column, data, 
-                              default = default,
-                              array = type == "multiselect")
-  
-  # integer
-  # text
-  # boolean
-  # select (gebaseerd op tabel met keuze opties)
-  
-  if(type == "numeric"){
-    
-    if(!isTruthy(value))value <- 0
-    
-    numericInput(ns("value"), label, 
-                 value = value)
-    
-  } else if(type == "freetext"){
-    
-    textInput(ns("value"), label, value = value)
-    
-  } else if(type == "boolean"){
-    
-    radioButtons(ns("value"), label, inline = TRUE, 
-                 choices = setNames(c(TRUE,FALSE),names(options)),
-                 selected = as.character(value)
-    )
-    
-  } else if(type == "singleselect"){
-    
-    selectizeInput(ns("value"), label, choices = options, 
-                   selected = value, 
-                   multiple = FALSE)
-    
-  } else if(type == "multiselect"){
-    
-    selectizeInput(ns("value"), label, choices = options, 
-                   selected = value, 
-                   multiple = TRUE, 
-                   options = list(plugins = list("remove_button"))
-                   )
-    
-  } else if(type == "date"){
-    
-    dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
-
-  }
-
-  # } else if(type == "html"){
-  # 
-  #   shintocatman::htmlInput(ns("value"), value = value)
-  # 
-  # }
-  
-
-}
-
-editFieldModule <- function(input, output, session, .reg, type){
-  
-  # #---- Input validator
-  # val_i <- shinyvalidate::InputValidator$new()
-  # 
-  # if(isTRUE(b$max == 0)){
-  #   val_i$add_rule("value", sv_lte(0, message = "Voer een negatief getal in!"))
-  # }
-  # 
-  # val_i$enable()
-  
-  # #---- HTML edit field
-  # if(b$type == "html_editor"){ 
-  #   html_edit <- callModule(freetextEditModule, "value", 
-  #                           data = data,
-  #                           kolom = column,
-  #                           label = b$label)
-  # }
-  
-  #--- Output reactive
-  value <- reactive({
-    
-    # if(b$type == "html_editor"){
-    #   return(html_edit())
-    # }
-    
-    out <- input$value
-    
-    if(type == "boolean"){
-      out <- as.logical(out)
-      
-      # array optie.
-    } else if(type == "multiselect"){
-      
-      out <- .reg$to_json(out)
-      
-    } else if(type == "date"){
-      out <- as.character(out)
-    }
-    
-    out
-    
-  })
-  
-  
-  value
-}
-
-
-
-# editFieldModuleUI("one", "this_thing", data = NULL,
-#                   type = "boolean", default = TRUE, options = NULL, label = "hello")
-
-
-
-#--- formSection: serie input velden onder elkaar (bv. linker kolom van een form)
-
-formSectionModuleUI <- function(id, cfg, data = NULL, .reg){
-  
-  ns <- NS(id)
-  
-  els <- split(cfg, 1:nrow(cfg))[cfg$order_field]
-  
-  lapply(els, function(el){
-    editFieldModuleUI(ns(el$id_form), 
-                      column = el$column_field, 
-                      label = el$label_field,
-                      options = .reg$choices_from_json(el$options),
-                      type = el$type_field,
-                      default = if(el$type_field == "boolean")TRUE else "", #el$default,
-                      data = data)
-  })  
-  
-  
-  
-}
-
-
-formSectionModule <- function(input, output, session, cfg = reactive(NULL), .reg){
-  
-  values <- reactive({
-    cfg <- cfg()
-    
-    if(nrow(cfg) == 0){
-      return(NULL)
-    }
-    
-    lapply(split(cfg, 1:nrow(cfg)), function(el){
-      col <- el$column_field
-      id <- el$id_form
-      callModule(editFieldModule, id, .reg = .reg, type = el$type_field)
-    }) %>% setNames(cfg$column_field)
-  })
-  
-  return(values)
-  
-}
-
-
 
 
 #---- Testing
 
-test_nieuweRegistratie <- function(){
+test_formModule <- function(){
   library(withr)
   with_dir("test", source("global.R"))
   
@@ -371,34 +164,6 @@ test_nieuweRegistratie <- function(){
 }
 
 
-test_formSection <- function(){
-  
-  library(withr)
-  with_dir("test", source("global.R"))
-  data <- .reg$get_form_fields("links")
-  
-  ui <- softui::simple_page(
-    
-    softui::box(
-      formSectionModuleUI("form", cfg = data, .reg = .reg)
-    ),
-    
-    verbatimTextOutput("txt_out")
-  )
-  
-  server <- function(input, output, session) {
-    
-    out <- callModule(formSectionModule, "form", cfg = data, .reg = .reg)
-    
-    output$txt_out <- renderPrint({
-      lapply(out(), function(x)x())
-    })
-  }
-  
-  shinyApp(ui, server)
-  
-
-}
 
 
 
