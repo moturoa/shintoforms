@@ -738,6 +738,7 @@ formClass <- R6::R6Class(
     write_new_registration = function(data, name, user_id){
       
       self$prepare_data_table()
+      
       data_pre <- data.frame(
         id = uuid::UUIDgenerate(),
         name = name,
@@ -746,6 +747,7 @@ formClass <- R6::R6Class(
         user = user_id
       )
       
+
       # TODO generic renaming method (to/from, data/def tables)
       data_pre <- dplyr::rename_with(data_pre, 
                                  .fn = function(x){

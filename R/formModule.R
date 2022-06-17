@@ -325,6 +325,10 @@ formSectionModule <- function(input, output, session, cfg = reactive(NULL), .reg
   values <- reactive({
     cfg <- cfg()
     
+    if(nrow(cfg) == 0){
+      return(NULL)
+    }
+    
     lapply(split(cfg, 1:nrow(cfg)), function(el){
       col <- el$column_field
       id <- el$id_form
