@@ -49,10 +49,23 @@ formClass <- R6::R6Class(
       
       self$def_table <- def_table
       self$def <- def_columns
-      
+
       self$data_table <- data_table
       self$data_columns <- data_columns
       
+      # Check
+      defcols <- self$table_columns(self$def_table)
+      di1 <- unlist(self$def) %in% defcols
+      if(any(!di1)){
+        stop(paste("Columns in def_columns not found:", paste(defcols[!di1], collapse=",")))
+      }
+      
+      datacols <- self$table_columns(self$data_table)
+      di2 <- unlist(self$data_columns) %in% datacols
+      
+      if(any(!di2)){
+        stop(paste("Columns in data_columns not found:", paste(datacols[!di2], collapse=",")))
+      }
     },
     
     #----- Generic database methods
@@ -215,7 +228,7 @@ formClass <- R6::R6Class(
       if(is.null(self$schema)){
         names(self$query(glue("select * from {table} where false")))
       } else {
-        names(self$query(glue("select * from {self$schema).{table} where false")))
+        names(self$query(glue("select * from {self$schema}.{table} where false")))
       }
       
       
@@ -393,9 +406,10 @@ formClass <- R6::R6Class(
     #' @param form_section Left or right
     add_input_field_to_form = function(label_field, type_field, form_section){
       
-      id <- uuid::UUIDgenerate()
-      
+
       assert_input_field_type(type_field)
+      
+      id <- uuid::UUIDgenerate()
       
       # Sanitize column name
       kol_nm_veld <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)

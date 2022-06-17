@@ -1,3 +1,2 @@
 
 - selectinput does not yet use the order_options to fill the choices
-- on init ($initialize) check if the data_table and def_table definitions are correct
