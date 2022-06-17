@@ -40,7 +40,9 @@ nieuweRegistratieUI <- function(id){
 #' @rdname registratie
 #' @export
 nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL),
-                                    current_user){
+                                    current_user, 
+                                    callback_confirm = function(){},
+                                    callback_cancel = function(){}) {
   
   ns <- session$ns
   
@@ -104,6 +106,7 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
     #   x
     # })
     
+
     showModal(
       softui::modal(
         title = "Opslaan",
@@ -121,13 +124,14 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
   
   
   out_ping <- reactiveVal()
-  observeEvent(input$btn_cancel, out_ping(runif(1)))
+  observeEvent(input$btn_cancel, {
+    out_ping(runif(1))
+    callback_cancel()
+  })
   
   observeEvent(input$btn_confirm_new_registration, {
    
-    
     resp <- .reg$write_new_registration(edits(), input$txt_registration_name, current_user)
-    
     if(resp){
       toastr_success("Registratie opgeslagen")
     } else {
@@ -136,7 +140,7 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
     
     out_ping(runif(1))
     
-    
+    callback_confirm()
   })
   
   
