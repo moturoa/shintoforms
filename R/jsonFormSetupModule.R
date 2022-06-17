@@ -31,7 +31,7 @@ jsonFormSetupModule <- function(input, output, session,
   data_ordered_left <- reactive({
     
     data() %>%
-      filter(!!sym(side_column()) == "links") %>%
+      filter(!!sym(side_column()) == 1) %>%
       arrange(!!sym(order_column()))
   })
   
@@ -47,7 +47,7 @@ jsonFormSetupModule <- function(input, output, session,
   data_ordered_right <- reactive({
     
     data() %>%
-      filter(!!sym(side_column()) == "rechts") %>%
+      filter(!!sym(side_column()) == 2) %>%
       arrange(!!sym(order_column()))
   })
   
@@ -92,12 +92,12 @@ jsonFormSetupModule <- function(input, output, session,
   observeEvent(input$btn_confirm, {
     
     id <- input$form_kolom_links
-    side <- c(rep("links", length(input$form_kolom_links)))
+    side <- c(rep(1, length(input$form_kolom_links)))
     order <- c(1:length(input$form_kolom_links))
     data_links <- data.frame(id, side, order)
     
     id <- input$form_kolom_rechts
-    side <- c(rep("rechts", length(input$form_kolom_rechts)))
+    side <- c(rep(2, length(input$form_kolom_rechts)))
     order <- c(1:length(input$form_kolom_rechts))
     data_rechts <- data.frame(id, side, order)
     

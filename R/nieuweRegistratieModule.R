@@ -53,17 +53,17 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL,
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet. 
   cfg_left <- reactive({
     ping_update()
-    .reg$get_form_fields("links")
+    .reg$get_form_fields(1)
   })
   
   cfg_right <- reactive({
     ping_update()
-    .reg$get_form_fields("rechts")
+    .reg$get_form_fields(2)
   })
   
   
   output$ui_input_left <- renderUI({
-    
+
     formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg, data = data)
     
   })

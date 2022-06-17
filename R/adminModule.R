@@ -124,7 +124,7 @@ adminModule <- function(input, output, session, .reg = NULL){
              "Kolomnaam" = column_field, 
              "Label" = label_field, 
              "Type" = type_field, 
-             "Kolom" = form_side,
+             "Kolom" = form_section,
              "Volgorde" = order_field,
              "Opties" = options, 
              "Volgorde opties" = order_options, 
@@ -161,8 +161,8 @@ adminModule <- function(input, output, session, .reg = NULL){
         radioButtons(session$ns("rad_type_formfield"), "Type invoerveld",
                      choices = configured_field_types),
         radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
-                     choices = c("Links" = "links",
-                                 "Rechts" = "rechts"))
+                     choices = c("Links" = 1,
+                                 "Rechts" = 2))
       )
     )
   })
@@ -172,7 +172,7 @@ adminModule <- function(input, output, session, .reg = NULL){
     if(stringr::str_trim(input$txt_column_name, side = "both") != ""){
       resp <- .reg$add_input_field_to_form(input$txt_column_name, 
                                    input$rad_type_formfield, 
-                                   input$rad_side_formfield)
+                                   as.integer(input$rad_side_formfield))
       
       if(resp < 0){
         toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
@@ -191,7 +191,7 @@ adminModule <- function(input, output, session, .reg = NULL){
   form_setup <- callModule(jsonFormSetupModule, "edit_formorder", 
                            data = form_invul_data,
                            .reg = .reg,
-                           side_column = reactive("form_side"),
+                           side_column = reactive("form_section"),
                            order_column = reactive("order_field"),
                            id_column = reactive("id_form"),
                            label_column = reactive("label_field")
@@ -324,7 +324,7 @@ adminModule <- function(input, output, session, .reg = NULL){
     
     .reg$edit_zichtbaarheid_invoerveld(selected_id(), FALSE)
     .reg$edit_verwijder_datum(selected_id(), today())
-    .reg$amend_formfield_order(selected_row()$form_side, selected_row()$order_field)
+    .reg$amend_formfield_order(selected_row()$form_section, selected_row()$order_field)
     db_ping(runif(1))
     
   })
@@ -341,7 +341,7 @@ adminModule <- function(input, output, session, .reg = NULL){
         "Kolomnaam" = column_field, 
         "Label" = label_field, 
         "Type" = type_field, 
-        "Kolom" = form_side,
+        "Kolom" = form_section,
         "Verwijderd op" = date_deleted,
         "Volgorde" = order_field,
         "Opties" = options, 
@@ -374,7 +374,7 @@ adminModule <- function(input, output, session, .reg = NULL){
     
     req(selected_row_deleted())
     
-    volg_veld_reset <- .reg$get_next_formorder_number(selected_row_deleted()$form_side)
+    volg_veld_reset <- .reg$get_next_formorder_number(selected_row_deleted()$form_section)
     .reg$reset_volgorde_invoerveld(selected_id_deleted(), volg_veld_reset)
     .reg$edit_zichtbaarheid_invoerveld(selected_id_deleted(), TRUE)
     db_ping(runif(1))

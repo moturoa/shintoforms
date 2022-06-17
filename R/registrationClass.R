@@ -24,7 +24,7 @@ registrationClass <- R6::R6Class(
                             label_field = "label_veld",
                             type_field = "type_veld",
                             order_field = "volgorde_veld",
-                            form_side = "formulier_kant",
+                            form_section = "formulier_sectie",
                             visible = "zichtbaar",
                             date_deleted = "datum_uitgeschakeld",
                             options = "opties",
@@ -358,28 +358,28 @@ registrationClass <- R6::R6Class(
     },
     
     #' @description Get form fields for left or right column of the form
-    get_form_fields = function(kant_formulier = c("links", "rechts")){
+    get_form_fields = function(form_section){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$def_table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+        qu <- glue::glue("SELECT * FROM {self$schema}.{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("SELECT * FROM {self$def_table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+        qu <- glue::glue("SELECT * FROM {self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       }
       
       out <- dbGetQuery(self$con, qu)
-      out <- out[order(out$volgorde_veld),]
+      out <- out[order(out[[self$def$order_field]]),]
       
       self$rename_definition_table(out)
       
     },
     
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
-    get_next_formorder_number = function(kant_formulier = c("links", "rechts")){
+    get_next_formorder_number = function(form_section){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema}.{self$def_table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema}.{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$def_table} WHERE {self$def$form_side} = '{kant_formulier}' AND {self$def$visible} = TRUE")
+        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       }
       
       count <- dbGetQuery(self$con, qu)
@@ -390,8 +390,8 @@ registrationClass <- R6::R6Class(
     #' @description Adds an input field to a form
     #' @param label_field Label for the field
     #' @param type_field Type of field (options : TODO)
-    #' @param form_side Left or right
-    add_input_field_to_form = function(label_field, type_field, form_side){
+    #' @param form_section Left or right
+    add_input_field_to_form = function(label_field, type_field, form_section){
       
       id <- uuid::UUIDgenerate()
       
@@ -402,7 +402,7 @@ registrationClass <- R6::R6Class(
       
       if(self$check_uniqueness_column_name(kol_nm_veld)){
         
-        volg_veld <- self$get_next_formorder_number(form_side)
+        volg_veld <- self$get_next_formorder_number(form_section)
         
         if(type_field == "boolean"){
           opties <- '{"1":"Ja","2":"Nee"}'
@@ -418,7 +418,7 @@ registrationClass <- R6::R6Class(
           label_field = label_field,
           type_field = type_field,
           order_field = volg_veld,
-          form_side = form_side,
+          form_section = form_section,
           visible = TRUE,
           options = opties,
           order_options = "[]",
@@ -604,9 +604,9 @@ registrationClass <- R6::R6Class(
         order <- new_setup$order[x]
         
         if(!is.null(self$schema)){
-          qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$form_side} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
+          qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$form_section} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
         } else {
-          qu <- glue::glue("UPDATE {self$def_table} SET {self$def$form_side} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
+          qu <- glue::glue("UPDATE {self$def_table} SET {self$def$form_section} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
         }
         
         dbExecute(self$con, qu)
@@ -643,9 +643,9 @@ registrationClass <- R6::R6Class(
     amend_formfield_order = function(formside, deleted_number){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_side} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
+        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_section} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_side} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
+        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_section} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
       }
       
       dbExecute(self$con, qu)
@@ -724,7 +724,6 @@ registrationClass <- R6::R6Class(
     write_new_registration = function(data, name, user_id){
       
       self$prepare_data_table()
-      
       data_pre <- data.frame(
         id = uuid::UUIDgenerate(),
         name = name,
@@ -738,7 +737,10 @@ registrationClass <- R6::R6Class(
                                  .fn = function(x){
                                    unname(unlist(self$data_columns[x]))
                                  })  
+
+      data[sapply(data,length) == 0] <- NULL
       
+            
       data <- as.data.frame(
         lapply(data, function(x){
 
@@ -751,6 +753,7 @@ registrationClass <- R6::R6Class(
           if(class(x) == "json"){
             x <- as.character(x)
           }
+          
           x
         })
       )
