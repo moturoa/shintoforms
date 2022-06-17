@@ -27,6 +27,12 @@ server <- function(input, output, session) {
                                       .reg = .reg, 
                                       ping_update = reactive(NULL),
                                       current_user = "devuser",
+                                      data = list(
+                                        aantal_brommers = 100,
+                                        datum_inschrijving_gemeente = "2022-1-10",
+                                        kolom_rechts = "Dit is in een modal gemaakt",
+                                        crimineel_verleden = FALSE
+                                      ),
                                       callback_confirm = function()removeModal(),
                                       callback_cancel = function()removeModal())
     

@@ -39,8 +39,10 @@ nieuweRegistratieUI <- function(id){
 
 #' @rdname registratie
 #' @export
-nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL),
+nieuweRegistratieModule <- function(input, output, session, .reg = NULL, 
+                                    ping_update = reactive(NULL),
                                     current_user, 
+                                    data = NULL,
                                     callback_confirm = function(){},
                                     callback_cancel = function(){}) {
   
@@ -62,13 +64,13 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
   
   output$ui_input_left <- renderUI({
     
-    formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg)
+    formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg, data = data)
     
   })
   
   output$ui_input_right <- renderUI({
     
-    formSectionModuleUI(session$ns("form_right"), cfg = cfg_right(), .reg = .reg)
+    formSectionModuleUI(session$ns("form_right"), cfg = cfg_right(), .reg = .reg, data = data)
     
   })
   
@@ -227,7 +229,7 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "date"){
     
-    dateInput(ns("value"), label, language = "nl", format = "dd-mm-yyyy")
+    dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
     
   }
   # else if(b$type == "html_editor"){
