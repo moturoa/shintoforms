@@ -755,13 +755,11 @@ registrationClass <- R6::R6Class(
       
       data_all <- cbind(data_pre, data)
       
-      self$append_data(self$data_table, data_all)
-      
-      
+      res <- self$append_data(self$data_table, data_all)
+     
+      # TRUE if success (append_data has a try()) 
+      return(!inherits(res, "try-error"))
     }
-    
-    
-    
     
   )
   

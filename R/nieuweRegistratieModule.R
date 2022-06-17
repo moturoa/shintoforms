@@ -19,8 +19,9 @@ nieuweRegistratieUI <- function(id){
     
     softui::fluid_row(class = "justify-content-end",
       
+      tags$hr(),
      
-      column(4,
+      column(6,
          softui::action_button(ns("btn_cancel"), 
                                "Annuleren", 
                                icon = bsicon("x-lg"), 
@@ -125,8 +126,13 @@ nieuweRegistratieModule <- function(input, output, session, .reg = NULL, ping_up
   observeEvent(input$btn_confirm_new_registration, {
    
     
-    .reg$write_new_registration(edits(), input$txt_registration_name, current_user)
+    resp <- .reg$write_new_registration(edits(), input$txt_registration_name, current_user)
     
+    if(resp){
+      toastr_success("Registratie opgeslagen")
+    } else {
+      toastr_error("Er is een fout opgetreden")
+    }
     
     out_ping(runif(1))
     

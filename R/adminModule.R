@@ -170,11 +170,18 @@ adminModule <- function(input, output, session, .reg = NULL){
   observeEvent(input$btn_confirm_add_formfield, {
     
     if(stringr::str_trim(input$txt_column_name, side = "both") != ""){
-      .reg$add_input_field_to_form(input$txt_column_name, 
+      resp <- .reg$add_input_field_to_form(input$txt_column_name, 
                                    input$rad_type_formfield, 
                                    input$rad_side_formfield)
-      db_ping(runif(1))
-      removeModal()
+      
+      if(resp < 0){
+        toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
+      } else {
+        db_ping(runif(1))
+        removeModal()  
+      }
+      
+      
     } else {
       toastr_error("Vul een label in")
     }
