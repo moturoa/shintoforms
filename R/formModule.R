@@ -138,7 +138,8 @@ formModule <- function(input, output, session, .reg = NULL,
     
     extra <- inject_prep()
     values <- list()
-    withmod <- which(!is.null(sapply(extra, "[[", "module")))
+    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null))
+    
     if(length(withmod)){
       
       for(i in seq_along(withmod)){

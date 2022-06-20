@@ -1,8 +1,8 @@
 Package: shintoforms
 Type: Package
 Title: Configurable Shinto Forms
-Version: 0.1-4
-Author: Wesley Brants
+Version: 0.1-5
+Author: Wesley Brants, Remko Duursma
 Maintainer: Remko Duursma <remko@shintolabs.nl>
 Description: Forms for shinto shiny applications
 Depends: shiny, softui, dplyr
