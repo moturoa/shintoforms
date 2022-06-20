@@ -17,10 +17,10 @@ formUI <- function(id){
       )
     ),
     
-    tags$div(style = "display: none;",
-      verbatimTextOutput(ns("txt_out"))
-    ),
-    
+    # tags$div(style = "display: none;",
+    #   verbatimTextOutput(ns("txt_out"))
+    # ),
+    # 
     softui::fluid_row(class = "justify-content-end",
       
       tags$hr(),
@@ -46,7 +46,7 @@ formUI <- function(id){
 formModule <- function(input, output, session, .reg = NULL, 
                                     ping_update = reactive(NULL),
                                     current_user, 
-                                    data = NULL,
+                                    data = reactive(NULL),
                                     callback_confirm = function(){},
                                     callback_cancel = function(){},
                                     inject = reactive(NULL)) {
@@ -104,7 +104,7 @@ formModule <- function(input, output, session, .reg = NULL,
   output$ui_input_left <- renderUI({
 
     formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg, 
-                        data = data,
+                        data = data(),
                         inject = inject_left())
     
   })
@@ -112,7 +112,7 @@ formModule <- function(input, output, session, .reg = NULL,
   output$ui_input_right <- renderUI({
     
     formSectionModuleUI(session$ns("form_right"), cfg = cfg_right(), .reg = .reg, 
-                        data = data,
+                        data = data(),
                         inject = inject_right())
     
   })
@@ -137,17 +137,16 @@ formModule <- function(input, output, session, .reg = NULL,
   observe({
     
     extra <- inject_prep()
-    values <- list()
     withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null))
     
     if(length(withmod)){
       
-      for(i in seq_along(withmod)){
+      values <- lapply(seq_along(withmod), function(i){
         j <- withmod[i]
-        values[[i]] <- callModule(extra[[j]]$server_module, 
-                                  extra[[j]]$id,
-                                  columns = extra[[j]]$columns)
-      }
+        callModule(extra[[j]]$server_module, 
+                   extra[[j]]$id,
+                   columns = extra[[j]]$columns)
+      })
       
       modules_extra(values)
     }
@@ -174,9 +173,9 @@ formModule <- function(input, output, session, .reg = NULL,
     out
   })
   
-  output$txt_out <- renderPrint({
-    edits()
-  })
+  # output$txt_out <- renderPrint({
+  #   edits()
+  # })
   
   
   observeEvent(input$btn_register_new_signal, {
@@ -186,9 +185,9 @@ formModule <- function(input, output, session, .reg = NULL,
         title = "Opslaan",
         id_confirm = "btn_confirm_new_registration",
       
-        tags$p("Je gaat deze registratie opslaan."),
-        tags$p("Geef deze registratie een naam zodat je deze terug kunt vinden in het systeem."),
-        textInput(session$ns("txt_registration_name"), NULL, value = "")
+        tags$p("Je gaat deze registratie opslaan. Weet je het zeker?"),
+        tags$p("Gebruiker: ", current_user),
+        tags$p(format(Sys.time(), "%m/%d/%Y %H:%M"))
       )
     )
     
@@ -203,7 +202,7 @@ formModule <- function(input, output, session, .reg = NULL,
   
   observeEvent(input$btn_confirm_new_registration, {
 
-    resp <- .reg$write_new_registration(edits(), input$txt_registration_name, current_user)
+    resp <- .reg$write_new_registration(edits(), current_user)
     if(resp){
       toastr_success("Registratie opgeslagen")
     } else {

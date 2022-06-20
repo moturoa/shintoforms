@@ -696,7 +696,7 @@ formClass <- R6::R6Class(
         switch(type,
                freetext = "text",
                numeric = "double precision",
-               boolean = "integer",
+               boolean = "boolean",
                singleselect = "text",
                multiselect = "text",
                date = "date",
@@ -735,13 +735,12 @@ formClass <- R6::R6Class(
       
     },
     
-    write_new_registration = function(data, name, user_id){
+    write_new_registration = function(data, user_id){
       
       self$prepare_data_table()
       
       data_pre <- data.frame(
         id = uuid::UUIDgenerate(),
-        name = name,
         time_created = format(Sys.time()),
         time_modified = format(Sys.time()),
         user = user_id
