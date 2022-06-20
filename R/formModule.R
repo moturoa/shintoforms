@@ -17,7 +17,9 @@ formUI <- function(id){
       )
     ),
     
-    #verbatimTextOutput(ns("txt_out")),
+    tags$div(style = "display: none;",
+      verbatimTextOutput(ns("txt_out"))
+    ),
     
     softui::fluid_row(class = "justify-content-end",
       
@@ -130,7 +132,9 @@ formModule <- function(input, output, session, .reg = NULL,
     
   })
 
-  modules_extra <- reactive({
+  modules_extra <- reactiveVal()
+    
+  observe({
     
     extra <- inject_prep()
     values <- list()
@@ -144,9 +148,10 @@ formModule <- function(input, output, session, .reg = NULL,
                                   columns = extra[[j]]$columns)
       }
       
+      modules_extra(values)
     }
     
-    values
+    
   })
   
   edits_extra <- reactive({
@@ -168,9 +173,9 @@ formModule <- function(input, output, session, .reg = NULL,
     out
   })
   
-  # output$txt_out <- renderPrint({
-  #   edits()
-  # })
+  output$txt_out <- renderPrint({
+    edits()
+  })
   
   
   observeEvent(input$btn_register_new_signal, {
