@@ -43,51 +43,43 @@ editFieldModuleUI <- function(id, column, data,
     
     if(!isTruthy(value))value <- 0
     
-    tags$div(id = id,
-      numericInput(ns("value"), label, 
-                   value = value)
-    )
+    numericInput(ns("value"), label, 
+                 value = value)
+    
     
   } else if(type == "freetext"){
     
-    tags$div(id = id,
-      textInput(ns("value"), label, value = value)
-    )
+    textInput(ns("value"), label, value = value)
     
   } else if(type == "boolean"){
     
-    tags$div(id = id,
       radioButtons(ns("value"), label, inline = TRUE, 
                    choices = setNames(c(TRUE,FALSE),names(options)),
                    selected = as.character(value)
       )
-    )
     
   } else if(type == "singleselect"){
     
-    tags$div(id = id,
-      selectizeInput(ns("value"), label, choices = options, 
+      selectizeInput(ns("value"), label, choices = c("", options), 
                      selected = value, 
                      multiple = FALSE)
-    )
     
   } else if(type == "multiselect"){
     
-    tags$div(id = id,
-      selectizeInput(ns("value"), label, choices = options, 
+      selectizeInput(ns("value"), label, choices = c("", options),
                      selected = value, 
                      multiple = TRUE, 
                      options = list(plugins = list("remove_button"))
       )
-    )
+    
   } else if(type == "date"){
     
-    if(value == ""){
+    if(length(value) == 0 || value == ""){
       value <- Sys.Date()
     }
-    tags$div(id = id,
-      dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
-    )
+    
+    dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
+    
   }
   
   # } else if(type == "html"){

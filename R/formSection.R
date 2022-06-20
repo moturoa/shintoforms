@@ -19,7 +19,7 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg, inject = list()){
                       label = el$label_field,
                       options = .reg$choices_from_json(el$options),
                       type = el$type_field,
-                      default = if(el$type_field == "boolean")TRUE else "", #el$default,
+                      default = if(el$type_field == "boolean")TRUE else "", 
                       data = data)
   })  
   

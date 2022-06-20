@@ -618,9 +618,9 @@ formClass <- R6::R6Class(
         order <- new_setup$order[x]
         
         if(!is.null(self$schema)){
-          qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$form_section} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
+          qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$form_section} = '{side}', \"{self$def$order_field}\" = '{order}'  WHERE {self$def$id_form} = '{id}'")
         } else {
-          qu <- glue::glue("UPDATE {self$def_table} SET {self$def$form_section} = '{side}', {self$def$order_field} = '{order}'  WHERE {self$def$id_form} = '{id}'")
+          qu <- glue::glue("UPDATE {self$def_table} SET {self$def$form_section} = '{side}', \"{self$def$order_field}\" = '{order}'  WHERE {self$def$id_form} = '{id}'")
         }
         
         dbExecute(self$con, qu)
@@ -657,9 +657,9 @@ formClass <- R6::R6Class(
     amend_formfield_order = function(formside, deleted_number){
       
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_section} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
+        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET \"{self$def$order_field}\" = \"{self$def$order_field}\" - 1 WHERE {self$def$form_section} = '{formside}' AND \"{self$def$order_field}\" > {deleted_number} AND {self$def$visible} = TRUE")
       } else {
-        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$order_field} = {self$def$order_field} - 1 WHERE {self$def$form_section} = '{formside}' AND {self$def$order_field} > {deleted_number} AND {self$def$visible} = TRUE")
+        qu <- glue::glue("UPDATE {self$def_table} SET \"{self$def$order_field}\" = \"{self$def$order_field}\" - 1 WHERE {self$def$form_section} = '{formside}' AND \"{self$def$order_field}\" > {deleted_number} AND {self$def$visible} = TRUE")
       }
       
       dbExecute(self$con, qu)
@@ -668,9 +668,9 @@ formClass <- R6::R6Class(
     
     reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
       if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$order_field} = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
       } else {
-        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$order_field} = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
+        qu <- glue::glue("UPDATE {self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
       }
       
       dbExecute(self$con, qu)
