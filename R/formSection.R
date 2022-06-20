@@ -51,8 +51,10 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg, inject = list()){
 }
 
 
-formSectionModule <- function(input, output, session, cfg = reactive(NULL), .reg){
+formSectionModule <- function(input, output, session, cfg = reactive(NULL), 
+                              .reg){
   
+
   values <- reactive({
     cfg <- cfg()
     
@@ -104,16 +106,13 @@ test_formSection <- function(){
   
   server <- function(input, output, session) {
     
-    basic <- callModule(formSectionModule, "form", cfg = reactive(data), .reg = .reg)
+    basic <- callModule(formSectionModule, "form", 
+                        cfg = reactive(data), .reg = .reg)
     
     extra <- callModule(testmodule, "testmod")
     
     out <- reactiveVal()
-    
-    observeEvent(extra(),{
-      
-      browser()
-    })
+
     
     output$txt_out <- renderPrint({
       lapply(out(), function(x)x())

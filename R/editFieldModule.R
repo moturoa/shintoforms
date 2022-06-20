@@ -43,41 +43,51 @@ editFieldModuleUI <- function(id, column, data,
     
     if(!isTruthy(value))value <- 0
     
-    numericInput(ns("value"), label, 
-                 value = value)
+    tags$div(id = id,
+      numericInput(ns("value"), label, 
+                   value = value)
+    )
     
   } else if(type == "freetext"){
     
-    textInput(ns("value"), label, value = value)
+    tags$div(id = id,
+      textInput(ns("value"), label, value = value)
+    )
     
   } else if(type == "boolean"){
     
-    radioButtons(ns("value"), label, inline = TRUE, 
-                 choices = setNames(c(TRUE,FALSE),names(options)),
-                 selected = as.character(value)
+    tags$div(id = id,
+      radioButtons(ns("value"), label, inline = TRUE, 
+                   choices = setNames(c(TRUE,FALSE),names(options)),
+                   selected = as.character(value)
+      )
     )
     
   } else if(type == "singleselect"){
     
-    selectizeInput(ns("value"), label, choices = options, 
-                   selected = value, 
-                   multiple = FALSE)
+    tags$div(id = id,
+      selectizeInput(ns("value"), label, choices = options, 
+                     selected = value, 
+                     multiple = FALSE)
+    )
     
   } else if(type == "multiselect"){
     
-    selectizeInput(ns("value"), label, choices = options, 
-                   selected = value, 
-                   multiple = TRUE, 
-                   options = list(plugins = list("remove_button"))
+    tags$div(id = id,
+      selectizeInput(ns("value"), label, choices = options, 
+                     selected = value, 
+                     multiple = TRUE, 
+                     options = list(plugins = list("remove_button"))
+      )
     )
-    
   } else if(type == "date"){
     
     if(value == ""){
       value <- Sys.Date()
     }
-    dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
-    
+    tags$div(id = id,
+      dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
+    )
   }
   
   # } else if(type == "html"){
