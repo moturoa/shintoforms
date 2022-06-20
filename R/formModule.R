@@ -17,7 +17,7 @@ formUI <- function(id){
       )
     ),
     
-    verbatimTextOutput(ns("txt_out")),
+    #verbatimTextOutput(ns("txt_out")),
     
     softui::fluid_row(class = "justify-content-end",
       
@@ -168,9 +168,9 @@ formModule <- function(input, output, session, .reg = NULL,
     out
   })
   
-  output$txt_out <- renderPrint({
-    edits()
-  })
+  # output$txt_out <- renderPrint({
+  #   edits()
+  # })
   
   
   observeEvent(input$btn_register_new_signal, {
