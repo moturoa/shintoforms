@@ -45,7 +45,7 @@ formPageUI <- function(id,
 #' @rdname formulier
 #' @export
 formPageModule <- function(input, output, session, .reg = NULL, ping_update = reactive(NULL),
-                            current_user){
+                            current_user, ...){
   
   show_form <- reactiveVal(FALSE)
   
@@ -73,7 +73,7 @@ formPageModule <- function(input, output, session, .reg = NULL, ping_update = re
   new_form_saved_ping <- callModule(formModule, "nieuweRegistratie", 
                                     .reg = .reg, 
                                     ping_update = ping_update,
-                                    current_user = current_user)
+                                    current_user = current_user, ...)
   
 }
 
