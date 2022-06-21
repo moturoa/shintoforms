@@ -75,6 +75,7 @@ formPageModule <- function(input, output, session, .reg = NULL, ping_update = re
                                     ping_update = ping_update,
                                     current_user = current_user, ...)
   
+return(new_form_saved_ping)
 }
 
 
