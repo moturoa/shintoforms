@@ -806,6 +806,20 @@ formClass <- R6::R6Class(
       
     },
     
+    
+    filter_period = function(data, 
+                             date_start = Sys.Date()-7, 
+                             date_end = Sys.Date()){
+      
+      timecol <- self$data_columns$time_created
+      
+      if(!timecol %in% names(data)){
+        stop("$filter_period works only on data returned with $read_registrations")
+      }
+      dplyr::filter(data, between(as.Date(!!sym(timecol)), date_start, date_end))
+      
+    },
+    
     read_definition = function(...){
       
       self$read_table(self$def_table, ...)
