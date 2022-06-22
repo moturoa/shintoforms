@@ -1,9 +1,15 @@
 
 #' Shiny module for form configuration
+#' @param id Shiny input id
+#' @param title Title for the tab panel with settings
+#' @param title_deleted Title for the tab panel with deleted fields
+#' @param header_ui UI to add at the top of the panel with settings
 #' @export
 #' @rdname formAdminModule
 formAdminUI <- function(id, 
-                    title = "Formulieropstelling"){
+                    title = "Formulieropstelling",
+                    title_deleted = "Verwijderde invoervelden",
+                    header_ui = NULL){
   
   ns <- NS(id)
   
@@ -12,6 +18,8 @@ formAdminUI <- function(id,
      softui::tab_panel(
        title = title, 
        icon = bsicon("pencil-square"),
+       
+       header_ui,
        
        softui::fluid_row(
          column(12,
@@ -76,7 +84,7 @@ formAdminUI <- function(id,
        
      ),
      softui::tab_panel(
-       title = "Verwijderde invoervelden", icon = bsicon("recycle"),
+       title = title_deleted, icon = bsicon("recycle"),
        shinyjs::hidden(
          tags$span(id = ns("span_restore_formfield"),
                    softui::fluid_row(

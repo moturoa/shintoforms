@@ -779,6 +779,37 @@ formClass <- R6::R6Class(
      
       # TRUE if success (append_data has a try()) 
       return(!inherits(res, "try-error"))
+    },
+    
+    read_registrations = function(recode = TRUE){
+      
+      data <- self$read_table(self$data_table)
+      
+      if(recode){
+        
+        # find select fields. they will be recoded with the actual values
+        def <- self$read_definition() %>% filter(
+          !!sym(self$def[["type_field"]]) %in% c("multiselect","singleselect"),
+          !!sym(self$def[["column_field"]]) %in% names(data))
+        
+        # for every select field, replace values
+        for(i in seq_len(nrow(def))){
+          opt <- def[[self$def$options]][i]
+          key <- self$from_json(opt)
+          col <- def[[self$def$column_field]][i]
+          data[[col]] <- dplyr::recode(data[[col]], !!!key)
+        }
+        
+      }
+      
+      data
+      
+    },
+    
+    read_definition = function(...){
+      
+      self$read_table(self$def_table, ...)
+      
     }
     
   )

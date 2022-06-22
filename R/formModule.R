@@ -142,10 +142,16 @@ formModule <- function(input, output, session, .reg = NULL,
     if(length(withmod)){
       
       values <- lapply(seq_along(withmod), function(i){
+        
         j <- withmod[i]
-        callModule(extra[[j]]$server_module, 
-                   extra[[j]]$id,
-                   columns = extra[[j]]$columns)
+        
+        lis_call <- c(list(
+          module = extra[[j]]$server_module, 
+          id = extra[[j]]$id,
+          columns = extra[[j]]$columns
+        ), extra[[j]]$module_server_pars)
+        
+        do.call(callModule, lis_call)
       })
       
       modules_extra(values)
