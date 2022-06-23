@@ -843,6 +843,14 @@ formClass <- R6::R6Class(
       
     },
     
+    get_registration_by_id = function(id){
+      
+      self$read_table(self$data_table, lazy = TRUE) %>%
+        dplyr::filter(!!sym(self$data_columns$id) == !!id) %>%
+        collect
+      
+    },
+    
     
     filter_period = function(data, 
                              date_start = Sys.Date()-7, 

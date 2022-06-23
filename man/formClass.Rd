@@ -49,6 +49,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-write_new_registration}{\code{formClass$write_new_registration()}}
 \item \href{#method-edit_registration}{\code{formClass$edit_registration()}}
 \item \href{#method-read_registrations}{\code{formClass$read_registrations()}}
+\item \href{#method-get_registration_by_id}{\code{formClass$get_registration_by_id()}}
 \item \href{#method-filter_period}{\code{formClass$filter_period()}}
 \item \href{#method-read_definition}{\code{formClass$read_definition()}}
 \item \href{#method-clone}{\code{formClass$clone()}}
@@ -485,6 +486,15 @@ Read registrations, recode select values where needed.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_registration_by_id"></a>}}
+\if{latex}{\out{\hypertarget{method-get_registration_by_id}{}}}
+\subsection{Method \code{get_registration_by_id()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_registration_by_id(id)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-filter_period"></a>}}
