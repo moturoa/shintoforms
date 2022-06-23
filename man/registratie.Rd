@@ -5,7 +5,7 @@
 \alias{formModule}
 \title{Nieuwe registratie Shiny module}
 \usage{
-formUI(id)
+formUI(id, buttons = TRUE)
 
 formModule(
   input,
@@ -16,6 +16,8 @@ formModule(
   current_user,
   data = reactive(NULL),
   write_method = reactive("new"),
+  confirm = reactive(NULL),
+  cancel = reactive(NULL),
   callback_confirm = function() { },
   callback_cancel = function() { }
 )

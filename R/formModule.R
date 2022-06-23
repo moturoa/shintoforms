@@ -2,7 +2,7 @@
 #' Nieuwe registratie Shiny module
 #' @rdname registratie
 #' @export
-formUI <- function(id){
+formUI <- function(id, buttons = TRUE){
   
   ns <- NS(id)
   
@@ -21,21 +21,28 @@ formUI <- function(id){
     #   verbatimTextOutput(ns("txt_out"))
     # ),
     # 
-    softui::fluid_row(class = "justify-content-end",
+    
+    if(buttons){
       
-      tags$hr(),
-     
-      column(6,
-         softui::action_button(ns("btn_cancel"), 
-                               "Annuleren", 
-                               icon = bsicon("x-lg"), 
-                               status = "danger"),      
-         softui::action_button(ns("btn_register_new_signal"), 
-                      "Opslaan", 
-                      icon = bsicon("cloud-arrow-up"), 
-                        status = "success")
+      softui::fluid_row(class = "justify-content-end",
+                        
+                        tags$hr(),
+                        
+                        column(6,
+                               softui::action_button(ns("btn_cancel"), 
+                                                     "Annuleren", 
+                                                     icon = bsicon("x-lg"), 
+                                                     status = "danger"),      
+                               softui::action_button(ns("btn_register_new_signal"), 
+                                                     "Opslaan", 
+                                                     icon = bsicon("cloud-arrow-up"), 
+                                                     status = "success")
+                        )
       )
-    )
+      
+      
+    }
+    
   )
    
   
@@ -48,6 +55,10 @@ formModule <- function(input, output, session, .reg = NULL,
                                     current_user, 
                                     data = reactive(NULL),
                                     write_method = reactive("new"),
+                       
+                                    confirm = reactive(NULL),
+                                    cancel = reactive(NULL),
+                       
                                     callback_confirm = function(){},
                                     callback_cancel = function(){}) {
   
@@ -207,13 +218,18 @@ formModule <- function(input, output, session, .reg = NULL,
     callback_cancel()
   })
   
-  observeEvent(input$btn_confirm_new_registration, {
+  
+  confirm_new_reg <- reactiveVal()
+  observeEvent(confirm(), confirm_new_reg(runif(1)))
+  observeEvent(input$btn_confirm_new_registration, confirm_new_reg(runif(1)))
+  
+  
+  observeEvent(confirm_new_reg(), {
 
     if(write_method() == "new"){
       resp <- .reg$write_new_registration(edits(), current_user)  
     } else {
       resp <- .reg$edit_registration(old_data = data(), new_data = edits(), user_id = current_user)
-      print("editing")  
     }
     
     
