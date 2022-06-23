@@ -6,9 +6,9 @@ formUI <- function(id, buttons = TRUE){
   
   ns <- NS(id)
   
-  softui::fluid_page(
+  ui <- softui::fluid_page(
 
-    softui::fluid_row(
+    softui::fluid_row(id = ns("form_container"),
       column(6,
         uiOutput(ns("ui_input_left"))
       ),
@@ -44,8 +44,9 @@ formUI <- function(id, buttons = TRUE){
     }
     
   )
-   
   
+  tagList(ui, shintoforms_dependencies())
+   
 }
 
 #' @rdname registratie
@@ -55,6 +56,7 @@ formModule <- function(input, output, session, .reg = NULL,
                                     current_user, 
                                     data = reactive(NULL),
                                     write_method = reactive("new"),
+                                    disabled = FALSE,
                        
                                     confirm = reactive(NULL),
                                     cancel = reactive(NULL),
@@ -112,8 +114,10 @@ formModule <- function(input, output, session, .reg = NULL,
     
   })
   
+  ui_ping <- reactiveVal()
   output$ui_input_left <- renderUI({
 
+    ui_ping(runif(1))
     formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg, 
                         data = data(),
                         inject = inject_left())
@@ -122,14 +126,28 @@ formModule <- function(input, output, session, .reg = NULL,
   
   output$ui_input_right <- renderUI({
     
+    ui_ping(runif(1))
     formSectionModuleUI(session$ns("form_right"), cfg = cfg_right(), .reg = .reg, 
                         data = data(),
                         inject = inject_right())
     
   })
   
+
+  
   edit_left <- callModule(formSectionModule, "form_left", cfg = cfg_left, .reg = .reg)
   edit_right <- callModule(formSectionModule, "form_right", cfg = cfg_right, .reg = .reg)
+  
+  
+  observe({
+    
+    e <- edit_left()
+    e2 <- edit_right()
+    
+    if(disabled){
+      disable_inputs(session$ns("form_container"))
+    }
+  })
   
   
   edits_configured <- reactive({
@@ -290,24 +308,25 @@ test_formModule <- function(){
   library(shiny)
   
   ui <- softui::simple_page(
+    shintoforms_dependencies(),
+    includeScript("inst/disable/disable_inputs.js"),
     
     softui::box(
+      actionButton("btn1", "Disable all!"),
+      
       formUI("test")
     )
   )
   
   server <- function(input, output, session) {
+    
+    observeEvent(input$btn1, {
+      disable_inputs("test-form_container")
+    })
+    
     callModule(formModule, "test", .reg = .reg,
                current_user = "devuser",
-               inject = reactive(list(
-                 list(position = 4, section = 1, 
-                        ui_module = testmoduleui,
-                        server_module = testmodule, 
-                        columns = c("letterkeuze1","letterkeuze2")),
-                 list(position = 2, section = 2,
-                      html = tags$h2("Dit is een tekst"))
-                 
-               )))
+               disabled = TRUE)
   }
   
   shinyApp(ui, server)

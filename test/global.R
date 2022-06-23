@@ -1,7 +1,7 @@
 
 # Packages
-devtools::load_all()
-# library(shintoregistraties)
+#devtools::load_all()
+library(shintoforms)
 
 
 source("preload/load_packages.R")
