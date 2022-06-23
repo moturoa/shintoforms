@@ -40,6 +40,7 @@ formClass <- R6::R6Class(
                             time_modified = "wijzigdatum",
                             user = "user_id"
                           ),
+                          inject = NULL,
                           pool = TRUE,
                           sqlite = NULL,
                           default_color = "#3333cc"){
@@ -66,6 +67,9 @@ formClass <- R6::R6Class(
       if(any(!di2)){
         stop(paste("Columns in data_columns not found:", paste(datacols[!di2], collapse=",")))
       }
+      
+      # Extra custom fields (modules, can be anything even static HTML)
+      self$inject <- inject
     },
     
     #----- Generic database methods
@@ -781,6 +785,39 @@ formClass <- R6::R6Class(
       return(!inherits(res, "try-error"))
     },
     
+    
+    edit_registration = function(old_data, new_data, user_id){
+      
+      # id of the registration
+      id <- old_data[[self$data_columns$id]]
+      
+      for(col in names(new_data)){
+        
+        new_value <- new_data[[col]]
+        old_value <- old_data[[col]]
+        
+        if(!is.null(old_value) && new_value == old_value){
+          # do nothing
+        } else {
+          
+          self$replace_value_where(
+            self$data_table, 
+            col_compare = self$data_columns$id, 
+            val_compare = id,
+            col_replace = col, 
+            val_replace = new_value)
+          
+        }
+        
+      }
+      
+      return(TRUE)
+    },
+    
+
+    
+    #' @description Read registrations, recode select values where needed.
+    #' @param recode If TRUE (default), replaces codes with labels (for select fields)
     read_registrations = function(recode = TRUE){
       
       data <- self$read_table(self$data_table)

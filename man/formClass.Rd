@@ -47,6 +47,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-column_type_from_field_type}{\code{formClass$column_type_from_field_type()}}
 \item \href{#method-prepare_data_table}{\code{formClass$prepare_data_table()}}
 \item \href{#method-write_new_registration}{\code{formClass$write_new_registration()}}
+\item \href{#method-edit_registration}{\code{formClass$edit_registration()}}
 \item \href{#method-read_registrations}{\code{formClass$read_registrations()}}
 \item \href{#method-filter_period}{\code{formClass$filter_period()}}
 \item \href{#method-read_definition}{\code{formClass$read_definition()}}
@@ -72,6 +73,7 @@ Make new form object
   data_table = "registrations",
   data_columns = list(id = "id_registratie", name = "naam_registratie", time_created =
     "invoerdatum", time_modified = "wijzigdatum", user = "user_id"),
+  inject = NULL,
   pool = TRUE,
   sqlite = NULL,
   default_color = "#3333cc"
@@ -459,13 +461,30 @@ Make sure the necessary columns are present in the data_table
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-edit_registration"></a>}}
+\if{latex}{\out{\hypertarget{method-edit_registration}{}}}
+\subsection{Method \code{edit_registration()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_registration(old_data, new_data, user_id)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-read_registrations"></a>}}
 \if{latex}{\out{\hypertarget{method-read_registrations}{}}}
 \subsection{Method \code{read_registrations()}}{
+Read registrations, recode select values where needed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$read_registrations(recode = TRUE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{recode}}{If TRUE (default), replaces codes with labels (for select fields)}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-filter_period"></a>}}

@@ -47,9 +47,9 @@ formModule <- function(input, output, session, .reg = NULL,
                                     ping_update = reactive(NULL),
                                     current_user, 
                                     data = reactive(NULL),
+                                    write_method = reactive("new"),
                                     callback_confirm = function(){},
-                                    callback_cancel = function(){},
-                                    inject = reactive(NULL)) {
+                                    callback_cancel = function(){}) {
   
   ns <- session$ns
   
@@ -69,7 +69,7 @@ formModule <- function(input, output, session, .reg = NULL,
   # prepare inject object: module functions must get an ID and HTML
   inject_prep <- reactive({
     
-    inj <- inject()
+    inj <- .reg$inject
     if(is.null(inj))return(NULL)
     
     inj <- lapply(inj, function(x){
@@ -148,7 +148,8 @@ formModule <- function(input, output, session, .reg = NULL,
         lis_call <- c(list(
           module = extra[[j]]$server_module, 
           id = extra[[j]]$id,
-          columns = extra[[j]]$columns
+          columns = extra[[j]]$columns,
+          data = data
         ), extra[[j]]$module_server_pars)
         
         do.call(callModule, lis_call)
@@ -208,7 +209,14 @@ formModule <- function(input, output, session, .reg = NULL,
   
   observeEvent(input$btn_confirm_new_registration, {
 
-    resp <- .reg$write_new_registration(edits(), current_user)
+    if(write_method() == "new"){
+      resp <- .reg$write_new_registration(edits(), current_user)  
+    } else {
+      resp <- .reg$edit_registration(old_data = data(), new_data = edits(), user_id = current_user)
+      print("editing")  
+    }
+    
+    
     if(resp){
       toastr_success("Registratie opgeslagen")
     } else {

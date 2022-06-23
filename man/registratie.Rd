@@ -15,9 +15,9 @@ formModule(
   ping_update = reactive(NULL),
   current_user,
   data = reactive(NULL),
+  write_method = reactive("new"),
   callback_confirm = function() { },
-  callback_cancel = function() { },
-  inject = reactive(NULL)
+  callback_cancel = function() { }
 )
 }
 \description{
