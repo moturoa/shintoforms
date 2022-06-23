@@ -88,7 +88,7 @@ formModule <- function(input, output, session, .reg = NULL,
   inject_left <- reactive({
     
     obj <- inject_prep()
-    req(obj)
+    if(is.null(obj))return(NULL)
     obj[sapply(obj, "[[", "section") == 1]
     
   })
@@ -96,7 +96,7 @@ formModule <- function(input, output, session, .reg = NULL,
   inject_right <- reactive({
     
     obj <- inject_prep()
-    req(obj)
+    if(is.null(obj))return(NULL)
     obj[sapply(obj, "[[", "section") == 2]
     
   })

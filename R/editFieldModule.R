@@ -30,6 +30,7 @@ editFieldModuleUI <- function(id, column, data,
   
   assert_input_field_type(type)
   
+  
   value <- make_default_value(column, data, 
                               default = default,
                               array = type == "multiselect")
@@ -74,7 +75,7 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "date"){
     
-    if(length(value) == 0 || value == ""){
+    if(length(value) == 0 || as.character(value) == ""){
       value <- Sys.Date()
     }
     

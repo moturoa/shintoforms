@@ -14,6 +14,7 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg, inject = list()){
   els <- split(cfg, 1:nrow(cfg))[cfg$order_field]
   
   ui <- lapply(els, function(el){
+    
     editFieldModuleUI(ns(el$id_form), 
                       column = el$column_field, 
                       label = el$label_field,
