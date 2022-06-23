@@ -5,7 +5,7 @@
 \alias{jsonFormSetupModule}
 \title{Shiny module to adjust order of a form}
 \usage{
-jsonFormSetupUI(id, class = "", icon = NULL, label = "Edit values")
+jsonFormSetupUI(id, icon = NULL, label = "Edit values", status = "secondary")
 
 jsonFormSetupModule(
   input,

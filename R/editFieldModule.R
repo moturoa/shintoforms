@@ -2,23 +2,6 @@
 
 
 #---- editFieldmodule: module voor een enkele input (bv numeric, text, oid)
-make_default_value <- function(x, data, default = character(0), array = FALSE){
-  
-  val <- data[[x]]
-  
-  if(is.null(val) || length(val) == 0 || is.na(val)){
-    default
-  } else {
-    
-    if(isTRUE(array)){
-      
-      val <- jsonlite::fromJSON(val)
-    }
-    
-    val
-  }
-  
-}
 
 editFieldModuleUI <- function(id, column, data, 
                               type, 

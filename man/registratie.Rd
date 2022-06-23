@@ -7,7 +7,18 @@
 \usage{
 formUI(id)
 
-formModule(input, output, session, .reg = NULL)
+formModule(
+  input,
+  output,
+  session,
+  .reg = NULL,
+  ping_update = reactive(NULL),
+  current_user,
+  data = reactive(NULL),
+  callback_confirm = function() { },
+  callback_cancel = function() { },
+  inject = reactive(NULL)
+)
 }
 \description{
 Nieuwe registratie Shiny module

@@ -11,11 +11,19 @@ formPageUI(
   icon = softui::bsicon("ui_checks"),
   header_ui = NULL,
   tag = "Opties",
-  new_existing_labels = c("Nieuwe registratie invoeren",
-    "Bestaande registratie bekijken")
+  new_existing_labels = c("Nieuwe registratie", "Registratie bewerken"),
+  edit_button = FALSE
 )
 
-formPageModule(input, output, session, .reg = NULL)
+formPageModule(
+  input,
+  output,
+  session,
+  .reg = NULL,
+  ping_update = reactive(NULL),
+  current_user,
+  ...
+)
 }
 \description{
 Formulier Shiny Module
