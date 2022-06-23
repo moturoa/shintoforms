@@ -28,6 +28,7 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg, inject = list()){
   
   if(length(inject)){
     last_pos <- 0
+    
     for(i in seq_along(inject)){
       
       obj <- inject[[i]]

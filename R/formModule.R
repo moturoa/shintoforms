@@ -76,7 +76,7 @@ formModule <- function(input, output, session, .reg = NULL,
         
       if(is.null(x$html) & !is.null(x$ui_module)){
         x$id <- uuid::UUIDgenerate()
-        x$html <- x$ui_module(ns(x$id))
+        x$html <- x$ui_module(ns(x$id), data = data(), columns = x$columns)
       }
       x
     })
