@@ -22,6 +22,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-has_value}{\code{formClass$has_value()}}
 \item \href{#method-replace_value_where}{\code{formClass$replace_value_where()}}
 \item \href{#method-get_by_id}{\code{formClass$get_by_id()}}
+\item \href{#method-get_field_choices}{\code{formClass$get_field_choices()}}
 \item \href{#method-make_choices}{\code{formClass$make_choices()}}
 \item \href{#method-choices_from_json}{\code{formClass$choices_from_json()}}
 \item \href{#method-rename_definition_table}{\code{formClass$rename_definition_table()}}
@@ -205,6 +206,16 @@ Close database connection
 Get a row from the form definition by the form id.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_by_id(id_form)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_field_choices"></a>}}
+\if{latex}{\out{\hypertarget{method-get_field_choices}{}}}
+\subsection{Method \code{get_field_choices()}}{
+Get (recoded) choices for a select field
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_field_choices(column_field)}\if{html}{\out{</div>}}
 }
 
 }

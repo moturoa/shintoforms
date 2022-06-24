@@ -304,6 +304,18 @@ formClass <- R6::R6Class(
       
     },
     
+    #' @description Get (recoded) choices for a select field
+    get_field_choices = function(column_field){
+      
+      
+      self$read_definition(lazy = TRUE) %>%
+        filter(!!sym(self$def$column_field) == !!column_field) %>%
+        pull(!!sym(self$def$column_field)) %>%
+        self$from_json()
+      
+    },
+    
+    
     #' @description Make choices (for selectInput) based on values and names
     make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
       
