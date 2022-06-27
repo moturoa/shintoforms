@@ -6,7 +6,9 @@
 # a vertical column with input fields (and nothing else)
 # typically right or left side of a formUI
 
-formSectionModuleUI <- function(id, cfg, data = NULL, .reg, inject = list()){
+formSectionModuleUI <- function(id, cfg, data = NULL, .reg, 
+                                inject = list(),
+                                disabled = FALSE){
   
   ns <- NS(id)
   
@@ -21,7 +23,8 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg, inject = list()){
                       options = .reg$choices_from_json(el$options),
                       type = el$type_field,
                       default = if(el$type_field == "boolean")TRUE else "", 
-                      data = data)
+                      data = data, 
+                      disabled = disabled)
   })  
   
   
@@ -39,14 +42,14 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg, inject = list()){
         stop("inject argument in formSectionModuleUI has to be in order of 'position'")
       }
       
+      last_pos <- as.integer(position_tag)
+      
       # insert the  ui.
-      # +(i-1) because after first insert, to increment the position
+      # +(i-1) because after first insert, increment the position
       ui <- append(ui, values = list(html_tag), after = as.integer(position_tag) + (i-1))
     }
     
   }
-  
-  
   
   ui
   

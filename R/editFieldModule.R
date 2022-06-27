@@ -7,12 +7,12 @@ editFieldModuleUI <- function(id, column, data,
                               type, 
                               default = NULL,
                               options = NULL,
-                              label = NULL){
+                              label = NULL,
+                              disabled = FALSE){
   
   ns <- NS(id)
   
   assert_input_field_type(type)
-  
   
   value <- make_default_value(column, data, 
                               default = default,
@@ -27,30 +27,30 @@ editFieldModuleUI <- function(id, column, data,
     
     if(!isTruthy(value))value <- 0
     
-    numericInput(ns("value"), label, 
+    ui <- numericInput(ns("value"), label, 
                  value = value)
     
     
   } else if(type == "freetext"){
     
-    textInput(ns("value"), label, value = value)
+    ui <- textInput(ns("value"), label, value = value)
     
   } else if(type == "boolean"){
     
-      radioButtons(ns("value"), label, inline = TRUE, 
+      ui <- radioButtons(ns("value"), label, inline = TRUE, 
                    choices = setNames(c(TRUE,FALSE),names(options)),
                    selected = as.character(value)
       )
     
   } else if(type == "singleselect"){
     
-      selectizeInput(ns("value"), label, choices = c("", options), 
+      ui <- selectizeInput(ns("value"), label, choices = c("", options), 
                      selected = value, 
                      multiple = FALSE)
     
   } else if(type == "multiselect"){
     
-      selectizeInput(ns("value"), label, choices = c("", options),
+      ui <- selectizeInput(ns("value"), label, choices = c("", options),
                      selected = value, 
                      multiple = TRUE, 
                      options = list(plugins = list("remove_button"))
@@ -62,7 +62,7 @@ editFieldModuleUI <- function(id, column, data,
       value <- Sys.Date()
     }
     
-    dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
+    ui <- dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
     
   }
   
@@ -72,7 +72,11 @@ editFieldModuleUI <- function(id, column, data,
   # 
   # }
   
+  if(isTRUE(disabled)){
+    ui <- shinyjs::disabled(ui)
+  }
   
+ui
 }
 
 editFieldModule <- function(input, output, session, .reg, type){

@@ -16,9 +16,9 @@ formModule(
   current_user,
   data = reactive(NULL),
   write_method = reactive("new"),
-  disabled = FALSE,
   confirm = reactive(NULL),
   cancel = reactive(NULL),
+  disabled = reactive(FALSE),
   callback_confirm = function() { },
   callback_cancel = function() { }
 )
