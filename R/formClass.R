@@ -846,7 +846,11 @@ formClass <- R6::R6Class(
           opt <- def[[self$def$options]][i]
           key <- self$from_json(opt)
           col <- def[[self$def$column_field]][i]
-          data[[col]] <- dplyr::recode(data[[col]], !!!key)
+          
+          if(length(key)){
+            data[[col]] <- dplyr::recode(data[[col]], !!!key)   
+          }
+          
         }
         
       }
