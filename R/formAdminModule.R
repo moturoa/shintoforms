@@ -44,25 +44,31 @@ formAdminUI <- function(id,
                 
                 shinyjs::hidden(
                   tags$span(id = ns("span_edit_options"),
-                            shintocatman::jsonEditModuleUI(ns("edit_options"), 
-                                             icon = bsicon("pencil-square"),
-                                             label = "Keuzelijst",
-                                             status = "secondary")  
+                        
+                            softui::action_button(ns("btn_edit_options"),
+                                                  label = "Keuzelijst", 
+                                                  icon = bsicon("pencil-square"), 
+                                                  status = "secondary")
+                            
                   )
                 ),
                 shinyjs::hidden(
                   tags$span(id = ns("span_edit_order_options"),
-                            shintocatman::jsonOrderModuleUI(ns("edit_order_options"), 
-                                                            label = "Volgorde keuzelijst", 
-                                                            icon = bsicon("pencil-square"), 
-                                                            status = "secondary")
+                            
+                            softui::action_button(ns("btn_edit_order_options"),
+                                                  label = "Volgorde keuzelijst", 
+                                                  icon = bsicon("pencil-square"), 
+                                                  status = "secondary")
+                            
                   )
                 ),
                 shinyjs::hidden(
                   tags$span(id = ns("span_edit_colors"),
-                            shintocatman::colorVectorPickModuleUI(ns("edit_colors"), 
-                                                                  status = "primary", 
-                                                                  label = "Kleuren")  
+                            
+                            softui::action_button(ns("btn_edit_colors"),
+                                                  label = "Kleuren", 
+                                                  icon = bsicon("palette-fill"), 
+                                                  status = "primary")
                   )
                 ),
   
@@ -270,12 +276,18 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     
   })
   
-  edited_options <- callModule(shintocatman::jsonEditModule, "edit_options",
-                       options = edit_options,
-                       edit = reactive("value"),
-                       widths = c(2,10),
-                       value = reactive(selected_row()$options))
-  
+  edited_options <- softui::modalize(trigger_open = reactive(input$btn_edit_options),
+                                     header_ui = tags$p("Pas de keuzelijst aan voor dit formulierveld."),
+                                     ui_module = shintocatman::jsonEditModuleUI,
+                                     server_module = shintocatman::jsonEditModule,
+                                     title = "Keuzelijst",
+                                     server_pars = list(
+                                       options = edit_options,
+                                       edit = reactive("value"),
+                                       widths = c(2,10),
+                                       value = reactive(selected_row()$options)
+                                     ))
+    
   observeEvent(edited_options(), {
 
     .reg$edit_options_field(selected_id(), edited_options())
@@ -289,11 +301,17 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     from_json(selected_row()$colors)
   })
   
-  colors <- callModule(shintocatman::colorVectorPickModule, "edit_colors",
-                       n_colors = reactive(length(current_colors())), 
-                       current_colors = current_colors,
-                       labels = reactive(from_json(selected_row()$options)),
-                       show_order = reactive(from_json(selected_row()$order_options)))
+  colors <- softui::modalize(trigger_open = reactive(input$btn_edit_colors),
+                             ui_module = shintocatman::colorVectorPickModuleUI,
+                             server_module = shintocatman::colorVectorPickModule,
+                             title = "Kies kleuren",
+                             server_pars = list(
+                               n_colors = reactive(length(current_colors())), 
+                               current_colors = current_colors,
+                               labels = reactive(from_json(selected_row()$options)),
+                               show_order = reactive(from_json(selected_row()$order_options))
+                             ))
+    
   
   observeEvent(colors(), {
     .reg$edit_options_colors(selected_id(), colors())
@@ -301,13 +319,17 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   })
   
   
-  ordering_opties <- callModule(shintocatman::jsonOrderModule, "edit_order_options",
-                                data = selected_row,
-                                title = "Volgorde keuzelijst",
-                                header_ui = tags$p("Pas hier de volgorde van de keuzelijst aan voor dit formulierveld"),
-                                label_column = reactive("options"),
-                                order_column = reactive("order_options"))
-  
+  ordering_opties <- softui::modalize(trigger_open = reactive(input$btn_edit_order_options),
+                                      header_ui = tags$p("Pas hier de volgorde van de keuzelijst aan voor dit formulierveld"),
+                                      ui_module = shintocatman::jsonOrderModuleUI,
+                                      server_module = shintocatman::jsonOrderModule,
+                                      title = "Volgorde keuzelijst",
+                                      server_pars = list(
+                                        data = selected_row,
+                                        label_column = reactive("options"),
+                                        order_column = reactive("order_options")
+                                      ))
+
   observeEvent(ordering_opties(), {
     
     .reg$set_options_order(selected_id(), ordering_opties())

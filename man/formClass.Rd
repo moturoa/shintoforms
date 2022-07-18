@@ -11,54 +11,54 @@ R6 Class voor Registratie formulier
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{formClass$new()}}
-\item \href{#method-connect_to_database}{\code{formClass$connect_to_database()}}
-\item \href{#method-close}{\code{formClass$close()}}
-\item \href{#method-make_column}{\code{formClass$make_column()}}
-\item \href{#method-read_table}{\code{formClass$read_table()}}
-\item \href{#method-append_data}{\code{formClass$append_data()}}
-\item \href{#method-table_columns}{\code{formClass$table_columns()}}
-\item \href{#method-query}{\code{formClass$query()}}
-\item \href{#method-has_value}{\code{formClass$has_value()}}
-\item \href{#method-replace_value_where}{\code{formClass$replace_value_where()}}
-\item \href{#method-get_by_id}{\code{formClass$get_by_id()}}
-\item \href{#method-get_field_choices}{\code{formClass$get_field_choices()}}
-\item \href{#method-make_choices}{\code{formClass$make_choices()}}
-\item \href{#method-choices_from_json}{\code{formClass$choices_from_json()}}
-\item \href{#method-rename_definition_table}{\code{formClass$rename_definition_table()}}
-\item \href{#method-get_input_fields}{\code{formClass$get_input_fields()}}
-\item \href{#method-get_form_fields}{\code{formClass$get_form_fields()}}
-\item \href{#method-get_next_formorder_number}{\code{formClass$get_next_formorder_number()}}
-\item \href{#method-add_input_field_to_form}{\code{formClass$add_input_field_to_form()}}
-\item \href{#method-check_uniqueness_column_name}{\code{formClass$check_uniqueness_column_name()}}
-\item \href{#method-edit_label_field}{\code{formClass$edit_label_field()}}
-\item \href{#method-from_json}{\code{formClass$from_json()}}
-\item \href{#method-to_json}{\code{formClass$to_json()}}
-\item \href{#method-edit_options_field}{\code{formClass$edit_options_field()}}
-\item \href{#method-is_color}{\code{formClass$is_color()}}
-\item \href{#method-edit_options_colors}{\code{formClass$edit_options_colors()}}
-\item \href{#method-amend_options_colors}{\code{formClass$amend_options_colors()}}
-\item \href{#method-set_options_order}{\code{formClass$set_options_order()}}
-\item \href{#method-amend_options_order}{\code{formClass$amend_options_order()}}
-\item \href{#method-edit_formulier_setup}{\code{formClass$edit_formulier_setup()}}
-\item \href{#method-edit_zichtbaarheid_invoerveld}{\code{formClass$edit_zichtbaarheid_invoerveld()}}
-\item \href{#method-edit_verwijder_datum}{\code{formClass$edit_verwijder_datum()}}
-\item \href{#method-amend_formfield_order}{\code{formClass$amend_formfield_order()}}
-\item \href{#method-reset_volgorde_invoerveld}{\code{formClass$reset_volgorde_invoerveld()}}
-\item \href{#method-column_type_from_field_type}{\code{formClass$column_type_from_field_type()}}
-\item \href{#method-prepare_data_table}{\code{formClass$prepare_data_table()}}
-\item \href{#method-write_new_registration}{\code{formClass$write_new_registration()}}
-\item \href{#method-edit_registration}{\code{formClass$edit_registration()}}
-\item \href{#method-read_registrations}{\code{formClass$read_registrations()}}
-\item \href{#method-get_registration_by_id}{\code{formClass$get_registration_by_id()}}
-\item \href{#method-filter_period}{\code{formClass$filter_period()}}
-\item \href{#method-read_definition}{\code{formClass$read_definition()}}
-\item \href{#method-clone}{\code{formClass$clone()}}
+\item \href{#method-NA-new}{\code{formClass$new()}}
+\item \href{#method-NA-connect_to_database}{\code{formClass$connect_to_database()}}
+\item \href{#method-NA-close}{\code{formClass$close()}}
+\item \href{#method-NA-make_column}{\code{formClass$make_column()}}
+\item \href{#method-NA-read_table}{\code{formClass$read_table()}}
+\item \href{#method-NA-append_data}{\code{formClass$append_data()}}
+\item \href{#method-NA-table_columns}{\code{formClass$table_columns()}}
+\item \href{#method-NA-query}{\code{formClass$query()}}
+\item \href{#method-NA-has_value}{\code{formClass$has_value()}}
+\item \href{#method-NA-replace_value_where}{\code{formClass$replace_value_where()}}
+\item \href{#method-NA-get_by_id}{\code{formClass$get_by_id()}}
+\item \href{#method-NA-get_field_choices}{\code{formClass$get_field_choices()}}
+\item \href{#method-NA-make_choices}{\code{formClass$make_choices()}}
+\item \href{#method-NA-choices_from_json}{\code{formClass$choices_from_json()}}
+\item \href{#method-NA-rename_definition_table}{\code{formClass$rename_definition_table()}}
+\item \href{#method-NA-get_input_fields}{\code{formClass$get_input_fields()}}
+\item \href{#method-NA-get_form_fields}{\code{formClass$get_form_fields()}}
+\item \href{#method-NA-get_next_formorder_number}{\code{formClass$get_next_formorder_number()}}
+\item \href{#method-NA-add_input_field_to_form}{\code{formClass$add_input_field_to_form()}}
+\item \href{#method-NA-check_uniqueness_column_name}{\code{formClass$check_uniqueness_column_name()}}
+\item \href{#method-NA-edit_label_field}{\code{formClass$edit_label_field()}}
+\item \href{#method-NA-from_json}{\code{formClass$from_json()}}
+\item \href{#method-NA-to_json}{\code{formClass$to_json()}}
+\item \href{#method-NA-edit_options_field}{\code{formClass$edit_options_field()}}
+\item \href{#method-NA-is_color}{\code{formClass$is_color()}}
+\item \href{#method-NA-edit_options_colors}{\code{formClass$edit_options_colors()}}
+\item \href{#method-NA-amend_options_colors}{\code{formClass$amend_options_colors()}}
+\item \href{#method-NA-set_options_order}{\code{formClass$set_options_order()}}
+\item \href{#method-NA-amend_options_order}{\code{formClass$amend_options_order()}}
+\item \href{#method-NA-edit_formulier_setup}{\code{formClass$edit_formulier_setup()}}
+\item \href{#method-NA-edit_zichtbaarheid_invoerveld}{\code{formClass$edit_zichtbaarheid_invoerveld()}}
+\item \href{#method-NA-edit_verwijder_datum}{\code{formClass$edit_verwijder_datum()}}
+\item \href{#method-NA-amend_formfield_order}{\code{formClass$amend_formfield_order()}}
+\item \href{#method-NA-reset_volgorde_invoerveld}{\code{formClass$reset_volgorde_invoerveld()}}
+\item \href{#method-NA-column_type_from_field_type}{\code{formClass$column_type_from_field_type()}}
+\item \href{#method-NA-prepare_data_table}{\code{formClass$prepare_data_table()}}
+\item \href{#method-NA-write_new_registration}{\code{formClass$write_new_registration()}}
+\item \href{#method-NA-edit_registration}{\code{formClass$edit_registration()}}
+\item \href{#method-NA-read_registrations}{\code{formClass$read_registrations()}}
+\item \href{#method-NA-get_registration_by_id}{\code{formClass$get_registration_by_id()}}
+\item \href{#method-NA-filter_period}{\code{formClass$filter_period()}}
+\item \href{#method-NA-read_definition}{\code{formClass$read_definition()}}
+\item \href{#method-unknown-clone}{\code{formClass$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-NA-new"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-new}{}}}
 \subsection{Method \code{new()}}{
 Make new form object
 \subsection{Usage}{
@@ -103,8 +103,8 @@ Make new form object
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-connect_to_database"></a>}}
-\if{latex}{\out{\hypertarget{method-connect_to_database}{}}}
+\if{html}{\out{<a id="method-NA-connect_to_database"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-connect_to_database}{}}}
 \subsection{Method \code{connect_to_database()}}{
 Connect to a database
 \subsection{Usage}{
@@ -119,8 +119,8 @@ Connect to a database
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-close"></a>}}
-\if{latex}{\out{\hypertarget{method-close}{}}}
+\if{html}{\out{<a id="method-NA-close"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-close}{}}}
 \subsection{Method \code{close()}}{
 Close database connection
 \subsection{Usage}{
@@ -129,8 +129,8 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-make_column"></a>}}
-\if{latex}{\out{\hypertarget{method-make_column}{}}}
+\if{html}{\out{<a id="method-NA-make_column"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-make_column}{}}}
 \subsection{Method \code{make_column()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$make_column(table, column, type = "varchar")}\if{html}{\out{</div>}}
@@ -138,8 +138,8 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-read_table"></a>}}
-\if{latex}{\out{\hypertarget{method-read_table}{}}}
+\if{html}{\out{<a id="method-NA-read_table"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-read_table}{}}}
 \subsection{Method \code{read_table()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$read_table(table, lazy = FALSE)}\if{html}{\out{</div>}}
@@ -147,8 +147,8 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-append_data"></a>}}
-\if{latex}{\out{\hypertarget{method-append_data}{}}}
+\if{html}{\out{<a id="method-NA-append_data"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-append_data}{}}}
 \subsection{Method \code{append_data()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$append_data(table, data)}\if{html}{\out{</div>}}
@@ -156,8 +156,8 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-table_columns"></a>}}
-\if{latex}{\out{\hypertarget{method-table_columns}{}}}
+\if{html}{\out{<a id="method-NA-table_columns"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-table_columns}{}}}
 \subsection{Method \code{table_columns()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$table_columns(table)}\if{html}{\out{</div>}}
@@ -165,8 +165,8 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-query"></a>}}
-\if{latex}{\out{\hypertarget{method-query}{}}}
+\if{html}{\out{<a id="method-NA-query"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-query}{}}}
 \subsection{Method \code{query()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$query(txt, glue = TRUE, quiet = FALSE)}\if{html}{\out{</div>}}
@@ -174,8 +174,8 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-has_value"></a>}}
-\if{latex}{\out{\hypertarget{method-has_value}{}}}
+\if{html}{\out{<a id="method-NA-has_value"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-has_value}{}}}
 \subsection{Method \code{has_value()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$has_value(table, column, value)}\if{html}{\out{</div>}}
@@ -183,8 +183,8 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-replace_value_where"></a>}}
-\if{latex}{\out{\hypertarget{method-replace_value_where}{}}}
+\if{html}{\out{<a id="method-NA-replace_value_where"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-replace_value_where}{}}}
 \subsection{Method \code{replace_value_where()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$replace_value_where(
@@ -200,8 +200,8 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_by_id"></a>}}
-\if{latex}{\out{\hypertarget{method-get_by_id}{}}}
+\if{html}{\out{<a id="method-NA-get_by_id"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_by_id}{}}}
 \subsection{Method \code{get_by_id()}}{
 Get a row from the form definition by the form id.
 \subsection{Usage}{
@@ -210,8 +210,8 @@ Get a row from the form definition by the form id.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_field_choices"></a>}}
-\if{latex}{\out{\hypertarget{method-get_field_choices}{}}}
+\if{html}{\out{<a id="method-NA-get_field_choices"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_field_choices}{}}}
 \subsection{Method \code{get_field_choices()}}{
 Get (recoded) choices for a select field
 \subsection{Usage}{
@@ -220,8 +220,8 @@ Get (recoded) choices for a select field
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-make_choices"></a>}}
-\if{latex}{\out{\hypertarget{method-make_choices}{}}}
+\if{html}{\out{<a id="method-NA-make_choices"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-make_choices}{}}}
 \subsection{Method \code{make_choices()}}{
 Make choices (for selectInput) based on values and names
 \subsection{Usage}{
@@ -235,8 +235,8 @@ Make choices (for selectInput) based on values and names
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-choices_from_json"></a>}}
-\if{latex}{\out{\hypertarget{method-choices_from_json}{}}}
+\if{html}{\out{<a id="method-NA-choices_from_json"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-choices_from_json}{}}}
 \subsection{Method \code{choices_from_json()}}{
 Unpack a JSON field to make a named vector
 \subsection{Usage}{
@@ -245,8 +245,8 @@ Unpack a JSON field to make a named vector
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-rename_definition_table"></a>}}
-\if{latex}{\out{\hypertarget{method-rename_definition_table}{}}}
+\if{html}{\out{<a id="method-NA-rename_definition_table"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-rename_definition_table}{}}}
 \subsection{Method \code{rename_definition_table()}}{
 Rename database table to correct internal column names
 \subsection{Usage}{
@@ -255,8 +255,8 @@ Rename database table to correct internal column names
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_input_fields"></a>}}
-\if{latex}{\out{\hypertarget{method-get_input_fields}{}}}
+\if{html}{\out{<a id="method-NA-get_input_fields"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_input_fields}{}}}
 \subsection{Method \code{get_input_fields()}}{
 Get all non-deleted form input fields
 \subsection{Usage}{
@@ -265,8 +265,8 @@ Get all non-deleted form input fields
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_form_fields"></a>}}
-\if{latex}{\out{\hypertarget{method-get_form_fields}{}}}
+\if{html}{\out{<a id="method-NA-get_form_fields"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_form_fields}{}}}
 \subsection{Method \code{get_form_fields()}}{
 Get form fields for left or right column of the form
 \subsection{Usage}{
@@ -275,8 +275,8 @@ Get form fields for left or right column of the form
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_next_formorder_number"></a>}}
-\if{latex}{\out{\hypertarget{method-get_next_formorder_number}{}}}
+\if{html}{\out{<a id="method-NA-get_next_formorder_number"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_next_formorder_number}{}}}
 \subsection{Method \code{get_next_formorder_number()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_next_formorder_number(form_section)}\if{html}{\out{</div>}}
@@ -284,8 +284,8 @@ Get form fields for left or right column of the form
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-add_input_field_to_form"></a>}}
-\if{latex}{\out{\hypertarget{method-add_input_field_to_form}{}}}
+\if{html}{\out{<a id="method-NA-add_input_field_to_form"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-add_input_field_to_form}{}}}
 \subsection{Method \code{add_input_field_to_form()}}{
 Adds an input field to a form
 \subsection{Usage}{
@@ -305,8 +305,8 @@ Adds an input field to a form
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-check_uniqueness_column_name"></a>}}
-\if{latex}{\out{\hypertarget{method-check_uniqueness_column_name}{}}}
+\if{html}{\out{<a id="method-NA-check_uniqueness_column_name"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-check_uniqueness_column_name}{}}}
 \subsection{Method \code{check_uniqueness_column_name()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$check_uniqueness_column_name(column)}\if{html}{\out{</div>}}
@@ -314,8 +314,8 @@ Adds an input field to a form
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-edit_label_field"></a>}}
-\if{latex}{\out{\hypertarget{method-edit_label_field}{}}}
+\if{html}{\out{<a id="method-NA-edit_label_field"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_label_field}{}}}
 \subsection{Method \code{edit_label_field()}}{
 Edit the label for an input field
 \subsection{Usage}{
@@ -324,8 +324,8 @@ Edit the label for an input field
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-from_json"></a>}}
-\if{latex}{\out{\hypertarget{method-from_json}{}}}
+\if{html}{\out{<a id="method-NA-from_json"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-from_json}{}}}
 \subsection{Method \code{from_json()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$from_json(x, ...)}\if{html}{\out{</div>}}
@@ -333,8 +333,8 @@ Edit the label for an input field
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-to_json"></a>}}
-\if{latex}{\out{\hypertarget{method-to_json}{}}}
+\if{html}{\out{<a id="method-NA-to_json"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-to_json}{}}}
 \subsection{Method \code{to_json()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$to_json(x, ...)}\if{html}{\out{</div>}}
@@ -342,8 +342,8 @@ Edit the label for an input field
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-edit_options_field"></a>}}
-\if{latex}{\out{\hypertarget{method-edit_options_field}{}}}
+\if{html}{\out{<a id="method-NA-edit_options_field"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_options_field}{}}}
 \subsection{Method \code{edit_options_field()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_options_field(id_form, new_options)}\if{html}{\out{</div>}}
@@ -351,8 +351,8 @@ Edit the label for an input field
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-is_color"></a>}}
-\if{latex}{\out{\hypertarget{method-is_color}{}}}
+\if{html}{\out{<a id="method-NA-is_color"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-is_color}{}}}
 \subsection{Method \code{is_color()}}{
 Is the provided color(s) valid?
 \subsection{Usage}{
@@ -361,8 +361,8 @@ Is the provided color(s) valid?
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-edit_options_colors"></a>}}
-\if{latex}{\out{\hypertarget{method-edit_options_colors}{}}}
+\if{html}{\out{<a id="method-NA-edit_options_colors"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_options_colors}{}}}
 \subsection{Method \code{edit_options_colors()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_options_colors(id_form, new_colors)}\if{html}{\out{</div>}}
@@ -370,8 +370,8 @@ Is the provided color(s) valid?
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-amend_options_colors"></a>}}
-\if{latex}{\out{\hypertarget{method-amend_options_colors}{}}}
+\if{html}{\out{<a id="method-NA-amend_options_colors"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-amend_options_colors}{}}}
 \subsection{Method \code{amend_options_colors()}}{
 If new options added, make sure the color vector is amended
 \subsection{Usage}{
@@ -380,8 +380,8 @@ If new options added, make sure the color vector is amended
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_options_order"></a>}}
-\if{latex}{\out{\hypertarget{method-set_options_order}{}}}
+\if{html}{\out{<a id="method-NA-set_options_order"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-set_options_order}{}}}
 \subsection{Method \code{set_options_order()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$set_options_order(id_form, new_order)}\if{html}{\out{</div>}}
@@ -389,8 +389,8 @@ If new options added, make sure the color vector is amended
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-amend_options_order"></a>}}
-\if{latex}{\out{\hypertarget{method-amend_options_order}{}}}
+\if{html}{\out{<a id="method-NA-amend_options_order"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-amend_options_order}{}}}
 \subsection{Method \code{amend_options_order()}}{
 If new categories added, make sure the order vector is amended
 \subsection{Usage}{
@@ -399,8 +399,8 @@ If new categories added, make sure the order vector is amended
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-edit_formulier_setup"></a>}}
-\if{latex}{\out{\hypertarget{method-edit_formulier_setup}{}}}
+\if{html}{\out{<a id="method-NA-edit_formulier_setup"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_formulier_setup}{}}}
 \subsection{Method \code{edit_formulier_setup()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_formulier_setup(new_setup)}\if{html}{\out{</div>}}
@@ -408,8 +408,8 @@ If new categories added, make sure the order vector is amended
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-edit_zichtbaarheid_invoerveld"></a>}}
-\if{latex}{\out{\hypertarget{method-edit_zichtbaarheid_invoerveld}{}}}
+\if{html}{\out{<a id="method-NA-edit_zichtbaarheid_invoerveld"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_zichtbaarheid_invoerveld}{}}}
 \subsection{Method \code{edit_zichtbaarheid_invoerveld()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_zichtbaarheid_invoerveld(id_formfield, new_zichtbaarheid)}\if{html}{\out{</div>}}
@@ -417,8 +417,8 @@ If new categories added, make sure the order vector is amended
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-edit_verwijder_datum"></a>}}
-\if{latex}{\out{\hypertarget{method-edit_verwijder_datum}{}}}
+\if{html}{\out{<a id="method-NA-edit_verwijder_datum"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_verwijder_datum}{}}}
 \subsection{Method \code{edit_verwijder_datum()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_verwijder_datum(id_formfield, new_date)}\if{html}{\out{</div>}}
@@ -426,8 +426,8 @@ If new categories added, make sure the order vector is amended
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-amend_formfield_order"></a>}}
-\if{latex}{\out{\hypertarget{method-amend_formfield_order}{}}}
+\if{html}{\out{<a id="method-NA-amend_formfield_order"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-amend_formfield_order}{}}}
 \subsection{Method \code{amend_formfield_order()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$amend_formfield_order(formside, deleted_number)}\if{html}{\out{</div>}}
@@ -435,8 +435,8 @@ If new categories added, make sure the order vector is amended
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-reset_volgorde_invoerveld"></a>}}
-\if{latex}{\out{\hypertarget{method-reset_volgorde_invoerveld}{}}}
+\if{html}{\out{<a id="method-NA-reset_volgorde_invoerveld"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-reset_volgorde_invoerveld}{}}}
 \subsection{Method \code{reset_volgorde_invoerveld()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$reset_volgorde_invoerveld(id_formfield, new_volgorde_nummer)}\if{html}{\out{</div>}}
@@ -444,8 +444,8 @@ If new categories added, make sure the order vector is amended
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-column_type_from_field_type"></a>}}
-\if{latex}{\out{\hypertarget{method-column_type_from_field_type}{}}}
+\if{html}{\out{<a id="method-NA-column_type_from_field_type"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-column_type_from_field_type}{}}}
 \subsection{Method \code{column_type_from_field_type()}}{
 Database column type based on field input type
 \subsection{Usage}{
@@ -454,8 +454,8 @@ Database column type based on field input type
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-prepare_data_table"></a>}}
-\if{latex}{\out{\hypertarget{method-prepare_data_table}{}}}
+\if{html}{\out{<a id="method-NA-prepare_data_table"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-prepare_data_table}{}}}
 \subsection{Method \code{prepare_data_table()}}{
 Make sure the necessary columns are present in the data_table
 \subsection{Usage}{
@@ -464,8 +464,8 @@ Make sure the necessary columns are present in the data_table
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-write_new_registration"></a>}}
-\if{latex}{\out{\hypertarget{method-write_new_registration}{}}}
+\if{html}{\out{<a id="method-NA-write_new_registration"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-write_new_registration}{}}}
 \subsection{Method \code{write_new_registration()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$write_new_registration(data, user_id)}\if{html}{\out{</div>}}
@@ -473,8 +473,8 @@ Make sure the necessary columns are present in the data_table
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-edit_registration"></a>}}
-\if{latex}{\out{\hypertarget{method-edit_registration}{}}}
+\if{html}{\out{<a id="method-NA-edit_registration"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_registration}{}}}
 \subsection{Method \code{edit_registration()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_registration(old_data, new_data, user_id)}\if{html}{\out{</div>}}
@@ -482,8 +482,8 @@ Make sure the necessary columns are present in the data_table
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-read_registrations"></a>}}
-\if{latex}{\out{\hypertarget{method-read_registrations}{}}}
+\if{html}{\out{<a id="method-NA-read_registrations"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-read_registrations}{}}}
 \subsection{Method \code{read_registrations()}}{
 Read registrations, recode select values where needed.
 \subsection{Usage}{
@@ -499,8 +499,8 @@ Read registrations, recode select values where needed.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_registration_by_id"></a>}}
-\if{latex}{\out{\hypertarget{method-get_registration_by_id}{}}}
+\if{html}{\out{<a id="method-NA-get_registration_by_id"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_registration_by_id}{}}}
 \subsection{Method \code{get_registration_by_id()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_registration_by_id(id)}\if{html}{\out{</div>}}
@@ -508,8 +508,8 @@ Read registrations, recode select values where needed.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-filter_period"></a>}}
-\if{latex}{\out{\hypertarget{method-filter_period}{}}}
+\if{html}{\out{<a id="method-NA-filter_period"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-filter_period}{}}}
 \subsection{Method \code{filter_period()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$filter_period(
@@ -521,8 +521,8 @@ Read registrations, recode select values where needed.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-read_definition"></a>}}
-\if{latex}{\out{\hypertarget{method-read_definition}{}}}
+\if{html}{\out{<a id="method-NA-read_definition"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-read_definition}{}}}
 \subsection{Method \code{read_definition()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$read_definition(...)}\if{html}{\out{</div>}}
@@ -530,8 +530,8 @@ Read registrations, recode select values where needed.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-unknown-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-unknown-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

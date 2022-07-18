@@ -17,7 +17,8 @@ jsonFormSetupModule(
   order_column = reactive(NULL),
   id_column = reactive(NULL),
   label_column = reactive(NULL),
-  callback = function(data) { }
+  callback = function(data) {
+ }
 )
 }
 \description{

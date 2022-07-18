@@ -19,8 +19,10 @@ formModule(
   confirm = reactive(NULL),
   cancel = reactive(NULL),
   disabled = reactive(FALSE),
-  callback_confirm = function() { },
-  callback_cancel = function() { }
+  callback_confirm = function() {
+ },
+  callback_cancel = function() {
+ }
 )
 }
 \description{
