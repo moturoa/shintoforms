@@ -25,6 +25,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-get_field_choices}{\code{formClass$get_field_choices()}}
 \item \href{#method-NA-make_choices}{\code{formClass$make_choices()}}
 \item \href{#method-NA-choices_from_json}{\code{formClass$choices_from_json()}}
+\item \href{#method-NA-distinct_registration_field}{\code{formClass$distinct_registration_field()}}
 \item \href{#method-NA-rename_definition_table}{\code{formClass$rename_definition_table()}}
 \item \href{#method-NA-get_input_fields}{\code{formClass$get_input_fields()}}
 \item \href{#method-NA-get_form_fields}{\code{formClass$get_form_fields()}}
@@ -241,6 +242,16 @@ Make choices (for selectInput) based on values and names
 Unpack a JSON field to make a named vector
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$choices_from_json(x)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-distinct_registration_field"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-distinct_registration_field}{}}}
+\subsection{Method \code{distinct_registration_field()}}{
+Get distinct values of a column in the registrations table
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$distinct_registration_field(column_name)}\if{html}{\out{</div>}}
 }
 
 }

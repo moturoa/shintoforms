@@ -353,6 +353,16 @@ formClass <- R6::R6Class(
       out
     },
     
+    #' @description Get distinct values of a column in the registrations table
+    distinct_registration_field = function(column_name){
+      
+      self$read_table(self$data_table, lazy = TRUE) %>%
+        distinct(!!sym(column_name)) %>%
+        collect %>%
+        pull(!!sym(column_name))
+      
+    },
+    
     
     
     #'@description Rename database table to correct internal column names
