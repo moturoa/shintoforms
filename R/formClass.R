@@ -268,7 +268,6 @@ formClass <- R6::R6Class(
     # replace_value_where("table", 'verwijderd', 'true', 'naam', 'gekozennaam')
     replace_value_where = function(table, col_replace, val_replace, col_compare, val_compare,
                                    query_only = FALSE, quiet = FALSE){
-      
       if(!is.null(self$schema)){
         query <- glue("update {self$schema}.{table} set {col_replace} = ?val_replace where ",
                       "{col_compare} = ?val_compare") %>% as.character()  
@@ -799,27 +798,38 @@ formClass <- R6::R6Class(
     
     
     edit_registration = function(old_data, new_data, user_id){
-      
       # id of the registration
       id <- old_data[[self$data_columns$id]]
       
       for(col in names(new_data)){
-        
         new_value <- new_data[[col]]
         old_value <- old_data[[col]]
         
-        if(!is.null(old_value) && new_value == old_value){
-          # do nothing
-        } else {
-          
-          self$replace_value_where(
-            self$data_table, 
-            col_compare = self$data_columns$id, 
-            val_compare = id,
-            col_replace = col, 
-            val_replace = new_value)
-          
+        # When a field is not filled in, even when NULL is given as input, the system retreives it as NA.
+        # So this extra check is necessary; comparison with NULL is fine. TODO: Consult with Remko
+        if(is.na(old_value)){
+          old_value <- NULL
         }
+        
+        if(is.null(new_value) && is.null(old_value)){
+          
+        } else {
+          # Ask Remko; why this !is.null statement?
+          if(!is.null(old_value) && new_value == old_value){
+            # do nothing
+          } else {
+            
+            self$replace_value_where(
+              self$data_table, 
+              col_compare = self$data_columns$id, 
+              val_compare = id,
+              col_replace = col, 
+              val_replace = new_value)
+            
+          }
+        }
+        
+        
         
       }
       
