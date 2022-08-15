@@ -167,7 +167,7 @@ formModule <- function(input, output, session, .reg = NULL,
   
   edit_left <- callModule(formSectionModule, "form_left", cfg = cfg_left, .reg = .reg)
   edit_right <- callModule(formSectionModule, "form_right", cfg = cfg_right, .reg = .reg)
-  edit_right <- callModule(formSectionModule, "form_bottom", cfg = cfg_bottom, .reg = .reg)
+  edit_bottom <- callModule(formSectionModule, "form_bottom", cfg = cfg_bottom, .reg = .reg)
   
   
   
@@ -192,7 +192,6 @@ formModule <- function(input, output, session, .reg = NULL,
     if(length(withmod)){
       
       values <- lapply(seq_along(withmod), function(i){
-        
         j <- withmod[i]
         
         lis_call <- c(list(
@@ -218,7 +217,6 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   edits <- reactive({
-    
     ext <- edits_extra()
     out <- edits_configured()
     
@@ -259,7 +257,6 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   observeEvent(confirm_new_reg(), {
-    
     if(write_method() == "new"){
       resp <- .reg$write_new_registration(edits(), current_user)
     } else {

@@ -725,7 +725,6 @@ formClass <- R6::R6Class(
     
     #' @description Make sure the necessary columns are present in the data_table
     prepare_data_table = function(){
-      
       tab <- self$get_input_fields()
       
       cols_output <- self$table_columns(self$data_table)
@@ -805,7 +804,7 @@ formClass <- R6::R6Class(
         new_value <- new_data[[col]]
         old_value <- old_data[[col]]
         
-        # When a field is not filled in, even when NULL is given as input, the system retreives it as NA.
+        # When a field is not filled in, even when NULL is given as input, the system sometimes retreives it as NA,
         # So this extra check is necessary; comparison with NULL is fine. TODO: Consult with Remko
         if(is.na(old_value)){
           old_value <- NULL
@@ -894,6 +893,20 @@ formClass <- R6::R6Class(
     read_definition = function(...){
       
       self$read_table(self$def_table, ...)
+      
+    },
+    
+    get_occurences = function(table, column, record){
+      
+      if(is.null(self$schema)){
+        qu <- glue::glue("SELECT * FROM {table} WHERE {column} = '{record}'")
+      } else {
+        qu <- glue::glue("SELECT * FROM {self$schema}.{table} WHERE {column} = '{record}'")  
+      }
+      
+      res <- dbGetQuery(self$con, qu)
+      
+      return(res)
       
     }
     
