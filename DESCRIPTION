@@ -1,7 +1,7 @@
 Package: shintoforms
 Type: Package
 Title: Configurable Shinto Forms
-Version: 0.2-2
+Version: 0.3
 Author: Wesley Brants, Remko Duursma
 Maintainer: Remko Duursma <remko@shintolabs.nl>
 Description: Forms for shinto shiny applications
@@ -9,5 +9,5 @@ Depends: shiny, softui, dplyr
 License: CC0
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
