@@ -918,6 +918,20 @@ formClass <- R6::R6Class(
       
       return(res)
       
+    },
+    
+    get_registration_by_json = function(table, column, record){
+      if(is.null(self$schema)){
+        qu <- glue::glue("SELECT * FROM {table} WHERE {column}::jsonb ? '{record}'")
+      } else {
+        qu <- glue::glue("SELECT * FROM {self$schema}.{table} WHERE {column}::jsonb ? '{record}'")
+      }
+      
+      res <- dbGetQuery(self$con, qu)
+      
+      return(res)
+      
+      
     }
     
   )
