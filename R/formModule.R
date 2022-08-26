@@ -7,14 +7,19 @@ formUI <- function(id, buttons = TRUE){
   ns <- NS(id)
   
   ui <- softui::fluid_page(
-
+    
     softui::fluid_row(id = ns("form_container"),
-      column(6,
-        uiOutput(ns("ui_input_left"))
-      ),
-      column(6,
-        uiOutput(ns("ui_input_right"))
-      )
+                      column(6,
+                             uiOutput(ns("ui_input_left"))
+                      ),
+                      column(6,
+                             uiOutput(ns("ui_input_right"))
+                      )
+    ),
+    softui::fluid_row(id = ns("form_container_btm"),
+                      column(12,
+                             uiOutput(ns("ui_input_bottom"))
+                      )
     ),
     
     # tags$div(style = "display: none;",
@@ -46,153 +51,175 @@ formUI <- function(id, buttons = TRUE){
   )
   
   tagList(ui, shintoforms_dependencies())
-   
+  
 }
 
 #' @rdname registratie
 #' @export
 formModule <- function(input, output, session, .reg = NULL, 
-                                    ping_update = reactive(NULL),
-                                    current_user, 
-                                    data = reactive(NULL),
-                                    write_method = reactive("new"),
+                       ping_update = reactive(NULL),
+                       current_user, 
+                       data = reactive(NULL),
+                       write_method = reactive("new"),
                        
-                                    confirm = reactive(NULL),
-                                    cancel = reactive(NULL),
+                       confirm = reactive(NULL),
+                       cancel = reactive(NULL),
                        
-                                    disabled = reactive(FALSE),
+                       disabled = reactive(FALSE),
                        
-                                    callback_confirm = function(){},
-                                    callback_cancel = function(){}) {
+                       callback_confirm = function(){},
+                       callback_cancel = function(){}) {
   
   ns <- session$ns
-
+  
   nieuwe_registratie_ping <- reactiveVal()
-
+  
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet.
   cfg_left <- reactive({
-
+    
     ping_update()
     .reg$get_form_fields(1)
   })
-
+  
   cfg_right <- reactive({
     ping_update()
     .reg$get_form_fields(2)
   })
-
+  
+  cfg_bottom <- reactive({
+    ping_update()
+    .reg$get_form_fields(3)
+  })
+  
   # prepare inject object: module functions must get an ID and HTML
   inject_prep <- reactive({
-
+    
     inj <- .reg$inject
     if(is.null(inj))return(NULL)
-
+    
     inj <- lapply(inj, function(x){
-
+      
       if(is.null(x$html) & !is.null(x$ui_module)){
         x$id <- uuid::UUIDgenerate()
         x$html <- x$ui_module(ns(x$id), data = data(), columns = x$columns)
       }
       x
     })
-
+    
     inj
-
+    
   })
-
+  
   inject_left <- reactive({
-
+    
     obj <- inject_prep()
     if(is.null(obj))return(NULL)
     obj[sapply(obj, "[[", "section") == 1]
-
+    
   })
-
+  
   inject_right <- reactive({
-
+    
     obj <- inject_prep()
     if(is.null(obj))return(NULL)
     obj[sapply(obj, "[[", "section") == 2]
-
+    
   })
-
+  
+  inject_bottom <- reactive({
+    
+    obj <- inject_prep()
+    if(is.null(obj))return(NULL)
+    obj[sapply(obj, "[[", "section") == 3]
+    
+  })
+  
   ui_ping <- reactiveVal()
   output$ui_input_left <- renderUI({
-
+    
     ui_ping(runif(1))
     formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg,
                         data = data(), disabled = disabled(),
                         inject = inject_left())
-
+    
   })
-
+  
   output$ui_input_right <- renderUI({
-
+    
     ui_ping(runif(1))
     formSectionModuleUI(session$ns("form_right"), cfg = cfg_right(), .reg = .reg,
                         data = data(), disabled = disabled(),
                         inject = inject_right())
-
+    
   })
-
-
-
+  
+  
+  output$ui_input_bottom <- renderUI({
+    
+    ui_ping(runif(1))
+    formSectionModuleUI(session$ns("form_bottom"), cfg = cfg_bottom(), .reg = .reg,
+                        data = data(), disabled = disabled(),
+                        inject = inject_bottom())
+    
+  })
+  
+  
+  
   edit_left <- callModule(formSectionModule, "form_left", cfg = cfg_left, .reg = .reg)
   edit_right <- callModule(formSectionModule, "form_right", cfg = cfg_right, .reg = .reg)
-
-
-
+  edit_bottom <- callModule(formSectionModule, "form_bottom", cfg = cfg_bottom, .reg = .reg)
+  
+  
+  
   edits_configured <- reactive({
-
+    
     req(edit_left())
-
+    
     out <- c(lapply(edit_left(), function(x)x()),
-      lapply(edit_right(), function(x)x()))
-
+             lapply(edit_right(), function(x)x()))
+    
     out
-
+    
   })
-
+  
   modules_extra <- reactiveVal()
-
+  
   observe({
-
+    
     extra <- inject_prep()
     withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null))
-
+    
     if(length(withmod)){
-
+      
       values <- lapply(seq_along(withmod), function(i){
-
         j <- withmod[i]
-
+        
         lis_call <- c(list(
           module = extra[[j]]$server_module,
           id = extra[[j]]$id,
           columns = extra[[j]]$columns,
           data = data
         ), extra[[j]]$module_server_pars)
-
+        
         do.call(callModule, lis_call)
       })
-
+      
       modules_extra(values)
     }
-
-
+    
+    
   })
-
+  
   edits_extra <- reactive({
     req(length(modules_extra()))
     lapply(modules_extra(), function(x)x())
   })
-
-
+  
+  
   edits <- reactive({
-
     ext <- edits_extra()
     out <- edits_configured()
-
+    
     if(length(ext)){
       for(i in seq_along(ext)){
         out[names(ext[[i]])] <- ext[[i]]
@@ -200,63 +227,62 @@ formModule <- function(input, output, session, .reg = NULL,
     }
     out
   })
-
+  
   observeEvent(input$btn_register_new_signal, {
-
+    
     showModal(
       softui::modal(
         title = "Opslaan",
         id_confirm = "btn_confirm_new_registration",
-
+        
         tags$p("Je gaat deze registratie opslaan. Weet je het zeker?"),
         tags$p("Gebruiker: ", current_user),
         tags$p(format(Sys.time(), "%m/%d/%Y %H:%M"))
       )
     )
-
+    
   })
-
-
+  
+  
   out_ping <- reactiveVal()
   observeEvent(input$btn_cancel, {
     out_ping(runif(1))
     callback_cancel()
   })
-
-
+  
+  
   confirm_new_reg <- reactiveVal()
   observeEvent(confirm(), confirm_new_reg(runif(1)))
   observeEvent(input$btn_confirm_new_registration, confirm_new_reg(runif(1)))
-
-
+  
+  
   observeEvent(confirm_new_reg(), {
-
     if(write_method() == "new"){
       resp <- .reg$write_new_registration(edits(), current_user)
     } else {
       resp <- .reg$edit_registration(old_data = data(), new_data = edits(), user_id = current_user)
     }
-
-
+    
+    
     if(resp){
       toastr_success("Registratie opgeslagen")
     } else {
       toastr_error("Er is een fout opgetreden")
     }
-
+    
     out_ping(runif(1))
-
+    
     callback_confirm()
   })
-
-
-
-return(out_ping)
+  
+  
+  
+  return(out_ping)
 }
 
 
-  
-  
+
+
 
 
 #---- Testing
