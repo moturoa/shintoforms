@@ -2,7 +2,7 @@
 #' Nieuwe registratie Shiny module
 #' @rdname registratie
 #' @export
-formUI <- function(id, buttons = TRUE){
+formUI <- function(id, buttons = TRUE, deletable = FALSE){
   
   ns <- NS(id)
   
@@ -42,6 +42,24 @@ formUI <- function(id, buttons = TRUE){
                                                      "Opslaan", 
                                                      icon = bsicon("cloud-arrow-up"), 
                                                      status = "success")
+                        )
+      )
+      
+      
+    },
+    
+    
+    if(deletable){
+      
+      softui::fluid_row(class = "justify-content-center",
+                        
+                        tags$hr(),
+                        
+                        column(3,
+                               softui::action_button(ns("btn_delete_registratie"), 
+                                                     "Verwijderen", 
+                                                     icon = bsicon("trash"), 
+                                                     status = "danger")
                         )
       )
       
@@ -275,6 +293,35 @@ formModule <- function(input, output, session, .reg = NULL,
     callback_confirm()
   })
   
+  
+  
+  observeEvent(input$btn_delete_registratie, {
+    showModal(
+      softui::modal(
+        title = "Weet u zeker dat u dit item wilt verwijderen?",
+        id_confirm = "btn_confirm_delete_registration", confirm_txt = "Ja, verwijderen", confirm_icon = softui::bsicon("trash"),
+        close_txt = "Annuleren", close_icon = softui::bsicon("x-lg"),
+        
+        tags$p(glue("U staat op het punt om registratie {data()$registration_name} (id: {data()$registration_id}) te verwijderen. 
+        Als u dit zeker weet kunt u dit hier bevestigen, anders kunt u de keuze annuleren.")),
+        tags$p("Gebruiker: ", current_user),
+        tags$p(format(Sys.time(), "%m/%d/%Y %H:%M"))
+      )
+    )
+  })
+  
+  confirm_del_reg <- reactiveVal()
+  observeEvent(input$btn_confirm_delete_registration, confirm_del_reg(runif(1)))
+  
+  observeEvent(confirm_del_reg(), {
+    #browser()
+    
+    # functie om iets te verwijderen
+    
+    out_ping(runif(1))
+    
+    callback_confirm()
+  })
   
   
   return(out_ping)
