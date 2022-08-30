@@ -143,7 +143,9 @@ formAdminModule <- function(input, output, session, .reg = NULL){
              "Opties" = options, 
              "Volgorde opties" = order_options, 
              "Kleuren" = colors, 
-             "Verwijderbaar" = removable) %>%
+             "Verwijderbaar" = removable,
+             "Filter" = make_filter,
+             "Tooltip" = tooltip) %>%
       softui::datatafel(selection = "single", dom = "tp", 
                         pageLength = 30, scrollX = TRUE, 
                         extensions = list())
@@ -176,7 +178,11 @@ formAdminModule <- function(input, output, session, .reg = NULL){
                      choices = configured_field_types),
         radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
                      choices = c("Links" = 1,
-                                 "Rechts" = 2))
+                                 "Rechts" = 2)),
+        radioButtons(session$ns("rad_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
+                     choices = c("Ja" = TRUE,
+                                 "Nee" = FALSE)),
+        textInput(session$ns("txt_tooltip"), "Tooltip")
       )
     )
   })
@@ -186,7 +192,9 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     if(stringr::str_trim(input$txt_column_name, side = "both") != ""){
       resp <- .reg$add_input_field_to_form(input$txt_column_name, 
                                    input$rad_type_formfield, 
-                                   as.integer(input$rad_side_formfield))
+                                   as.integer(input$rad_side_formfield),
+                                   input$rad_make_filter,
+                                   input$txt_tooltip)
       
       if(resp < 0){
         toastr_error("Deze kolom naam bestaat al, kies een andere naam.")

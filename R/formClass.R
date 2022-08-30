@@ -30,7 +30,9 @@ formClass <- R6::R6Class(
                             options = "opties",
                             order_options = "volgorde_opties",
                             colors = "kleuren",
-                            removable = "kan_worden_verwijderd"
+                            removable = "kan_worden_verwijderd",
+                            make_filter = "make_filter",
+                            tooltip = "tooltip"
                           ),
                           data_table = "registrations",
                           data_columns = list(
@@ -38,7 +40,8 @@ formClass <- R6::R6Class(
                             name = "naam_registratie",
                             time_created = "invoerdatum",
                             time_modified = "wijzigdatum",
-                            user = "user_id"
+                            user = "user_id",
+                            status = "status"
                           ),
                           inject = NULL,
                           pool = TRUE,
@@ -429,7 +432,7 @@ formClass <- R6::R6Class(
     #' @param label_field Label for the field
     #' @param type_field Type of field (options : TODO)
     #' @param form_section Left or right
-    add_input_field_to_form = function(label_field, type_field, form_section){
+    add_input_field_to_form = function(label_field, type_field, form_section, filterable, tooltip){
       
 
       assert_input_field_type(type_field)
@@ -462,7 +465,9 @@ formClass <- R6::R6Class(
           options = opties,
           order_options = "[]",
           colors = '[]',
-          removable = TRUE
+          removable = TRUE,
+          make_filter = filterable,
+          tooltip = tooltip
         )
         
         data <- dplyr::rename_with(data, 
@@ -843,6 +848,17 @@ formClass <- R6::R6Class(
       }
       
       return(TRUE)
+    },
+    
+    delete_registration = function(registration_id){
+      if(!is.null(self$schema)){
+        qu <- glue::glue("DELETE FROM {self$schema}.{self$data_table} WHERE {self$data_columns$id} = '{registration_id}'")
+      } else {
+        qu <- glue::glue("DELETE FROM {self$data_table} WHERE {self$data_columns$id} = '{registration_id}'")
+      }
+      
+      dbExecute(self$con, qu)
+      
     },
     
 

@@ -314,9 +314,7 @@ formModule <- function(input, output, session, .reg = NULL,
   observeEvent(input$btn_confirm_delete_registration, confirm_del_reg(runif(1)))
   
   observeEvent(confirm_del_reg(), {
-    #browser()
-    
-    # functie om iets te verwijderen
+    .reg$delete_registration(data()$registration_id)
     
     out_ping(runif(1))
     
