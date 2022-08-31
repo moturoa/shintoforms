@@ -3,13 +3,14 @@
 #' @export
 formClass <- R6::R6Class(
   lock_objects = FALSE,
-    
+  
   public = list(
     
     #' @description Make new form object
     #' @param config_file Path to DB config
     #' @param wat Entry in config for DB connection
     #' @param schema DB schema
+    #' @param filterable Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.
     #' @param table Table in DB (in schema) that holds form config
     #' @param pool If TRUE, connects with dbPool
     #' @param sqlite If path to an SQLite file, uses SQLite.
@@ -17,6 +18,7 @@ formClass <- R6::R6Class(
     initialize = function(config_file = "conf/config.yml", 
                           what,
                           schema = NULL,
+                          filterable = FALSE,
                           def_table = "formulier_velden",
                           def_columns = list(
                             id_form = "id_formulierveld",
@@ -43,6 +45,16 @@ formClass <- R6::R6Class(
                             user = "user_id",
                             status = "status"
                           ),
+                          event_data = NULL,
+                          event_columns = list(
+                            case = "case_id",
+                            activity = "activity_id",
+                            activity_instance = "activity_id_instance",
+                            eventtime = "eventtime",
+                            lifecycle = "lifecycle_id",
+                            resource = "resource"
+                          ),
+                          event_extra = NULL,
                           inject = NULL,
                           pool = TRUE,
                           sqlite = NULL,
@@ -53,9 +65,11 @@ formClass <- R6::R6Class(
       
       self$def_table <- def_table
       self$def <- def_columns
-
+      
       self$data_table <- data_table
       self$data_columns <- data_columns
+      
+      self$filterable <- filterable
       
       # Check
       defcols <- self$table_columns(self$def_table)
@@ -69,6 +83,18 @@ formClass <- R6::R6Class(
       
       if(any(!di2)){
         stop(paste("Columns in data_columns not found:", paste(datacols[!di2], collapse=",")))
+      }
+      
+      self$event_data <- event_data
+      self$event_columns <- event_columns
+      
+      if(!is.null(self$event_data)){
+        eventcols <- self$table_columns(self$event_data)
+        di3 <- unlist(self$event_columns) %in% eventcols
+        
+        if(any(!di3)){
+          stop(paste("Columns in event_columns not found:", paste(eventcols[!di3], collapse=",")))
+        }
       }
       
       # Extra custom fields (modules, can be anything even static HTML)
@@ -369,7 +395,6 @@ formClass <- R6::R6Class(
     
     #'@description Rename database table to correct internal column names
     rename_definition_table = function(data){
-      
       # Rename to standard colnames
       key <- data.frame(
         old = unname(unlist(self$def)),
@@ -381,8 +406,8 @@ formClass <- R6::R6Class(
       }
       
       dplyr::rename_with(data, .fn = function(x){
-                                  key$new[match(x, key$old)]
-                                })
+        key$new[match(x, key$old)]
+      })
       
     },
     
@@ -432,9 +457,9 @@ formClass <- R6::R6Class(
     #' @param label_field Label for the field
     #' @param type_field Type of field (options : TODO)
     #' @param form_section Left or right
-    add_input_field_to_form = function(label_field, type_field, form_section, filterable, tooltip){
+    add_input_field_to_form = function(label_field, type_field, form_section, filterable = NULL, tooltip = NULL){
       
-
+      
       assert_input_field_type(type_field)
       
       id <- uuid::UUIDgenerate()
@@ -465,10 +490,17 @@ formClass <- R6::R6Class(
           options = opties,
           order_options = "[]",
           colors = '[]',
-          removable = TRUE,
-          make_filter = filterable,
-          tooltip = tooltip
+          removable = TRUE
         )
+        
+        if(self$filterable){
+          data <- data %>%
+            mutate(make_filter = filterable,
+                   tooltip = tooltip)
+          
+        }
+        
+        
         
         data <- dplyr::rename_with(data, 
                                    .fn = function(x){
@@ -518,6 +550,16 @@ formClass <- R6::R6Class(
       self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
                                col_replace = self$def$label_field, 
                                val_replace = new_label)
+    },
+    
+    edit_filterable_column = function(id_form, new_filter_boolean, new_tooltip){
+      self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
+                               col_replace = self$def$make_filter, 
+                               val_replace = new_filter_boolean)
+      
+      self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
+                               col_replace = self$def$tooltip, 
+                               val_replace = new_tooltip)
     },
     
     from_json = function(x, ...){
@@ -775,24 +817,24 @@ formClass <- R6::R6Class(
         user = user_id
       )
       
-
+      
       # TODO generic renaming method (to/from, data/def tables)
       data_pre <- dplyr::rename_with(data_pre, 
-                                 .fn = function(x){
-                                   unname(unlist(self$data_columns[x]))
-                                 })  
-
+                                     .fn = function(x){
+                                       unname(unlist(self$data_columns[x]))
+                                     })  
+      
       data[sapply(data,length) == 0] <- NULL
       
-            
+      
       data <- as.data.frame(
         lapply(data, function(x){
-
+          
           # jsonify arrays
           if(length(x) > 1){
             x <- as.character(self$to_json(x))
           }
-
+          
           # needed for empty json strings; not sure why
           if(class(x) == "json"){
             x <- as.character(x)
@@ -804,8 +846,14 @@ formClass <- R6::R6Class(
       
       data_all <- cbind(data_pre, data)
       
+      browser()
+      if(!is.null(event_data)){
+        borwser()
+        self$add_event()
+      }
+      
       res <- self$append_data(self$data_table, data_all)
-     
+      
       # TRUE if success (append_data has a try()) 
       return(!inherits(res, "try-error"))
     },
@@ -843,11 +891,37 @@ formClass <- R6::R6Class(
           }
         }
         
-        
+        # If events not null en status veranderd, doe add_event
         
       }
       
       return(TRUE)
+    },
+    
+    add_event = function(registration_id, activity, resource){
+      browser()
+      new_event <- data.frame(
+        case = registration_id,
+        activity = activity,
+        activity_instance = uuid::UUIDgenerate(),
+        eventtime = format(Sys.time()),
+        lifecycle = "Status actief",
+        resource = resource
+      )
+      
+      
+      
+      # TODO generic renaming method (to/from, data/def tables)
+      new_event <- dplyr::rename_with(new_event, 
+                                     .fn = function(x){
+                                       unname(unlist(self$event_columns[x]))
+                                     })  
+      
+      res <- self$append_data(self$event_data, new_event)
+      
+      # TRUE if success (append_data has a try()) 
+      return(!inherits(res, "try-error"))
+      
     },
     
     delete_registration = function(registration_id){
@@ -861,7 +935,7 @@ formClass <- R6::R6Class(
       
     },
     
-
+    
     
     #' @description Read registrations, recode select values where needed.
     #' @param recode If TRUE (default), replaces codes with labels (for select fields)

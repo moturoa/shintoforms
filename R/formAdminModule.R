@@ -7,113 +7,113 @@
 #' @export
 #' @rdname formAdminModule
 formAdminUI <- function(id, 
-                    title = "Formulieropstelling",
-                    title_deleted = "Verwijderde invoervelden",
-                    header_ui = NULL){
+                        title = "Formulieropstelling",
+                        title_deleted = "Verwijderde invoervelden",
+                        header_ui = NULL){
   
   ns <- NS(id)
   
-   softui::tab_box(
-     
-     softui::tab_panel(
-       title = title, 
-       icon = bsicon("pencil-square"),
-       
-       header_ui,
-       
-       softui::fluid_row(
-         column(12,
-                softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
-                                      status = "light", icon = bsicon("plus")),
-                
-                tags$span(id = ns("span_edit_formorder"),
-                          jsonFormSetupUI(ns("edit_formorder"), 
-                                          icon = bsicon("columns"),
-                                          label = "Layout",
-                                          status = "secondary")
-                ),
-                
-                shinyjs::hidden(
-                  tags$span(id = ns("span_edit_formfield"),
-                            softui::action_button(ns("btn_edit_formfield"), "Label", 
-                                                  status = "secondary",
-                                                  icon = bsicon("pencil-square"))
+  softui::tab_box(
+    
+    softui::tab_panel(
+      title = title, 
+      icon = bsicon("pencil-square"),
+      
+      header_ui,
+      
+      softui::fluid_row(
+        column(12,
+               softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
+                                     status = "light", icon = bsicon("plus")),
+               
+               tags$span(id = ns("span_edit_formorder"),
+                         jsonFormSetupUI(ns("edit_formorder"), 
+                                         icon = bsicon("columns"),
+                                         label = "Layout",
+                                         status = "secondary")
+               ),
+               
+               shinyjs::hidden(
+                 tags$span(id = ns("span_edit_formfield"),
+                           softui::action_button(ns("btn_edit_formfield"), "Wijzig veld", 
+                                                 status = "secondary",
+                                                 icon = bsicon("pencil-square"))
+                 )
+               ),
+               
+               
+               shinyjs::hidden(
+                 tags$span(id = ns("span_edit_options"),
+                           
+                           softui::action_button(ns("btn_edit_options"),
+                                                 label = "Keuzelijst", 
+                                                 icon = bsicon("pencil-square"), 
+                                                 status = "secondary")
+                           
+                 )
+               ),
+               shinyjs::hidden(
+                 tags$span(id = ns("span_edit_order_options"),
+                           
+                           softui::action_button(ns("btn_edit_order_options"),
+                                                 label = "Volgorde keuzelijst", 
+                                                 icon = bsicon("pencil-square"), 
+                                                 status = "secondary")
+                           
+                 )
+               ),
+               shinyjs::hidden(
+                 tags$span(id = ns("span_edit_colors"),
+                           
+                           softui::action_button(ns("btn_edit_colors"),
+                                                 label = "Kleuren", 
+                                                 icon = bsicon("palette-fill"), 
+                                                 status = "primary")
+                 )
+               ),
+               
+               shinyjs::hidden(
+                 tags$span(id = ns("span_delete_formfield"),
+                           softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
+                                                 status = "danger",
+                                                 icon = bsicon("trash3"))
+                 )
+               )
+               
+        )
+      ),
+      softui::fluid_row(
+        column(12,
+               DT::dataTableOutput(ns("dt_form_invoervelden"))
+        )
+      )
+      
+    ),
+    softui::tab_panel(
+      title = title_deleted, icon = bsicon("recycle"),
+      shinyjs::hidden(
+        tags$span(id = ns("span_restore_formfield"),
+                  softui::fluid_row(
+                    column(12,
+                           softui::action_button(ns("btn_restore_formfield"), 
+                                                 "Invoerveld terugzetten", 
+                                                 status = "secondary", 
+                                                 icon = bsicon("arrow-return-left"))
+                    )
                   )
-                ),
-                
-                
-                shinyjs::hidden(
-                  tags$span(id = ns("span_edit_options"),
-                        
-                            softui::action_button(ns("btn_edit_options"),
-                                                  label = "Keuzelijst", 
-                                                  icon = bsicon("pencil-square"), 
-                                                  status = "secondary")
-                            
-                  )
-                ),
-                shinyjs::hidden(
-                  tags$span(id = ns("span_edit_order_options"),
-                            
-                            softui::action_button(ns("btn_edit_order_options"),
-                                                  label = "Volgorde keuzelijst", 
-                                                  icon = bsicon("pencil-square"), 
-                                                  status = "secondary")
-                            
-                  )
-                ),
-                shinyjs::hidden(
-                  tags$span(id = ns("span_edit_colors"),
-                            
-                            softui::action_button(ns("btn_edit_colors"),
-                                                  label = "Kleuren", 
-                                                  icon = bsicon("palette-fill"), 
-                                                  status = "primary")
-                  )
-                ),
+        )
+      ),
+      softui::fluid_row(
+        column(12,
+               DT::dataTableOutput(ns("dt_deleted_invoervelden"))
+        )
+      )
+      
+      
+      
+    )
+  )
   
-                shinyjs::hidden(
-                  tags$span(id = ns("span_delete_formfield"),
-                            softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
-                                                  status = "danger",
-                                                  icon = bsicon("trash3"))
-                  )
-                )
-                
-         )
-       ),
-       softui::fluid_row(
-         column(12,
-                DT::dataTableOutput(ns("dt_form_invoervelden"))
-         )
-       )
-       
-     ),
-     softui::tab_panel(
-       title = title_deleted, icon = bsicon("recycle"),
-       shinyjs::hidden(
-         tags$span(id = ns("span_restore_formfield"),
-                   softui::fluid_row(
-                     column(12,
-                            softui::action_button(ns("btn_restore_formfield"), 
-                                                  "Invoerveld terugzetten", 
-                                                  status = "secondary", 
-                                                  icon = bsicon("arrow-return-left"))
-                     )
-                   )
-         )
-       ),
-       softui::fluid_row(
-         column(12,
-                DT::dataTableOutput(ns("dt_deleted_invoervelden"))
-         )
-       )
-       
-       
-       
-     )
-   )
-
 }
 
 
@@ -132,20 +132,34 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   })
   
   output$dt_form_invoervelden <- DT::renderDataTable({
-    
-    form_invul_data() %>%
-      select(#"ID" = id_formulierveld, 
-             "Kolomnaam" = column_field, 
-             "Label" = label_field, 
-             "Type" = type_field, 
-             "Kolom" = form_section,
-             "Volgorde" = order_field,
-             "Opties" = options, 
-             "Volgorde opties" = order_options, 
-             "Kleuren" = colors, 
-             "Verwijderbaar" = removable,
-             "Filter" = make_filter,
-             "Tooltip" = tooltip) %>%
+    if(.reg$filterable){
+      admin_table <- form_invul_data() %>%
+        select(#"ID" = id_formulierveld, 
+          "Kolomnaam" = column_field, 
+          "Label" = label_field, 
+          "Type" = type_field, 
+          "Kolom" = form_section,
+          "Volgorde" = order_field,
+          "Opties" = options, 
+          "Volgorde opties" = order_options, 
+          "Kleuren" = colors, 
+          "Verwijderbaar" = removable,
+          "Filter" = make_filter,
+          "Tooltip" = tooltip)
+    } else {
+      admin_table <- form_invul_data() %>%
+        select(#"ID" = id_formulierveld, 
+          "Kolomnaam" = column_field, 
+          "Label" = label_field, 
+          "Type" = type_field, 
+          "Kolom" = form_section,
+          "Volgorde" = order_field,
+          "Opties" = options, 
+          "Volgorde opties" = order_options, 
+          "Kleuren" = colors, 
+          "Verwijderbaar" = removable)
+    }
+    admin_table %>%
       softui::datatafel(selection = "single", dom = "tp", 
                         pageLength = 30, scrollX = TRUE, 
                         extensions = list())
@@ -179,22 +193,35 @@ formAdminModule <- function(input, output, session, .reg = NULL){
         radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
                      choices = c("Links" = 1,
                                  "Rechts" = 2)),
-        radioButtons(session$ns("rad_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
-                     choices = c("Ja" = TRUE,
-                                 "Nee" = FALSE)),
-        textInput(session$ns("txt_tooltip"), "Tooltip")
+        if(.reg$filterable){
+          radioButtons(session$ns("rad_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
+                       choices = c("Ja" = TRUE,
+                                   "Nee" = FALSE))
+        },
+        if(.reg$filterable){
+          textInput(session$ns("txt_tooltip"), "Tooltip")
+        }
+        ,
+        
       )
     )
   })
   
   observeEvent(input$btn_confirm_add_formfield, {
     
+    if(.reg$filterable){
+      make_filter <- input$rad_make_filter
+      tooltip <- input$txt_tooltip
+    } else {
+      make_filter <- NULL
+      tooltip <- NULL
+    }
+    
     if(stringr::str_trim(input$txt_column_name, side = "both") != ""){
       resp <- .reg$add_input_field_to_form(input$txt_column_name, 
-                                   input$rad_type_formfield, 
-                                   as.integer(input$rad_side_formfield),
-                                   input$rad_make_filter,
-                                   input$txt_tooltip)
+                                           input$rad_type_formfield, 
+                                           as.integer(input$rad_side_formfield),
+                                           make_filter, tooltip)
       
       if(resp < 0){
         toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
@@ -230,7 +257,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     
     # These fields don't have any editable options
     show_edit_options <- isTRUE(!type %in% c("freetext","numeric","date"))
-
+    
     shinyjs::toggleElement("span_edit_formfield", condition = !is.null(sel))
     shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options))
     shinyjs::toggleElement("span_edit_colors", condition = (!is.null(sel) && show_edit_options))
@@ -251,6 +278,15 @@ formAdminModule <- function(input, output, session, .reg = NULL){
         
         textInput(session$ns("txt_edit_formfield_label"), "Label", 
                   value = selected_row()$label_field),
+        if(.reg$filterable){
+          radioButtons(session$ns("rad_edit_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
+                       choices = c("Ja" = TRUE,
+                                   "Nee" = FALSE),
+                       selected = selected_row()$make_filter)
+        },
+        if(.reg$filterable){
+          textInput(session$ns("txt_edit_tooltip"), "Tooltip", value = selected_row()$tooltip)
+        },
         
         id_confirm = "btn_confirm_edit_label"
       )
@@ -263,6 +299,9 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     
     if(stringr::str_trim(input$txt_edit_formfield_label, side = "both") != ""){
       .reg$edit_label_field(selected_id(), input$txt_edit_formfield_label)
+      if(.reg$filterable){
+        .reg$edit_filterable_column(selected_id(), input$rad_edit_make_filter, input$txt_edit_tooltip)
+      }
       db_ping(runif(1))
       removeModal()
     } else {
@@ -295,16 +334,16 @@ formAdminModule <- function(input, output, session, .reg = NULL){
                                        widths = c(2,10),
                                        value = reactive(selected_row()$options)
                                      ))
-    
+  
   observeEvent(edited_options(), {
-
+    
     .reg$edit_options_field(selected_id(), edited_options())
     .reg$amend_options_order(selected_id(), edited_options())
     .reg$amend_options_colors(selected_id(), edited_options())
     db_ping(runif(1))
-
+    
   })
-
+  
   current_colors <- reactive({
     from_json(selected_row()$colors)
   })
@@ -319,7 +358,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
                                labels = reactive(from_json(selected_row()$options)),
                                show_order = reactive(from_json(selected_row()$order_options))
                              ))
-    
+  
   
   observeEvent(colors(), {
     .reg$edit_options_colors(selected_id(), colors())
@@ -337,7 +376,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
                                         label_column = reactive("options"),
                                         order_column = reactive("order_options")
                                       ))
-
+  
   observeEvent(ordering_opties(), {
     
     .reg$set_options_order(selected_id(), ordering_opties())
@@ -419,5 +458,5 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   })
   
   
-return(db_ping)  
+  return(db_ping)  
 }
