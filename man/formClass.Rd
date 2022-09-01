@@ -33,6 +33,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-add_input_field_to_form}{\code{formClass$add_input_field_to_form()}}
 \item \href{#method-NA-check_uniqueness_column_name}{\code{formClass$check_uniqueness_column_name()}}
 \item \href{#method-NA-edit_label_field}{\code{formClass$edit_label_field()}}
+\item \href{#method-NA-edit_filterable_column}{\code{formClass$edit_filterable_column()}}
 \item \href{#method-NA-from_json}{\code{formClass$from_json()}}
 \item \href{#method-NA-to_json}{\code{formClass$to_json()}}
 \item \href{#method-NA-edit_options_field}{\code{formClass$edit_options_field()}}
@@ -50,6 +51,9 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-prepare_data_table}{\code{formClass$prepare_data_table()}}
 \item \href{#method-NA-write_new_registration}{\code{formClass$write_new_registration()}}
 \item \href{#method-NA-edit_registration}{\code{formClass$edit_registration()}}
+\item \href{#method-NA-add_event}{\code{formClass$add_event()}}
+\item \href{#method-NA-delete_registration}{\code{formClass$delete_registration()}}
+\item \href{#method-NA-delete_event}{\code{formClass$delete_event()}}
 \item \href{#method-NA-read_registrations}{\code{formClass$read_registrations()}}
 \item \href{#method-NA-get_registration_by_id}{\code{formClass$get_registration_by_id()}}
 \item \href{#method-NA-filter_period}{\code{formClass$filter_period()}}
@@ -69,15 +73,22 @@ Make new form object
   config_file = "conf/config.yml",
   what,
   schema = NULL,
+  filterable = FALSE,
   def_table = "formulier_velden",
   def_columns = list(id_form = "id_formulierveld", column_field = "kolomnaam_veld",
     label_field = "label_veld", type_field = "type_veld", order_field = "volgorde_veld",
     form_section = "formulier_sectie", visible = "zichtbaar", date_deleted =
     "datum_uitgeschakeld", options = "opties", order_options = "volgorde_opties", colors
-    = "kleuren", removable = "kan_worden_verwijderd"),
+    = "kleuren", removable = "kan_worden_verwijderd", make_filter = "make_filter",
+    tooltip = "tooltip"),
   data_table = "registrations",
   data_columns = list(id = "id_registratie", name = "naam_registratie", time_created =
-    "invoerdatum", time_modified = "wijzigdatum", user = "user_id"),
+    "invoerdatum", time_modified = "wijzigdatum", user = "user_id", status = "status"),
+  event_data = NULL,
+  event_columns = list(case = "case_id", activity = "activity_id", activity_instance =
+    "activity_id_instance", eventtime = "eventtime", lifecycle = "lifecycle_id", resource
+    = "resource"),
+  event_extra = NULL,
   inject = NULL,
   pool = TRUE,
   sqlite = NULL,
@@ -91,6 +102,8 @@ Make new form object
 \item{\code{config_file}}{Path to DB config}
 
 \item{\code{schema}}{DB schema}
+
+\item{\code{filterable}}{Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.}
 
 \item{\code{pool}}{If TRUE, connects with dbPool}
 
@@ -302,7 +315,13 @@ Get form fields for left or right column of the form
 \subsection{Method \code{add_input_field_to_form()}}{
 Adds an input field to a form
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$add_input_field_to_form(label_field, type_field, form_section)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$add_input_field_to_form(
+  label_field,
+  type_field,
+  form_section,
+  filterable = NULL,
+  tooltip = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -333,6 +352,15 @@ Adds an input field to a form
 Edit the label for an input field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_label_field(id_form, new_label)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-edit_filterable_column"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_filterable_column}{}}}
+\subsection{Method \code{edit_filterable_column()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_filterable_column(id_form, new_filter_boolean, new_tooltip)}\if{html}{\out{</div>}}
 }
 
 }
@@ -491,6 +519,33 @@ Make sure the necessary columns are present in the data_table
 \subsection{Method \code{edit_registration()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_registration(old_data, new_data, user_id)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-add_event"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-add_event}{}}}
+\subsection{Method \code{add_event()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$add_event(registration_id, activity, resource)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-delete_registration"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-delete_registration}{}}}
+\subsection{Method \code{delete_registration()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$delete_registration(registration_id)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-delete_event"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-delete_event}{}}}
+\subsection{Method \code{delete_event()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$delete_event(registration_id)}\if{html}{\out{</div>}}
 }
 
 }

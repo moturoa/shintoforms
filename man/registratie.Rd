@@ -5,7 +5,7 @@
 \alias{formModule}
 \title{Nieuwe registratie Shiny module}
 \usage{
-formUI(id, buttons = TRUE)
+formUI(id, buttons = TRUE, deletable = FALSE)
 
 formModule(
   input,
