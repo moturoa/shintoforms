@@ -297,6 +297,8 @@ formClass <- R6::R6Class(
     # replace_value_where("table", 'verwijderd', 'true', 'naam', 'gekozennaam')
     replace_value_where = function(table, col_replace, val_replace, col_compare, val_compare,
                                    query_only = FALSE, quiet = FALSE){
+      
+      
       if(!is.null(self$schema)){
         query <- glue("update {self$schema}.{table} set {col_replace} = ?val_replace where ",
                       "{col_compare} = ?val_compare") %>% as.character()  
@@ -846,10 +848,8 @@ formClass <- R6::R6Class(
       
       data_all <- cbind(data_pre, data)
       
-      browser()
-      if(!is.null(event_data)){
-        borwser()
-        self$add_event()
+      if(!is.null(self$event_data)){
+        self$add_event(data_all[[self$data_columns$id]], data_all[[self$data_columns$status]], user_id)
       }
       
       res <- self$append_data(self$data_table, data_all)
@@ -890,8 +890,13 @@ formClass <- R6::R6Class(
             
           }
         }
-        
-        # If events not null en status veranderd, doe add_event
+
+      }
+      if(!is.null(self$event_data)){
+        status_change <- old_data[[self$data_columns$status]] != new_data[[self$data_columns$status]]
+        if(status_change){
+          self$add_event(id, new_data[[self$data_columns$status]], user_id)
+        }
         
       }
       
@@ -899,7 +904,6 @@ formClass <- R6::R6Class(
     },
     
     add_event = function(registration_id, activity, resource){
-      browser()
       new_event <- data.frame(
         case = registration_id,
         activity = activity,
@@ -933,6 +937,16 @@ formClass <- R6::R6Class(
       
       dbExecute(self$con, qu)
       
+    },
+    
+    delete_event = function(registration_id){
+      if(!is.null(self$schema)){
+        qu <- glue::glue("DELETE FROM {self$schema}.{self$event_data} WHERE {self$event_columns$case} = '{registration_id}'")
+      } else {
+        qu <- glue::glue("DELETE FROM {self$event_data} WHERE {self$event_columns$case} = '{registration_id}'")
+      }
+      
+      dbExecute(self$con, qu)
     },
     
     

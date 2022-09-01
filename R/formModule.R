@@ -301,8 +301,7 @@ formModule <- function(input, output, session, .reg = NULL,
         title = "Weet u zeker dat u dit item wilt verwijderen?",
         id_confirm = "btn_confirm_delete_registration", confirm_txt = "Ja, verwijderen", confirm_icon = softui::bsicon("trash"),
         close_txt = "Annuleren", close_icon = softui::bsicon("x-lg"),
-        # TODO: registration name werkt niet bij acties!!!
-        tags$p(glue("U staat op het punt om registratie {data()$registration_name} (id: {data()$registration_id}) te verwijderen. 
+        tags$p(glue("U staat op het punt om registratie {data()[[.reg$data_columns$name]]} (id: {data()[[.reg$data_columns$id]]}) te verwijderen. 
         Als u dit zeker weet kunt u dit hier bevestigen, anders kunt u de keuze annuleren.")),
         tags$p("Gebruiker: ", current_user),
         tags$p(format(Sys.time(), "%m/%d/%Y %H:%M"))
@@ -314,7 +313,10 @@ formModule <- function(input, output, session, .reg = NULL,
   observeEvent(input$btn_confirm_delete_registration, confirm_del_reg(runif(1)))
   
   observeEvent(confirm_del_reg(), {
-    .reg$delete_registration(data()$registration_id)
+    .reg$delete_registration(data()[[.reg$data_columns$id]])
+    if(!is.null(.reg$event_data)){
+      .reg$delete_event(data()[[.reg$data_columns$id]])
+    }
     
     out_ping(runif(1))
     
