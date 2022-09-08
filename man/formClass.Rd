@@ -60,6 +60,8 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-read_definition}{\code{formClass$read_definition()}}
 \item \href{#method-NA-get_occurences}{\code{formClass$get_occurences()}}
 \item \href{#method-NA-get_registration_by_json}{\code{formClass$get_registration_by_json()}}
+\item \href{#method-NA-make_event_data}{\code{formClass$make_event_data()}}
+\item \href{#method-NA-get_eventdata_registration}{\code{formClass$get_eventdata_registration()}}
 \item \href{#method-unknown-clone}{\code{formClass$clone()}}
 }
 }
@@ -612,6 +614,24 @@ Read registrations, recode select values where needed.
 \subsection{Method \code{get_registration_by_json()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_registration_by_json(table, column, record)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-make_event_data"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-make_event_data}{}}}
+\subsection{Method \code{make_event_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$make_event_data(data)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_eventdata_registration"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_eventdata_registration}{}}}
+\subsection{Method \code{get_eventdata_registration()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_eventdata_registration(id)}\if{html}{\out{</div>}}
 }
 
 }
