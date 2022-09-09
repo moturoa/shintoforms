@@ -40,17 +40,20 @@ registrationProcessMiningModule <- function(input, output, session, .reg, regist
                            ),
                            column(6,
                                   tags$h3("Stappenkaart"),
-                                  #processmapR::process_map(event_data)
-                                  #plotOutput(session$ns("process_matrix_plot"))
+                                  DiagrammeR::grVizOutput(session$ns("process_map_plot"))
                                   
                            )
                          ),
                          softui::fluid_row(
                            column(6,
                                   tags$h3("Actoren"),
-                                  #processmapR::resource_map(event_data)
-                                  #plotOutput(session$ns("resource_matrix_plot"))
+                                  DiagrammeR::grVizOutput(session$ns("resource_map_plot"))
                                   
+                           ),
+                           column(6,
+                                  tags$h3("Overdracht-matrix"),
+                                  plotOutput(session$ns("process_matrix_plot"))
+                                  # TODO: RESOURCE MATRIX?
                            )
                          )
              )
@@ -65,14 +68,23 @@ registrationProcessMiningModule <- function(input, output, session, .reg, regist
     
   })
   
-  output$process_matrix_plot <- renderPlot({
-    event_data <- event_data()
-    plot <- processmapR::process_matrix(log = event_data) %>% plot
+  output$process_map_plot <- DiagrammeR::renderGrViz({
+    
+    event_data() %>% processmapR::process_map(render = TRUE)
+    
   })
   
-  output$resource_matrix_plot <- renderPlot({
-    event_data <- event_data()
-    processmapR::resource_matrix(log = event_data) %>% plot
+  
+  output$process_matrix_plot <- renderPlot({
+    
+    event_data() %>% processmapR::precedence_matrix() %>% plot()
+    
+  })
+  
+  output$resource_map_plot <- DiagrammeR::renderGrViz({
+    
+    event_data() %>% processmapR::resource_map()
+    
   })
   
   
