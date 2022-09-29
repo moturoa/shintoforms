@@ -256,7 +256,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     type <- sel$type_field
     
     # These fields don't have any editable options
-    show_edit_options <- isTRUE(!type %in% c("freetext","numeric","date"))
+    show_edit_options <- isTRUE(!type %in% c("freetext","numeric","date", "singlecheck"))
     
     shinyjs::toggleElement("span_edit_formfield", condition = !is.null(sel))
     shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options))

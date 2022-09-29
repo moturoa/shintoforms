@@ -43,7 +43,8 @@ formClass <- R6::R6Class(
                             time_created = "invoerdatum",
                             time_modified = "wijzigdatum",
                             user = "user_id",
-                            status = "status"
+                            status = "status",
+                            priority = "priority"
                           ),
                           event_data = NULL,
                           event_columns = list(
@@ -300,11 +301,23 @@ formClass <- R6::R6Class(
       
       
       if(!is.null(self$schema)){
-        query <- glue("update {self$schema}.{table} set {col_replace} = ?val_replace where ",
-                      "{col_compare} = ?val_compare") %>% as.character()  
+        if(is.logical(val_replace) & !is.na(val_replace)){
+          query <- glue("update {self$schema}.{table} set {col_replace} = ?val_replace::boolean where ",
+                        "{col_compare} = ?val_compare") %>% as.character() 
+        } else {
+          query <- glue("update {self$schema}.{table} set {col_replace} = ?val_replace where ",
+                        "{col_compare} = ?val_compare") %>% as.character() 
+        }
+        
       } else {
-        query <- glue("update {table} set {col_replace} = ?val_replace where ",
-                      "{col_compare} = ?val_compare") %>% as.character()
+        if(is.logical(val_replace) & !is.na(val_replace)){
+          query <- glue("update {table} set {col_replace} = ?val_replace::boolean where ",
+                        "{col_compare} = ?val_compare") %>% as.character()
+        } else {
+          query <- glue("update {table} set {col_replace} = ?val_replace where ",
+                        "{col_compare} = ?val_compare") %>% as.character()
+        }
+        
       }
       
       query <- sqlInterpolate(DBI::ANSI(), 
@@ -763,6 +776,7 @@ formClass <- R6::R6Class(
                singleselect = "text",
                multiselect = "text",
                date = "text",
+               singlecheck = "boolean",
                "text"   # if not in list
         )
       } else if(db == "postgres"){
@@ -773,6 +787,7 @@ formClass <- R6::R6Class(
                singleselect = "text",
                multiselect = "text",
                date = "date",
+               singlecheck = "boolean",
                "text"   # if not in list
         )
       } else {
@@ -859,6 +874,7 @@ formClass <- R6::R6Class(
     
     
     edit_registration = function(old_data, new_data, user_id){
+      
       # id of the registration
       id <- old_data[[self$data_columns$id]]
       
