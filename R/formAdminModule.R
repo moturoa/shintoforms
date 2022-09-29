@@ -278,14 +278,17 @@ formAdminModule <- function(input, output, session, .reg = NULL){
         
         textInput(session$ns("txt_edit_formfield_label"), "Label", 
                   value = selected_row()$label_field),
+        
         if(.reg$filterable){
-          radioButtons(session$ns("rad_edit_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
-                       choices = c("Ja" = TRUE,
-                                   "Nee" = FALSE),
-                       selected = selected_row()$make_filter)
-        },
-        if(.reg$filterable){
-          textInput(session$ns("txt_edit_tooltip"), "Tooltip", value = selected_row()$tooltip)
+          
+          tagList(
+            radioButtons(session$ns("rad_edit_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
+                         choices = c("Ja" = TRUE,
+                                     "Nee" = FALSE),
+                         selected = selected_row()$make_filter),
+            textInput(session$ns("txt_edit_tooltip"), "Tooltip", value = selected_row()$tooltip)  
+          )
+          
         },
         
         id_confirm = "btn_confirm_edit_label"

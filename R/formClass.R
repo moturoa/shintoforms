@@ -78,12 +78,12 @@ formClass <- R6::R6Class(
         stop(paste("Columns in def_columns not found:", paste(defcols[!di1], collapse=",")))
       }
       
-      datacols <- self$table_columns(self$data_table)
-      di2 <- unlist(self$data_columns) %in% datacols
-      
-      if(any(!di2)){
-        stop(paste("Columns in data_columns not found:", paste(datacols[!di2], collapse=",")))
-      }
+      # datacols <- self$table_columns(self$data_table)
+      # di2 <- unlist(self$data_columns) %in% datacols
+      # 
+      # if(any(!di2)){
+      #   stop(paste("Columns in data_columns not found:", paste(unlist(self$data_columns)[!di2], collapse=",")))
+      # }
       
       self$event_data <- event_data
       self$event_columns <- event_columns
@@ -498,9 +498,7 @@ formClass <- R6::R6Class(
           data <- data %>%
             mutate(make_filter = filterable,
                    tooltip = tooltip)
-          
         }
-        
         
         
         data <- dplyr::rename_with(data, 
@@ -519,13 +517,8 @@ formClass <- R6::R6Class(
         
       } else {
         
-        
         return(-1)
         
-        # dit mag niet
-        # goed voorbeeld van onion model idee fout.
-        # deze methode weet niet dat toastr beschikbaar is 
-        #toastr_error("Dit label zorgt voor een kolomnaam die al bestaat. Voer een ander label in.")
       }
       
       
@@ -809,6 +802,7 @@ formClass <- R6::R6Class(
     
     write_new_registration = function(data, user_id){
       
+      # add missing columns to output etc.
       self$prepare_data_table()
       
       data_pre <- data.frame(
