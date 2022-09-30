@@ -103,6 +103,13 @@ function(input, output, session){
   # -------- Audit
   if(GLOBAL_AUDIT){
     timeseries <- .reg$create_timeseries(columns=NULL,table=NULL) 
+    
+    # VOORBEELD 1: alleen events voor de kolom aantal_brommers (+ creaties)
+    #timeseries <- .reg$create_timeseries(columns=c("aantal_brommers"),table=NULL) 
+    # VOORBEELD 2: hergebruik van reeds ingeladen data object 
+    #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
+    
+    signal_data
   
     output$dt_audit <- renderReactable({  
       head(timeseries) %>%  

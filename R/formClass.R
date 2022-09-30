@@ -1116,14 +1116,31 @@ formClass <- R6::R6Class(
       
       
     },
+    
+    
+    
+    ####### AUDIT #####
+    
     # maak punt mutaties; let op dit is een zware operatie!
-    # table is de huidige registratietabel; evt gefiltered maar geen selects
+    # table: is de huidige registratietabel; evt gefiltered 
+    # columns: eventueel een selectie van kolommen waardoor de operatie minder heftig is.
+    # VOORBEELD 1: alleen events voor de kolom aantal_brommers (+ creaties)
+    #timeseries <- .reg$create_timeseries(columns=c("aantal_brommers"),table=NULL) 
+    # VOORBEELD 2: hergebruik van reeds ingeladen data object 
+    #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
+    
     create_timeseries = function(columns=NULL, table=NULL){
  
+      selected_columns <- unique( c(columns,
+                                    self$data_columns$id,  
+                                    self$data_columns$name, 
+                                    self$data_columns$user, 
+                                    self$data_columns$time_modified))
+      
       if(is.null(table)){
         if(!is.null(columns)) {
           huidige_data <-  self$read_table(self$data_table, lazy=TRUE) %>%
-            select(columns) %>%
+            select(selected_columns) %>%
               collect
         } else {
           huidige_data <-  self$read_table(self$data_table)
@@ -1131,15 +1148,15 @@ formClass <- R6::R6Class(
        
     } else if(!is.null(columns)){
       huidige_data <-  table %>%
-        select(columns)  
+        select(selected_columns)  
     } else { 
-      huidige_data <-  table
+      huidige_data <- table
     }
     
     if(!is.null(columns)){
       
       historische_data <- self$read_table(self$audit_table, lazy=TRUE) %>%
-        select(columns) %>%
+        select(selected_columns) %>%
         collect
     } else {  
       historische_data <- self$read_table(self$audit_table)
@@ -1148,6 +1165,8 @@ formClass <- R6::R6Class(
         return(rbind(huidige_data, historische_data))
   },
 
+  # functie om een audit table om te zetten in een event log
+  # creation only filterd alleen de aanmaak events en dus geen updates
   create_events = function(timeseries, creation_only=FALSE){
        
  
@@ -1169,14 +1188,14 @@ formClass <- R6::R6Class(
                   variable=NA,
                   old_val=NA, 
                   new_val=NA) %>% 
-          select(self$data_columns$id, 
+          select(self$data_columns$id,  
+                 self$data_columns$name, 
+                 self$data_columns$user, 
+                 self$data_columns$time_modified,
                  type,  
                  variable,
                  old_val,
-                 new_val, 
-                 self$data_columns$name, 
-                 self$data_columns$user, 
-                 self$data_columns$time_modified)
+                 new_val)
         
         # er is maar 1 rij en dat is dan de aanmaak regel ...
         if(nrow(timeseries_for_id) ==1 | creation_only){
@@ -1228,14 +1247,14 @@ formClass <- R6::R6Class(
                                         !!self$data_columns$user := new_row[[self$data_columns$user]],
                                         !!self$data_columns$time_modified := new_row[[self$data_columns$time_modified]]) %>% 
             
-            select(self$data_columns$id, 
+            select(self$data_columns$id,  
+                   self$data_columns$name, 
+                   self$data_columns$user, 
+                   self$data_columns$time_modified,
                    type,  
                    variable,
                    old_val,
-                   new_val, 
-                   self$data_columns$name, 
-                   self$data_columns$user, 
-                   self$data_columns$time_modified) 
+                   new_val) 
           
           return(df_formatted)
           
@@ -1253,7 +1272,45 @@ formClass <- R6::R6Class(
       # return one dataframe with all mutations for all p_ids
       return(plyr::ldply(all_mutations))
       
-    }    
+  }  ,
+  
+  
+  
+  ####### Process Mining #####
+  
+  make_event_data = function(data){
+    bupaR::eventlog(data,
+                    case_id = self$event_columns$case,
+                    activity_id = self$event_columns$activity,
+                    activity_instance_id = self$event_columns$activity_instance,
+                    timestamp = self$event_columns$eventtime,
+                    lifecycle_id = self$event_columns$lifecycle,
+                    resource_id = self$event_columns$resource)
+  },
+  
+  get_eventdata_registration = function(id){
+    data <- self$read_table(self$event_data, lazy = TRUE) %>%
+      filter(!!sym(self$event_columns$case) == !!id) %>%
+      collect
+    
+    event_data <- self$make_event_data(data)
+    
+    statussen <- unlist(self$get_field_choices("status"))
+    statussen <- data.frame(number = names(statussen), status = statussen)
+    
+    firstname <- self$event_columns$activity
+    join_cols = c("number")
+    names(join_cols) <- firstname
+    
+    event_data <- left_join(event_data, statussen, by = join_cols)
+    
+    event_data <- event_data %>%
+      mutate(activity_id = status) %>%
+      select(-c("status")) %>% 
+      replace_na(list(activity_id = "Geen status"))
+    
+  }
+  
   )
   
 )
