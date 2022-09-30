@@ -3,9 +3,7 @@
 sidebar <- softui::dashboard_sidebar(
   softui::sidebar_menu(
     softui::menu_item("Admin", tabName = "admin", icon = bsicon("gear-fill")),
-    softui::menu_item("Formulier", tabName = "formulier", icon = bsicon("ui-checks")),
-    softui::menu_item("Overzicht", tabName = "overzicht", icon = bsicon("list")),
-    softui::menu_item("Audit", tabName = "audit", icon = bsicon("list-nested")) 
+    softui::menu_item("Formulier", tabName = "formulier", icon = bsicon("ui-checks"))
   )
 )
 
@@ -22,12 +20,6 @@ body <- softui::dashboard_body(
 
     softui::tab_item("formulier",
                      formPageUI("formulier")
-    ),
-    softui::tab_item("overzicht", 
-                     
-                     reactable::reactableOutput( "dt_signalen_overzicht") 
-    ),
-    softui::tab_item("audit",
     )
     
   )

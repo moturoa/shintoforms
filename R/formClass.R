@@ -13,12 +13,14 @@ formClass <- R6::R6Class(
     #' @param filterable Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.
     #' @param table Table in DB (in schema) that holds form config
     #' @param pool If TRUE, connects with dbPool
+    #' @param audit If TRUE, writes edits to audit log
     #' @param sqlite If path to an SQLite file, uses SQLite.
     #' @param default_color Default color
     initialize = function(config_file = "conf/config.yml", 
                           what,
                           schema = NULL,
                           filterable = FALSE,
+                          audit=FALSE,
                           def_table = "formulier_velden",
                           def_columns = list(
                             id_form = "id_formulierveld",
@@ -66,6 +68,8 @@ formClass <- R6::R6Class(
       self$def_table <- def_table
       self$def <- def_columns
       
+      self$audit <- audit
+       
       self$data_table <- data_table
       self$data_columns <- data_columns
       
@@ -292,6 +296,77 @@ formClass <- R6::R6Class(
       nrow(out) > 0
     },
     
+    # meerdere tegelijk
+    replace_value_where_multi = function(table, replace_list, col_compare, val_compare,
+                                         query_only = FALSE, quiet = FALSE,  username=""){
+      
+      # nodig voor wanneer men op 'opslaan' klikt zonder wijziging
+      if(length(replace_list) > 0){
+        
+        
+        # interpolate KOLOM = ?value  voor alle records in de replace_list behalve bool type
+        set_values <- lapply(names(replace_list),  function(x){
+          
+          replace_val <- replace_list[[x]]
+          
+          if(is.null(replace_val)){
+            return("")
+          }
+          
+          # DB method gebruikt sqlInterpolate zodat integers/chars correct worden vervangen.
+          # maar werkt niet voor boolean vandaar deze eerste stap.
+          # de stap !is.na(new_val) is nodig omdat is.logical(NA) == TRUE!
+          if(is.logical(replace_val) & !is.na(replace_val)){
+            query <- glue("{x} = {ifelse(replace_val, 'true', 'false')}") %>% as.character() 
+          } else { 
+            sub_query <- glue("{x} = ?val_replace") %>% as.character()
+            query <- sqlInterpolate(DBI::ANSI(), 
+                                    sub_query, 
+                                    val_replace = replace_val )
+          }
+          return(query)
+        })
+        update_str <- paste(set_values[set_values != ""],  collapse = ", ")
+        
+        if(!is.null(self$schema)){
+          query <- glue("update {self$schema}.{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = '{Sys.time()}' where ",
+                        "{col_compare} = ?val_compare") %>% as.character() 
+          
+          if(self$audit){
+            audit_query <- glue("insert into {self$schema}.{table}_audit select * from ",
+                                "{self$schema}.{table} where {col_compare}=?val_compare;") %>% as.character() 
+            audit_query <- sqlInterpolate(DBI::ANSI(), audit_query,  val_compare = val_compare) 
+          }
+        } else {
+          
+          query <- glue("update {table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = '{Sys.time()}' where ",
+                        "{col_compare} = ?val_compare") %>% as.character() 
+          if(self$audit){
+            audit_query <- glue("insert into {table}_audit select * from {table} where ",
+                                "{col_compare}=?val_compare;") %>% as.character()  
+            audit_query <- sqlInterpolate(DBI::ANSI(),  audit_query,  val_compare = val_compare)
+          }
+        } 
+        query <- sqlInterpolate(DBI::ANSI(), 
+                                query, 
+                                val_compare = val_compare)
+        
+        if(query_only)return(query)
+        
+        if(!quiet){
+          flog.info(query, name = "DBR6")  
+          if(self$audit){ 
+            flog.info(audit_query, name = "DBR6")  
+          }
+        }
+        
+        if(self$audit){ 
+          dbExecute(self$con, audit_query)
+        }
+        
+        dbExecute(self$con, query)   
+      }
+    }, 
     
     # set verwijderd=1 where naam=gekozennaam.
     # replace_value_where("table", 'verwijderd', 'true', 'naam', 'gekozennaam')
@@ -320,11 +395,8 @@ formClass <- R6::R6Class(
       dbExecute(self$con, query)
       
     },
-    
-    
+     
     #----- Form registration methods
-    
-    
     #' @description Get a row from the form definition by the form id.
     get_by_id = function(id_form){
       
@@ -856,6 +928,12 @@ formClass <- R6::R6Class(
       # id of the registration
       id <- old_data[[self$data_columns$id]]
       
+      
+      
+      replace_list <- list()
+      
+      
+      # valideer of de kolom echt gewijzigd is
       for(col in names(new_data)){
         new_value <- new_data[[col]]
         old_value <- old_data[[col]]
@@ -866,33 +944,29 @@ formClass <- R6::R6Class(
           old_value <- NULL
         }
         
-        if(is.null(new_value) && is.null(old_value)){
-          
-        } else {
-          # Ask Remko; why this !is.null statement?
-          if(!is.null(old_value) && new_value == old_value){
-            # do nothing
-          } else {
-            
-            self$replace_value_where(
-              self$data_table, 
-              col_compare = self$data_columns$id, 
-              val_compare = id,
-              col_replace = col, 
-              val_replace = new_value)
-            
-          }
+        data_has_changed <- try(!isTRUE(new_value == old_value) && !(is.na(old_value) & is.na(new_value)))
+        
+        if(inherits(data_has_changed, "try-error")){
+          warning(glue("Problem with column: {col}"))
         }
         
-      }
-      if(!is.null(self$event_data)){
-        status_change <- old_data[[self$data_columns$status]] != new_data[[self$data_columns$status]]
-        if(status_change){
-          self$add_event(id, new_data[[self$data_columns$status]], user_id)
+        # data has changed; append to list
+        if(isTRUE(data_has_changed)){ 
+          replace_list[col] <- new_value 
         }
-        
-      }
+      } 
       
+      
+      self$replace_value_where_multi(self$data_table,
+                                     replace_list=replace_list, 
+                                     col_compare=self$data_columns$id,
+                                     val_compare=id,  
+                                     query_only = FALSE, 
+                                     quiet = FALSE,  
+                                     username=user_id)
+       
+    
+        
       return(TRUE)
     },
     
