@@ -20,6 +20,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-table_columns}{\code{formClass$table_columns()}}
 \item \href{#method-NA-query}{\code{formClass$query()}}
 \item \href{#method-NA-has_value}{\code{formClass$has_value()}}
+\item \href{#method-NA-replace_value_where_multi}{\code{formClass$replace_value_where_multi()}}
 \item \href{#method-NA-replace_value_where}{\code{formClass$replace_value_where()}}
 \item \href{#method-NA-get_by_id}{\code{formClass$get_by_id()}}
 \item \href{#method-NA-get_field_choices}{\code{formClass$get_field_choices()}}
@@ -60,6 +61,8 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-read_definition}{\code{formClass$read_definition()}}
 \item \href{#method-NA-get_occurences}{\code{formClass$get_occurences()}}
 \item \href{#method-NA-get_registration_by_json}{\code{formClass$get_registration_by_json()}}
+\item \href{#method-NA-create_timeseries}{\code{formClass$create_timeseries()}}
+\item \href{#method-NA-create_events}{\code{formClass$create_events()}}
 \item \href{#method-NA-make_event_data}{\code{formClass$make_event_data()}}
 \item \href{#method-NA-get_eventdata_registration}{\code{formClass$get_eventdata_registration()}}
 \item \href{#method-unknown-clone}{\code{formClass$clone()}}
@@ -76,6 +79,8 @@ Make new form object
   what,
   schema = NULL,
   filterable = FALSE,
+  audit = FALSE,
+  audit_table = "registrations_audit",
   def_table = "formulier_velden",
   def_columns = list(id_form = "id_formulierveld", column_field = "kolomnaam_veld",
     label_field = "label_veld", type_field = "type_veld", order_field = "volgorde_veld",
@@ -107,6 +112,8 @@ Make new form object
 \item{\code{schema}}{DB schema}
 
 \item{\code{filterable}}{Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.}
+
+\item{\code{audit}}{If TRUE, writes edits to audit log}
 
 \item{\code{pool}}{If TRUE, connects with dbPool}
 
@@ -198,6 +205,23 @@ Close database connection
 \subsection{Method \code{has_value()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$has_value(table, column, value)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-replace_value_where_multi"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-replace_value_where_multi}{}}}
+\subsection{Method \code{replace_value_where_multi()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$replace_value_where_multi(
+  table,
+  replace_list,
+  col_compare,
+  val_compare,
+  query_only = FALSE,
+  quiet = FALSE,
+  username = ""
+)}\if{html}{\out{</div>}}
 }
 
 }
@@ -615,6 +639,24 @@ Read registrations, recode select values where needed.
 \subsection{Method \code{get_registration_by_json()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_registration_by_json(table, column, record)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-create_timeseries"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-create_timeseries}{}}}
+\subsection{Method \code{create_timeseries()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$create_timeseries(columns = NULL, table = NULL)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-create_events"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-create_events}{}}}
+\subsection{Method \code{create_events()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$create_events(timeseries, creation_only = FALSE)}\if{html}{\out{</div>}}
 }
 
 }
