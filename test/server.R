@@ -101,7 +101,21 @@ function(input, output, session){
   }
    
   # -------- Audit
-
+  if(GLOBAL_AUDIT){
+    timeseries <- .reg$create_timeseries(columns=NULL,table=NULL) 
+  
+    output$dt_audit <- renderReactable({  
+      head(timeseries) %>%  
+        reactable()
+      })
+    output$dt_events <- renderReactable({  
+      head(.reg$create_events(timeseries)) %>%  
+        mutate(action = glue('kolom {variable} van {ifelse(is.na(old_val) | old_val == "", "leeg", old_val)} naar {new_val}')) %>%
+        reactable()
+    })
+    
+  }
+  
 }
 
 

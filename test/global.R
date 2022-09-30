@@ -9,10 +9,13 @@ shintoshiny::check_for_version("softui","0.4")
 shintoshiny::check_for_version("shintousers","0.4-2")
 shintoshiny::check_for_version("shintocatman","0.1-5")
 
+GLOBAL_AUDIT <<- TRUE
+
+
 # Database connection
 .reg <- formClass$new(sqlite = "data/registraties.sqlite",
                               def_table = "formulier_velden",
-                              audit=T,
+                              audit=GLOBAL_AUDIT,
                               audit_table = "registraties_audit",
                               def_columns = list(
                                 id_form = "id_formulierveld",
@@ -39,7 +42,7 @@ shintoshiny::check_for_version("shintocatman","0.1-5")
                                 user = "user_id",
                                 status = "status"
                               ))
- browser()
+ 
 # End.
 onStop(function() {
   .reg$close()
