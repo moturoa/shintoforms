@@ -13,12 +13,15 @@ formClass <- R6::R6Class(
     #' @param filterable Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.
     #' @param table Table in DB (in schema) that holds form config
     #' @param pool If TRUE, connects with dbPool
+    #' @param audit If TRUE, writes edits to audit log
     #' @param sqlite If path to an SQLite file, uses SQLite.
     #' @param default_color Default color
     initialize = function(config_file = "conf/config.yml", 
                           what,
                           schema = NULL,
                           filterable = FALSE,
+                          audit=FALSE,
+                          audit_table = "registrations_audit",
                           def_table = "formulier_velden",
                           def_columns = list(
                             id_form = "id_formulierveld",
@@ -61,11 +64,15 @@ formClass <- R6::R6Class(
                           sqlite = NULL,
                           default_color = "#3333cc"){
       
+      self$audit <- audit
+      self$audit_table <- audit_table
+      
       self$default_color <- default_color
       self$connect_to_database(config_file, schema, what, pool, sqlite)
       
       self$def_table <- def_table
       self$def <- def_columns
+         
       
       self$data_table <- data_table
       self$data_columns <- data_columns
@@ -167,11 +174,14 @@ formClass <- R6::R6Class(
           self$con <- response
         }
         
-        
         self$dbtype <- "postgres"
         
       }
       
+      # check if audit table is present 
+      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
+        stop(glue("Audit feature is on but there is no table named {self$audit_table}")) 
+      } 
       
     },
     
@@ -293,6 +303,77 @@ formClass <- R6::R6Class(
       nrow(out) > 0
     },
     
+    # meerdere tegelijk
+    replace_value_where_multi = function(table, replace_list, col_compare, val_compare,
+                                         query_only = FALSE, quiet = FALSE,  username=""){
+      
+      # nodig voor wanneer men op 'opslaan' klikt zonder wijziging
+      if(length(replace_list) > 0){
+        
+        
+        # interpolate KOLOM = ?value  voor alle records in de replace_list behalve bool type
+        set_values <- lapply(names(replace_list),  function(x){
+          
+          replace_val <- replace_list[[x]]
+          
+          if(is.null(replace_val)){
+            return("")
+          }
+          
+          # DB method gebruikt sqlInterpolate zodat integers/chars correct worden vervangen.
+          # maar werkt niet voor boolean vandaar deze eerste stap.
+          # de stap !is.na(new_val) is nodig omdat is.logical(NA) == TRUE!
+          if(is.logical(replace_val) & !is.na(replace_val)){
+            query <- glue("{x} = {ifelse(replace_val, 'true', 'false')}") %>% as.character() 
+          } else { 
+            sub_query <- glue("{x} = ?val_replace") %>% as.character()
+            query <- sqlInterpolate(DBI::ANSI(), 
+                                    sub_query, 
+                                    val_replace = replace_val )
+          }
+          return(query)
+        })
+        update_str <- paste(set_values[set_values != ""],  collapse = ", ")
+        
+        if(!is.null(self$schema)){
+          query <- glue("update {self$schema}.{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = '{Sys.time()}' where ",
+                        "{col_compare} = ?val_compare") %>% as.character() 
+          
+          if(self$audit){
+            audit_query <- glue("insert into {self$schema}.{self$audit_table} select * from ",
+                                "{self$schema}.{table} where {col_compare}=?val_compare;") %>% as.character() 
+            audit_query <- sqlInterpolate(DBI::ANSI(), audit_query,  val_compare = val_compare) 
+          }
+        } else {
+          
+          query <- glue("update {table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = '{Sys.time()}' where ",
+                        "{col_compare} = ?val_compare") %>% as.character() 
+          if(self$audit){
+            audit_query <- glue("insert into {self$audit_table} select * from {table} where ",
+                                "{col_compare}=?val_compare;") %>% as.character()  
+            audit_query <- sqlInterpolate(DBI::ANSI(),  audit_query,  val_compare = val_compare)
+          }
+        } 
+        query <- sqlInterpolate(DBI::ANSI(), 
+                                query, 
+                                val_compare = val_compare)
+        
+        if(query_only)return(query)
+        
+        if(!quiet){
+          flog.info(query, name = "DBR6")  
+          if(self$audit){ 
+            flog.info(audit_query, name = "DBR6")  
+          }
+        }
+        
+        if(self$audit){ 
+          dbExecute(self$con, audit_query)
+        }
+        
+        dbExecute(self$con, query)   
+      }
+    }, 
     
     # set verwijderd=1 where naam=gekozennaam.
     # replace_value_where("table", 'verwijderd', 'true', 'naam', 'gekozennaam')
@@ -333,11 +414,8 @@ formClass <- R6::R6Class(
       dbExecute(self$con, query)
       
     },
-    
-    
+     
     #----- Form registration methods
-    
-    
     #' @description Get a row from the form definition by the form id.
     get_by_id = function(id_form){
       
@@ -804,6 +882,12 @@ formClass <- R6::R6Class(
           flog.info(glue("Adding column: {tab$column_field[i]}, type : {new_col_type}"))
           self$make_column(self$data_table, tab$column_field[i], new_col_type)
           
+          # wanneer audit -> kolom ook aan audit table toevoegen
+          if(self$audit){
+            self$make_column(self$audit_table, tab$column_field[i], new_col_type)
+            
+          }
+          
         } else {
           
           # do nothing.
@@ -872,6 +956,12 @@ formClass <- R6::R6Class(
       # id of the registration
       id <- old_data[[self$data_columns$id]]
       
+      
+      
+      replace_list <- list()
+      
+      
+      # valideer of de kolom echt gewijzigd is
       for(col in names(new_data)){
         new_value <- new_data[[col]]
         old_value <- old_data[[col]]
@@ -882,33 +972,29 @@ formClass <- R6::R6Class(
           old_value <- NULL
         }
         
-        if(is.null(new_value) && is.null(old_value)){
-          
-        } else {
-          # Ask Remko; why this !is.null statement?
-          if(!is.null(old_value) && new_value == old_value){
-            # do nothing
-          } else {
-            
-            self$replace_value_where(
-              self$data_table, 
-              col_compare = self$data_columns$id, 
-              val_compare = id,
-              col_replace = col, 
-              val_replace = new_value)
-            
-          }
+        data_has_changed <- try(!isTRUE(new_value == old_value) && !(is.na(old_value) & is.na(new_value)))
+        
+        if(inherits(data_has_changed, "try-error")){
+          warning(glue("Problem with column: {col}"))
         }
         
-      }
-      if(!is.null(self$event_data)){
-        status_change <- old_data[[self$data_columns$status]] != new_data[[self$data_columns$status]]
-        if(status_change){
-          self$add_event(id, new_data[[self$data_columns$status]], user_id)
+        # data has changed; append to list
+        if(isTRUE(data_has_changed)){ 
+          replace_list[col] <- new_value 
         }
-        
-      }
+      } 
       
+      
+      self$replace_value_where_multi(self$data_table,
+                                     replace_list=replace_list, 
+                                     col_compare=self$data_columns$id,
+                                     val_compare=id,  
+                                     query_only = FALSE, 
+                                     quiet = FALSE,  
+                                     username=user_id)
+       
+    
+        
       return(TRUE)
     },
     
@@ -1047,41 +1133,200 @@ formClass <- R6::R6Class(
       
     },
     
-    ####### Process Mining #####
     
-    make_event_data = function(data){
-      bupaR::eventlog(data,
-                      case_id = self$event_columns$case,
-                      activity_id = self$event_columns$activity,
-                      activity_instance_id = self$event_columns$activity_instance,
-                      timestamp = self$event_columns$eventtime,
-                      lifecycle_id = self$event_columns$lifecycle,
-                      resource_id = self$event_columns$resource)
-    },
     
-    get_eventdata_registration = function(id){
-      data <- self$read_table(self$event_data, lazy = TRUE) %>%
-        filter(!!sym(self$event_columns$case) == !!id) %>%
-        collect
+    ####### AUDIT #####
+    
+    # maak punt mutaties; let op dit is een zware operatie!
+    # table: is de huidige registratietabel; evt gefiltered 
+    # columns: eventueel een selectie van kolommen waardoor de operatie minder heftig is.
+    # VOORBEELD 1: alleen events voor de kolom aantal_brommers (+ creaties)
+    #timeseries <- .reg$create_timeseries(columns=c("aantal_brommers"),table=NULL) 
+    # VOORBEELD 2: hergebruik van reeds ingeladen data object 
+    #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
+    
+    create_timeseries = function(columns=NULL, table=NULL){
+ 
+      selected_columns <- unique( c(columns,
+                                    self$data_columns$id,  
+                                    self$data_columns$name, 
+                                    self$data_columns$user, 
+                                    self$data_columns$time_modified))
       
-      event_data <- self$make_event_data(data)
-      
-      statussen <- unlist(self$get_field_choices("status"))
-      statussen <- data.frame(number = names(statussen), status = statussen)
-      
-      firstname <- self$event_columns$activity
-      join_cols = c("number")
-      names(join_cols) <- firstname
-      
-      event_data <- left_join(event_data, statussen, by = join_cols)
-      
-      event_data <- event_data %>%
-        mutate(activity_id = status) %>%
-        select(-c("status")) %>% 
-        replace_na(list(activity_id = "Geen status"))
-      
+      if(is.null(table)){
+        if(!is.null(columns)) {
+          huidige_data <-  self$read_table(self$data_table, lazy=TRUE) %>%
+            select(selected_columns) %>%
+              collect
+        } else {
+          huidige_data <-  self$read_table(self$data_table)
+        }
+       
+    } else if(!is.null(columns)){
+      huidige_data <-  table %>%
+        select(selected_columns)  
+    } else { 
+      huidige_data <- table
     }
     
+    if(!is.null(columns)){
+      
+      historische_data <- self$read_table(self$audit_table, lazy=TRUE) %>%
+        select(selected_columns) %>%
+        collect
+    } else {  
+      historische_data <- self$read_table(self$audit_table)
+    }
+    
+        return(rbind(huidige_data, historische_data))
+  },
+
+  # functie om een audit table om te zetten in een event log
+  # creation only filterd alleen de aanmaak events en dus geen updates
+  create_events = function(timeseries, creation_only=FALSE){
+       
+ 
+    timeseries$auditstamp <- timeseries[[self$data_columns$time_modified]]
+    timeseries$auditstamp <- as.POSIXct( timeseries$auditstamp, tz = "UTC" ) 
+    # outer loop over all unique ID's
+    all_mutations <- lapply(unique(timeseries[[self$data_columns$id]]), function(i){
+      
+        # i is nu een uniek ID voor een registratie 
+        timeseries_for_id <- timeseries %>% 
+                              filter(!!as.symbol(self$data_columns$id)==i) %>% 
+                              arrange(auditstamp)
+         
+        
+        
+        # alle creates voor ID 
+        aanmaak_regel <- timeseries_for_id[1,] %>% 
+          mutate( type='C', 
+                  variable=NA,
+                  old_val=NA, 
+                  new_val=NA) %>% 
+          select(self$data_columns$id,  
+                 self$data_columns$name, 
+                 self$data_columns$user, 
+                 self$data_columns$time_modified,
+                 type,  
+                 variable,
+                 old_val,
+                 new_val)
+        
+        # er is maar 1 rij en dat is dan de aanmaak regel ...
+        if(nrow(timeseries_for_id) ==1 | creation_only){
+          return(aanmaak_regel) 
+        }  
+        
+        
+        # alle Updates voor IDb
+        # inner loop over all mutations for an ID 
+        mutations_for_id <- lapply(1:(nrow(timeseries_for_id)-1), function(time_index){
+          # time_index is nu de index waarop de old row is gemuteerd naar de new_row
+          
+          # get (old)row at time_index and (new)row at time_index+1
+          old_row <- timeseries_for_id[time_index,] 
+          new_row <- timeseries_for_id[time_index+1,] 
+          
+          
+          # calculate changes
+          # note -> we dont care if only time_modified or user changes.
+          suppressWarnings({ 
+            differences <- diffdf::diffdf(new_row %>% select(-self$data_columns$user, 
+                                                             -self$data_columns$time_modified,
+                                                             -auditstamp),
+                                          old_row %>% select(-self$data_columns$user, 
+                                                             -self$data_columns$time_modified,
+                                                             -auditstamp)) 
+          })
+          # loop over changes (minus NumDiff want die is niet relevant)
+          point_mutations <- lapply(attr(differences, "names")[attr(differences, "names") != 'NumDiff'] , function(changed_attri){ 
+            return(differences[[changed_attri]]) 
+          })
+          
+          # samenvoegen en checken of de data nog klopt.
+          df <- plyr::ldply(point_mutations)  
+          if(nrow(df) <= 0){
+            return(NA)
+          }  
+          # formatteren
+          # let op voor een wijziging gebruiken we expres het label van de oude rij, 
+          # maar user+time_modified van de nieuwe rij. 
+          df_formatted <- df %>% mutate(old_val = as.character(COMPARE),
+                                        new_val=as.character(BASE),
+                                        !!self$data_columns$id := old_row[[self$data_columns$id]],
+                                        #type=case_when(VARIABLE == 'verwijderd' ~ 'D', DOORONTWIKKELING? 
+                                        #                TRUE ~ 'U'),                   DOORONTWIKKELING? 
+                                        type='U',
+                                        variable=VARIABLE,
+                                        !!self$data_columns$name := old_row[[self$data_columns$name]],
+                                        !!self$data_columns$user := new_row[[self$data_columns$user]],
+                                        !!self$data_columns$time_modified := new_row[[self$data_columns$time_modified]]) %>% 
+            
+            select(self$data_columns$id,  
+                   self$data_columns$name, 
+                   self$data_columns$user, 
+                   self$data_columns$time_modified,
+                   type,  
+                   variable,
+                   old_val,
+                   new_val) 
+          
+          return(df_formatted)
+          
+          
+        })    
+        # return one dataframe with all mutations for id
+        
+        wijzigingen <- mutations_for_id[!is.na(mutations_for_id)]
+        wijziging_regels <- plyr::ldply(wijzigingen)
+        
+        return(rbind(wijziging_regels, aanmaak_regel)) 
+     
+            
+      })  
+      # return one dataframe with all mutations for all p_ids
+      return(plyr::ldply(all_mutations))
+      
+  }  ,
+  
+  
+  
+  ####### Process Mining #####
+  
+  make_event_data = function(data){
+    bupaR::eventlog(data,
+                    case_id = self$event_columns$case,
+                    activity_id = self$event_columns$activity,
+                    activity_instance_id = self$event_columns$activity_instance,
+                    timestamp = self$event_columns$eventtime,
+                    lifecycle_id = self$event_columns$lifecycle,
+                    resource_id = self$event_columns$resource)
+  },
+  
+  get_eventdata_registration = function(id){
+    data <- self$read_table(self$event_data, lazy = TRUE) %>%
+      filter(!!sym(self$event_columns$case) == !!id) %>%
+      collect
+    
+    event_data <- self$make_event_data(data)
+    
+    statussen <- unlist(self$get_field_choices("status"))
+    statussen <- data.frame(number = names(statussen), status = statussen)
+    
+    firstname <- self$event_columns$activity
+    join_cols = c("number")
+    names(join_cols) <- firstname
+    
+    event_data <- left_join(event_data, statussen, by = join_cols)
+    
+    event_data <- event_data %>%
+      mutate(activity_id = status) %>%
+      select(-c("status")) %>% 
+      replace_na(list(activity_id = "Geen status"))
+    
+  }
+  
   )
   
 )
