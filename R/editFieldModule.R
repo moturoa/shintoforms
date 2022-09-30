@@ -23,6 +23,9 @@ editFieldModuleUI <- function(id, column, data,
   # boolean
   # select (gebaseerd op tabel met keuze opties)
   
+  # dont crash if type not in list below
+  ui <- NULL
+  
   if(type == "numeric"){
     
     if(!isTruthy(value))value <- 0
