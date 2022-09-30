@@ -178,7 +178,7 @@ formClass <- R6::R6Class(
       }
       
       # check if audit table is present 
-      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table)){
+      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
         stop(glue("Audit feature is on but there is no table named {self$audit_table}")) 
       } 
       
@@ -1115,43 +1115,11 @@ formClass <- R6::R6Class(
       return(res)
       
       
-    },
-    
-    ####### Process Mining #####
-    
-    make_event_data = function(data){
-      bupaR::eventlog(data,
-                      case_id = self$event_columns$case,
-                      activity_id = self$event_columns$activity,
-                      activity_instance_id = self$event_columns$activity_instance,
-                      timestamp = self$event_columns$eventtime,
-                      lifecycle_id = self$event_columns$lifecycle,
-                      resource_id = self$event_columns$resource)
-    },
-    
-    get_eventdata_registration = function(id){
-      data <- self$read_table(self$event_data, lazy = TRUE) %>%
-        filter(!!sym(self$event_columns$case) == !!id) %>%
-        collect
-      
-      event_data <- self$make_event_data(data)
-      
-      statussen <- unlist(self$get_field_choices("status"))
-      statussen <- data.frame(number = names(statussen), status = statussen)
-      
-      firstname <- self$event_columns$activity
-      join_cols = c("number")
-      names(join_cols) <- firstname
-      
-      event_data <- left_join(event_data, statussen, by = join_cols)
-      
-      event_data <- event_data %>%
-        mutate(activity_id = status) %>%
-        select(-c("status")) %>% 
-        replace_na(list(activity_id = "Geen status"))
-      
     }
     
+    
+    
+     
   )
   
 )

@@ -12,8 +12,8 @@ shintoshiny::check_for_version("shintocatman","0.1-5")
 # Database connection
 .reg <- formClass$new(sqlite = "data/registraties.sqlite",
                               def_table = "formulier_velden",
-                              #audit=T,
-                              #audit_table = "registraties_audit",
+                              audit=T,
+                              audit_table = "registraties_audit",
                               def_columns = list(
                                 id_form = "id_formulierveld",
                                 column_field = "kolomnaam_veld",
@@ -39,7 +39,7 @@ shintoshiny::check_for_version("shintocatman","0.1-5")
                                 user = "user_id",
                                 status = "status"
                               ))
- 
+ browser()
 # End.
 onStop(function() {
   .reg$close()
