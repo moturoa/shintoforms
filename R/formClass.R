@@ -21,6 +21,7 @@ formClass <- R6::R6Class(
                           schema = NULL,
                           filterable = FALSE,
                           audit=FALSE,
+                          audit_table = "registrations_audit",
                           def_table = "formulier_velden",
                           def_columns = list(
                             id_form = "id_formulierveld",
@@ -62,14 +63,16 @@ formClass <- R6::R6Class(
                           sqlite = NULL,
                           default_color = "#3333cc"){
       
+      self$audit <- audit
+      self$audit_table <- audit_table
+      
       self$default_color <- default_color
       self$connect_to_database(config_file, schema, what, pool, sqlite)
       
       self$def_table <- def_table
       self$def <- def_columns
+         
       
-      self$audit <- audit
-       
       self$data_table <- data_table
       self$data_columns <- data_columns
       
@@ -170,11 +173,14 @@ formClass <- R6::R6Class(
           self$con <- response
         }
         
-        
         self$dbtype <- "postgres"
         
       }
       
+      # check if audit table is present 
+      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table)){
+        stop(glue("Audit feature is on but there is no table named {self$audit_table}")) 
+      } 
       
     },
     
@@ -333,7 +339,7 @@ formClass <- R6::R6Class(
                         "{col_compare} = ?val_compare") %>% as.character() 
           
           if(self$audit){
-            audit_query <- glue("insert into {self$schema}.{table}_audit select * from ",
+            audit_query <- glue("insert into {self$schema}.{self$audit_table} select * from ",
                                 "{self$schema}.{table} where {col_compare}=?val_compare;") %>% as.character() 
             audit_query <- sqlInterpolate(DBI::ANSI(), audit_query,  val_compare = val_compare) 
           }
@@ -342,7 +348,7 @@ formClass <- R6::R6Class(
           query <- glue("update {table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = '{Sys.time()}' where ",
                         "{col_compare} = ?val_compare") %>% as.character() 
           if(self$audit){
-            audit_query <- glue("insert into {table}_audit select * from {table} where ",
+            audit_query <- glue("insert into {self$audit_table} select * from {table} where ",
                                 "{col_compare}=?val_compare;") %>% as.character()  
             audit_query <- sqlInterpolate(DBI::ANSI(),  audit_query,  val_compare = val_compare)
           }
@@ -860,6 +866,12 @@ formClass <- R6::R6Class(
           
           flog.info(glue("Adding column: {tab$column_field[i]}, type : {new_col_type}"))
           self$make_column(self$data_table, tab$column_field[i], new_col_type)
+          
+          # wanneer audit -> kolom ook aan audit table toevoegen
+          if(self$audit){
+            self$make_column(self$audit_table, tab$column_field[i], new_col_type)
+            
+          }
           
         } else {
           
