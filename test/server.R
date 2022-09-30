@@ -110,7 +110,8 @@ function(input, output, session){
       })
     output$dt_events <- renderReactable({  
       head(.reg$create_events(timeseries)) %>%  
-        mutate(action = glue('kolom {variable} van {ifelse(is.na(old_val) | old_val == "", "leeg", old_val)} naar {new_val}')) %>%
+        mutate(action = case_when(type == 'U' ~ glue('kolom {variable} van {ifelse(is.na(old_val) | old_val == "", "leeg", old_val)} naar {new_val}'),
+                                  type == 'C' ~ glue('Aanmaak registratie'))) %>%
         reactable()
     })
     
