@@ -461,7 +461,7 @@ formClass <- R6::R6Class(
     add_input_field_to_form = function(label_field, type_field, form_section, filterable = NULL, tooltip = NULL){
       
       
-      assert_input_field_type(type_field)
+      #assert_input_field_type(type_field)
       
       id <- uuid::UUIDgenerate()
       

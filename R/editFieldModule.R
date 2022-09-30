@@ -12,7 +12,7 @@ editFieldModuleUI <- function(id, column, data,
   
   ns <- NS(id)
   
-  assert_input_field_type(type)
+  #assert_input_field_type(type)
   
   value <- make_default_value(column, data, 
                               default = default,
