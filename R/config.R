@@ -4,7 +4,8 @@ configured_field_types <- c("Tekstinvoer" = "freetext",
                            "Ja/Nee" = "boolean",
                            "Keuzemenu (enkele optie)" = "singleselect",
                            "Keuzemenu (meerdere opties)" = "multiselect",
-                           "Datum" = "date")
+                           "Datum" = "date",
+                           "Checkbox" = "singlecheck")
                            #"Tekst met opmaak" = "html")
 
 

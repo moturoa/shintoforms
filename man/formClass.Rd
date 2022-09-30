@@ -85,7 +85,8 @@ Make new form object
     tooltip = "tooltip"),
   data_table = "registrations",
   data_columns = list(id = "id_registratie", name = "naam_registratie", time_created =
-    "invoerdatum", time_modified = "wijzigdatum", user = "user_id", status = "status"),
+    "invoerdatum", time_modified = "wijzigdatum", user = "user_id", status = "status",
+    priority = "priority"),
   event_data = NULL,
   event_columns = list(case = "case_id", activity = "activity_id", activity_instance =
     "activity_id_instance", eventtime = "eventtime", lifecycle = "lifecycle_id", resource

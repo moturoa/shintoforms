@@ -64,6 +64,12 @@ editFieldModuleUI <- function(id, column, data,
     
     ui <- dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
     
+  } else if(type == "singlecheck"){
+    if(length(value) == 0 || as.character(value) == ""){
+      value <- FALSE
+    }
+    ui <- checkboxInput(ns("value"), label, value = value)
+    
   }
   
   # } else if(type == "html"){
