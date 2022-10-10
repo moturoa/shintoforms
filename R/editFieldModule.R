@@ -61,7 +61,7 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "date"){
     
-    if(length(value) == 0 || as.character(value) == ""){
+    if(length(value) == 0){
       value <- Sys.Date()
     }
     
