@@ -93,9 +93,9 @@ formModule <- function(input, output, session, .reg = NULL,
   nieuwe_registratie_ping <- reactiveVal()
   
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet.
+  
   cfg_left <- reactive({
-    
-    ping_update()
+      ping_update()
     .reg$get_form_fields(1)
   })
   

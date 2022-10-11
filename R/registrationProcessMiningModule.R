@@ -20,6 +20,7 @@ registrationProcessMiningUI <- function(id){
 #' @param .reg formClass for which the process mining is being done (call to formClass does not have event_data set as NULL)
 #' @param registration_id registration about we want to see event traces and process mining analyses
 #' @rdname registrationProcessMiningModule
+#' @importFrom DiagrammeR grVizOutput
 registrationProcessMiningModule <- function(input, output, session, .reg, registration_id = reactive(NULL)){
   
   event_data <- reactive({
