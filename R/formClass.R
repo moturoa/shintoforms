@@ -1245,7 +1245,7 @@ formClass <- R6::R6Class(
           })
           
           # samenvoegen en checken of de data nog klopt.
-          df <- plyr::ldply(point_mutations)  
+          df <- as.data.frame(do.call(rbind, point_mutations) )
           if(nrow(df) <= 0){
             return(NA)
           }  
@@ -1279,14 +1279,14 @@ formClass <- R6::R6Class(
         # return one dataframe with all mutations for id
         
         wijzigingen <- mutations_for_id[!is.na(mutations_for_id)]
-        wijziging_regels <- plyr::ldply(wijzigingen)
+        wijziging_regels <- as.data.frame(do.call(rbind, wijzigingen))
         
         return(rbind(wijziging_regels, aanmaak_regel)) 
      
             
       })  
       # return one dataframe with all mutations for all p_ids
-      return(plyr::ldply(all_mutations))
+      return(as.data.frame(do.call(rbind, all_mutations)))
       
   }  ,
   
