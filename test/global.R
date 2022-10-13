@@ -4,12 +4,11 @@ devtools::load_all()
 #library(shintoforms)
 
 source("preload/load_packages.R")
-library(reactable) # small addition
 shintoshiny::check_for_version("softui","0.4")
 shintoshiny::check_for_version("shintousers","0.4-2")
 shintoshiny::check_for_version("shintocatman","0.1-5")
 
-GLOBAL_AUDIT <<- TRUE
+GLOBAL_AUDIT <- TRUE
 
 
 # Database connection
@@ -43,6 +42,11 @@ GLOBAL_AUDIT <<- TRUE
                                 status = "status"
                               ))
  
+
+
+#dbExecute(.reg$con, "alter table registraties add column serial_id INTEGER AUTOINCREMENT NOT NULL")
+
+
 # End.
 onStop(function() {
   .reg$close()

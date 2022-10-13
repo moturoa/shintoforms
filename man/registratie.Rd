@@ -16,6 +16,7 @@ formModule(
   current_user,
   data = reactive(NULL),
   write_method = reactive("new"),
+  registration_description_function = function(data) NULL,
   confirm = reactive(NULL),
   cancel = reactive(NULL),
   disabled = reactive(FALSE),

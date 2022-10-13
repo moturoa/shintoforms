@@ -4,22 +4,27 @@
 #' @export
 formUI <- function(id, buttons = TRUE, deletable = FALSE){
   
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
   ui <- softui::fluid_page(
     
+    # Extra block with any UI describing the signal (when editing only)
+    softui::fluid_row(
+      shiny::uiOutput(ns("ui_registration_description"))
+    ),
+    
     softui::fluid_row(id = ns("form_container"),
-                      column(6,
-                             uiOutput(ns("ui_input_left"))
-                      ),
-                      column(6,
-                             uiOutput(ns("ui_input_right"))
-                      )
+          shiny::column(6,
+              shiny::uiOutput(ns("ui_input_left"))
+          ),
+          shiny::column(6,
+              shiny::uiOutput(ns("ui_input_right"))
+          )
     ),
     softui::fluid_row(id = ns("form_container_btm"),
-                      column(12,
-                             uiOutput(ns("ui_input_bottom"))
-                      )
+          shiny::column(12,
+              shiny::uiOutput(ns("ui_input_bottom"))
+          )
     ),
     
     # tags$div(style = "display: none;",
@@ -31,9 +36,9 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
       
       softui::fluid_row(class = "justify-content-end",
                         
-                        tags$hr(),
+                        shiny::tags$hr(),
                         
-                        column(6,
+                        shiny::column(6,
                                softui::action_button(ns("btn_cancel"), 
                                                      "Annuleren", 
                                                      icon = bsicon("x-lg"), 
@@ -53,9 +58,9 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
       
       softui::fluid_row(class = "justify-content-center",
                         
-                        tags$hr(),
+                        shiny::tags$hr(),
                         
-                        column(3,
+                        shiny::column(3,
                                softui::action_button(ns("btn_delete_registratie"), 
                                                      "Verwijderen", 
                                                      icon = bsicon("trash"), 
@@ -68,7 +73,7 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
     
   )
   
-  tagList(ui, shintoforms_dependencies())
+  shiny::tagList(ui, shintoforms_dependencies())
   
 }
 
@@ -79,6 +84,8 @@ formModule <- function(input, output, session, .reg = NULL,
                        current_user, 
                        data = reactive(NULL),
                        write_method = reactive("new"),
+                       
+                       registration_description_function = function(data)NULL,
                        
                        confirm = reactive(NULL),
                        cancel = reactive(NULL),
@@ -92,8 +99,16 @@ formModule <- function(input, output, session, .reg = NULL,
   
   nieuwe_registratie_ping <- reactiveVal()
   
-  # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet.
+  # Extra  block with description / other UI / whatever / of the registration
+  output$ui_registration_description <- renderUI({
+    
+    registration_description_function(data())
+    
+  })
   
+  
+  
+  # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet.
   cfg_left <- reactive({
       ping_update()
     .reg$get_form_fields(1)
@@ -308,18 +323,17 @@ formModule <- function(input, output, session, .reg = NULL,
       )
     )
   })
-  
-  confirm_del_reg <- reactiveVal()
-  observeEvent(input$btn_confirm_delete_registration, confirm_del_reg(runif(1)))
-  
-  observeEvent(confirm_del_reg(), {
+
+  observeEvent(input$btn_confirm_delete_registration, {
+    
     .reg$delete_registration(data()[[.reg$data_columns$id]])
     if(!is.null(.reg$event_data)){
       .reg$delete_event(data()[[.reg$data_columns$id]])
     }
+
+    toastr_success("Registratie verwijderd")
     
     out_ping(runif(1))
-    
     callback_confirm()
   })
   

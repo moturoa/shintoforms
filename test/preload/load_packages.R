@@ -70,6 +70,7 @@ suppressPackageStartupMessages({
   library(dbplyr)
   library(forcats)
   
+  library(reactable)   
   # library(gridExtra)
   # library(egg)
   # library(ggrepel)

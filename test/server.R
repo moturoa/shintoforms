@@ -109,17 +109,16 @@ function(input, output, session){
     # VOORBEELD 2: hergebruik van reeds ingeladen data object 
     #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
     
-    signal_data
-  
     output$dt_audit <- renderReactable({  
       head(timeseries) %>%  
         reactable()
-      })
+    })
+    
     output$dt_events <- renderReactable({  
       head(.reg$create_events(timeseries)) %>%  
-        mutate(action = case_when(type == 'U' ~ glue('kolom {variable} van {ifelse(is.na(old_val) | old_val == "", "leeg", old_val)} naar {new_val}'),
+        dplyr::mutate(action = case_when(type == 'U' ~ glue('kolom {variable} van {ifelse(is.na(old_val) | old_val == "", "leeg", old_val)} naar {new_val}'),
                                   type == 'C' ~ glue('Aanmaak registratie'))) %>%
-        reactable()
+        reactable::reactable()
     })
     
   }
