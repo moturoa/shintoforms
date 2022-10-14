@@ -1,7 +1,31 @@
 
+#-- configure possible input field types
+configured_field_types <- c("Tekstinvoer" = "freetext",
+                            "Numerieke invoer" = "numeric",
+                            "Ja/Nee" = "boolean",
+                            "Keuzemenu (enkele optie)" = "singleselect",
+                            "Keuzemenu (meerdere opties)" = "multiselect",
+                            "Datum" = "date",
+                            "Checkbox" = "singlecheck",
+                            "Tekst met opmaak" = "html")
+
+assert_input_field_type <- function(type){
+  if(!type %in% configured_field_types){
+    stop(paste("type_field must be one of:", paste(configured_field_types,collapse=",")))
+  }  
+}
 
 
 #---- editFieldmodule: module voor een enkele input (bv numeric, text, oid)
+
+# TODO type / subtype:
+# select: single, multiple
+# check: single, multiple
+# boolean: radio, switch
+# text: short, long, html
+# numeric: single, range
+# date: single, range
+
 
 editFieldModuleUI <- function(id, column, data, 
                               type, 
@@ -73,13 +97,11 @@ editFieldModuleUI <- function(id, column, data,
     }
     ui <- checkboxInput(ns("value"), label, value = value)
     
+  } else if(type == "html"){
+
+    ui <- shintocatman::htmlInput(ns("value"), label = label, value = value)
+
   }
-  
-  # } else if(type == "html"){
-  # 
-  #   shintocatman::htmlInput(ns("value"), value = value)
-  # 
-  # }
   
   if(isTRUE(disabled)){
     ui <- shinyjs::disabled(ui)
@@ -116,6 +138,7 @@ editFieldModule <- function(input, output, session, .reg, type){
     
     out <- input$value
     
+    # Extra processing of output
     if(type == "boolean"){
       out <- as.logical(out)
       
@@ -140,6 +163,34 @@ editFieldModule <- function(input, output, session, .reg, type){
 
 # editFieldModuleUI("one", "this_thing", data = NULL,
 #                   type = "boolean", default = TRUE, options = NULL, label = "hello")
+
+
+test_editFieldModule <- function(){
+  
+  devtools::load_all()
+  
+  ui <- softui::simple_page(
+    softui::box(
+      uiOutput("uiout")
+    )
+  )
+  
+  server <- function(input, output, session) {
+    
+    output$uiout <- renderUI({
+      # editFieldModuleUI("one", "this_thing", data = NULL,
+      #                   type = "html", default = TRUE, options = NULL, 
+      #                   label = "hello")
+      shintocatman::htmlInput("test", value = "some text")
+    })
+    
+  }
+  
+  shinyApp(ui, server)
+  
+}
+
+
 
 
 

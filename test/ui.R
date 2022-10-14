@@ -16,6 +16,7 @@ sidebar <- softui::dashboard_sidebar(
 body <- softui::dashboard_body(
   
   includeCSS("www/extra_css.css"),
+  shintocatman::useHtmlInput(),
 
   softui::tab_items(
     softui::tab_item("admin",
