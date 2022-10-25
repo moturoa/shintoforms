@@ -89,7 +89,9 @@ editFieldModuleUI <- function(id, column, data,
       value <- Sys.Date()
     }
     
-    ui <- dateInput(ns("value"), label, language = "nl", value = value, format = "dd-mm-yyyy")
+    ui <- dateInput(ns("value"), label, language = "nl", 
+                    weekstart = 1,  # start on monday; should be configurable at some point
+                    value = value, format = "dd-mm-yyyy")
     
   } else if(type == "singlecheck"){
     if(length(value) == 0 || as.character(value) == ""){
