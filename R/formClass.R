@@ -310,7 +310,6 @@ formClass <- R6::R6Class(
       # nodig voor wanneer men op 'opslaan' klikt zonder wijziging
       if(length(replace_list) > 0){
         
-        
         # interpolate KOLOM = ?value  voor alle records in de replace_list behalve bool type
         set_values <- lapply(names(replace_list),  function(x){
           
@@ -956,8 +955,6 @@ formClass <- R6::R6Class(
       # id of the registration
       id <- old_data[[self$data_columns$id]]
       
-      
-      
       replace_list <- list()
       
       
@@ -967,10 +964,10 @@ formClass <- R6::R6Class(
         old_value <- old_data[[col]]
         
         # When a field is not filled in, even when NULL is given as input, the system sometimes retreives it as NA,
-        # So this extra check is necessary; comparison with NULL is fine. TODO: Consult with Remko
-        if(is.na(old_value)){
-          old_value <- NULL
-        }
+        # # So this extra check is necessary; comparison with NULL is fine. TODO: Consult with Remko
+        # if(is.na(old_value)){
+        #   old_value <- NULL
+        # }
         
         data_has_changed <- try(!isTRUE(new_value == old_value) && !(is.na(old_value) & is.na(new_value)))
         

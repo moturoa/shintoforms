@@ -290,6 +290,7 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   observeEvent(confirm_new_reg(), {
+    
     if(write_method() == "new"){
       resp <- .reg$write_new_registration(edits(), current_user)
     } else {
