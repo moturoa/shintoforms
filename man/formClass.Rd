@@ -52,9 +52,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-prepare_data_table}{\code{formClass$prepare_data_table()}}
 \item \href{#method-NA-write_new_registration}{\code{formClass$write_new_registration()}}
 \item \href{#method-NA-edit_registration}{\code{formClass$edit_registration()}}
-\item \href{#method-NA-add_event}{\code{formClass$add_event()}}
 \item \href{#method-NA-delete_registration}{\code{formClass$delete_registration()}}
-\item \href{#method-NA-delete_event}{\code{formClass$delete_event()}}
 \item \href{#method-NA-read_registrations}{\code{formClass$read_registrations()}}
 \item \href{#method-NA-get_registration_by_id}{\code{formClass$get_registration_by_id()}}
 \item \href{#method-NA-filter_period}{\code{formClass$filter_period()}}
@@ -63,8 +61,6 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-get_registration_by_json}{\code{formClass$get_registration_by_json()}}
 \item \href{#method-NA-create_timeseries}{\code{formClass$create_timeseries()}}
 \item \href{#method-NA-create_events}{\code{formClass$create_events()}}
-\item \href{#method-NA-make_event_data}{\code{formClass$make_event_data()}}
-\item \href{#method-NA-get_eventdata_registration}{\code{formClass$get_eventdata_registration()}}
 \item \href{#method-unknown-clone}{\code{formClass$clone()}}
 }
 }
@@ -92,11 +88,6 @@ Make new form object
   data_columns = list(id = "id_registratie", name = "naam_registratie", time_created =
     "invoerdatum", time_modified = "wijzigdatum", user = "user_id", status = "status",
     priority = "priority"),
-  event_data = NULL,
-  event_columns = list(case = "case_id", activity = "activity_id", activity_instance =
-    "activity_id_instance", eventtime = "eventtime", lifecycle = "lifecycle_id", resource
-    = "resource"),
-  event_extra = NULL,
   inject = NULL,
   pool = TRUE,
   sqlite = NULL,
@@ -550,29 +541,11 @@ Make sure the necessary columns are present in the data_table
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-add_event"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-add_event}{}}}
-\subsection{Method \code{add_event()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$add_event(registration_id, activity, resource)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-delete_registration"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-delete_registration}{}}}
 \subsection{Method \code{delete_registration()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$delete_registration(registration_id)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-delete_event"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-delete_event}{}}}
-\subsection{Method \code{delete_event()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$delete_event(registration_id)}\if{html}{\out{</div>}}
 }
 
 }
@@ -657,24 +630,6 @@ Read registrations, recode select values where needed.
 \subsection{Method \code{create_events()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$create_events(timeseries, creation_only = FALSE)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-make_event_data"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-make_event_data}{}}}
-\subsection{Method \code{make_event_data()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$make_event_data(data)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-get_eventdata_registration"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-get_eventdata_registration}{}}}
-\subsection{Method \code{get_eventdata_registration()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$get_eventdata_registration(id)}\if{html}{\out{</div>}}
 }
 
 }
