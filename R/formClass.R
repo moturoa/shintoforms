@@ -49,16 +49,6 @@ formClass <- R6::R6Class(
                             status = "status",
                             priority = "priority"
                           ),
-                          event_data = NULL,
-                          event_columns = list(
-                            case = "case_id",
-                            activity = "activity_id",
-                            activity_instance = "activity_id_instance",
-                            eventtime = "eventtime",
-                            lifecycle = "lifecycle_id",
-                            resource = "resource"
-                          ),
-                          event_extra = NULL,
                           inject = NULL,
                           pool = TRUE,
                           sqlite = NULL,
@@ -93,17 +83,6 @@ formClass <- R6::R6Class(
       #   stop(paste("Columns in data_columns not found:", paste(unlist(self$data_columns)[!di2], collapse=",")))
       # }
       
-      self$event_data <- event_data
-      self$event_columns <- event_columns
-      
-      if(!is.null(self$event_data)){
-        eventcols <- self$table_columns(self$event_data)
-        di3 <- unlist(self$event_columns) %in% eventcols
-        
-        if(any(!di3)){
-          stop(paste("Columns in event_columns not found:", paste(eventcols[!di3], collapse=",")))
-        }
-      }
       
       # Extra custom fields (modules, can be anything even static HTML)
       self$inject <- inject
@@ -939,10 +918,6 @@ formClass <- R6::R6Class(
       
       data_all <- cbind(data_pre, data)
       
-      if(!is.null(self$event_data)){
-        self$add_event(data_all[[self$data_columns$id]], data_all[[self$data_columns$status]], user_id)
-      }
-      
       res <- self$append_data(self$data_table, data_all)
       
       # TRUE if success (append_data has a try()) 
@@ -995,30 +970,6 @@ formClass <- R6::R6Class(
       return(TRUE)
     },
     
-    add_event = function(registration_id, activity, resource){
-      new_event <- data.frame(
-        case = registration_id,
-        activity = activity,
-        activity_instance = uuid::UUIDgenerate(),
-        eventtime = format(Sys.time()),
-        lifecycle = "Status actief",
-        resource = resource
-      )
-      
-      
-      
-      # TODO generic renaming method (to/from, data/def tables)
-      new_event <- dplyr::rename_with(new_event, 
-                                      .fn = function(x){
-                                        unname(unlist(self$event_columns[x]))
-                                      })  
-      
-      res <- self$append_data(self$event_data, new_event)
-      
-      # TRUE if success (append_data has a try()) 
-      return(!inherits(res, "try-error"))
-      
-    },
     
     delete_registration = function(registration_id){
       if(!is.null(self$schema)){
@@ -1029,16 +980,6 @@ formClass <- R6::R6Class(
       
       dbExecute(self$con, qu)
       
-    },
-    
-    delete_event = function(registration_id){
-      if(!is.null(self$schema)){
-        qu <- glue::glue("DELETE FROM {self$schema}.{self$event_data} WHERE {self$event_columns$case} = '{registration_id}'")
-      } else {
-        qu <- glue::glue("DELETE FROM {self$event_data} WHERE {self$event_columns$case} = '{registration_id}'")
-      }
-      
-      dbExecute(self$con, qu)
     },
     
     
@@ -1285,43 +1226,6 @@ formClass <- R6::R6Class(
       # return one dataframe with all mutations for all p_ids
       return(as.data.frame(do.call(rbind, all_mutations)))
       
-  }  ,
-  
-  
-  
-  ####### Process Mining #####
-  
-  make_event_data = function(data){
-    bupaR::eventlog(data,
-                    case_id = self$event_columns$case,
-                    activity_id = self$event_columns$activity,
-                    activity_instance_id = self$event_columns$activity_instance,
-                    timestamp = self$event_columns$eventtime,
-                    lifecycle_id = self$event_columns$lifecycle,
-                    resource_id = self$event_columns$resource)
-  },
-  
-  get_eventdata_registration = function(id){
-    data <- self$read_table(self$event_data, lazy = TRUE) %>%
-      filter(!!sym(self$event_columns$case) == !!id) %>%
-      collect
-    
-    event_data <- self$make_event_data(data)
-    
-    statussen <- unlist(self$get_field_choices("status"))
-    statussen <- data.frame(number = names(statussen), status = statussen)
-    
-    firstname <- self$event_columns$activity
-    join_cols = c("number")
-    names(join_cols) <- firstname
-    
-    event_data <- left_join(event_data, statussen, by = join_cols)
-    
-    event_data <- event_data %>%
-      mutate(activity_id = status) %>%
-      select(-c("status")) %>% 
-      replace_na(list(activity_id = "Geen status"))
-    
   }
   
   )
