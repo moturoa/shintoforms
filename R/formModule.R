@@ -93,11 +93,14 @@ formModule <- function(input, output, session, .reg = NULL,
                        disabled = reactive(FALSE),
                        
                        callback_confirm = function(){},
-                       callback_cancel = function(){}) {
+                       callback_cancel = function(){},
+                       
+                       message_success = "Registratie opgeslagen",
+                       message_error = "Er is een fout opgetreden",
+                       message_deleted = "Registratie verwijderd"
+                       ) {
   
   ns <- session$ns
-  
-  nieuwe_registratie_ping <- reactiveVal()
   
   # Extra  block with description / other UI / whatever / of the registration
   output$ui_registration_description <- renderUI({
@@ -105,7 +108,6 @@ formModule <- function(input, output, session, .reg = NULL,
     registration_description_function(data())
     
   })
-  
   
   
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet.
@@ -299,9 +301,9 @@ formModule <- function(input, output, session, .reg = NULL,
     
     
     if(resp){
-      toastr_success("Registratie opgeslagen")
+      toastr_success(message_success)
     } else {
-      toastr_error("Er is een fout opgetreden")
+      toastr_error(message_error)
     }
     
     out_ping(runif(1))
@@ -314,9 +316,10 @@ formModule <- function(input, output, session, .reg = NULL,
   observeEvent(input$btn_delete_registratie, {
     showModal(
       softui::modal(
-        title = "Weet u zeker dat u dit item wilt verwijderen?",
+        title = "Registratie verwijderen",
         id_confirm = "btn_confirm_delete_registration", confirm_txt = "Ja, verwijderen", confirm_icon = softui::bsicon("trash"),
-        close_txt = "Annuleren", close_icon = softui::bsicon("x-lg"),
+        close_txt = "Annuleren", 
+        close_icon = softui::bsicon("x-lg"),
         tags$p(glue("U staat op het punt om registratie {data()[[.reg$data_columns$name]]} (id: {data()[[.reg$data_columns$id]]}) te verwijderen. 
         Als u dit zeker weet kunt u dit hier bevestigen, anders kunt u de keuze annuleren.")),
         tags$p("Gebruiker: ", current_user),
@@ -332,7 +335,7 @@ formModule <- function(input, output, session, .reg = NULL,
       .reg$delete_event(data()[[.reg$data_columns$id]])
     }
 
-    toastr_success("Registratie verwijderd")
+    toastr_success(message_deleted)
     
     out_ping(runif(1))
     callback_confirm()
