@@ -19,6 +19,7 @@ formClass <- R6::R6Class(
     initialize = function(config_file = "conf/config.yml", 
                           what,
                           schema = NULL,
+                          db_connection = NULL,
                           filterable = FALSE,
                           audit=FALSE,
                           audit_table = "registrations_audit",
@@ -58,7 +59,21 @@ formClass <- R6::R6Class(
       self$audit_table <- audit_table
       
       self$default_color <- default_color
-      self$connect_to_database(config_file, schema, what, pool, sqlite)
+      
+      if(is.null(db_connection)){
+        self$connect_to_database(config_file, schema, what, pool, sqlite)  
+      } else {
+        if(!DBI::dbIsValid(db_connection)){
+          stop("Please pass a valid dbConnection object")
+        }
+        
+        self$con <- db_connection
+        self$schema <- schema
+        self$pool <- pool  #unused with passed db_connection?
+        self$dbtype <- "postgres"
+        
+      }
+      
       
       self$def_table <- def_table
       self$def <- def_columns
@@ -123,8 +138,8 @@ formClass <- R6::R6Class(
         
         cf <- config::get(what, file = config_file)
         
-        print("----CONNECTING TO----")
-        print(cf$dbhost)
+        flog.info("Connecting to DB: {cf$dbname} on host : {cf$dbhost}")
+        flog.info("Connecting with user: {cf$dbuser}")
         
         self$dbuser <- cf$dbuser
         
