@@ -63,7 +63,8 @@ formClass <- R6::R6Class(
                             comment = "comment", 
                             status = "status",
                             username = "username", 
-                            timestamp = "timestamp"
+                            timestamp = "timestamp",
+                            verwijderd = "verwijderd"
                           ), 
                           relation_audit_table = "object_relations_audit",
                           inject = NULL,
@@ -1301,7 +1302,9 @@ formClass <- R6::R6Class(
                                        relation_id=NA,
                                        filter_verwijderd=T){
     collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
-    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
+#    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
+    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
+ 
     A = ifelse(is.na(collector_id), "", glue(" AND {self$relation_columns$collector_id} = '{collector_id}'"))
     B = ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
     C = ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
@@ -1324,6 +1327,7 @@ formClass <- R6::R6Class(
                           relation_type,
                           comment=NA,
                           status="1",
+                          verwijderd=FALSE,
                           username,
                           timestamp){ 
     
@@ -1351,9 +1355,9 @@ formClass <- R6::R6Class(
     return(self$query("select now()", quiet = TRUE)$now)
     
   },
-  #' @description Delete relations
+  #' @description Soft delete relations
   #' @param ids ID of rows to delete
-  delete_relations = function(ids){
+  soft_delete_relations = function(ids){
     
     if(length(ids) > 0){ 
       if(self$audit) {
@@ -1379,15 +1383,14 @@ formClass <- R6::R6Class(
       }
       dbExecute(self$con, qu_delete) 
     }
-  }, 
-  
+  },  
   #' @description Append relations
   #' @param data Data to append
   write_new_relations = function(data){ 
     postgres_time<-self$postgres_now()
     # Voor postgres GEBRUIK now()::timestamp
     data <- data %>% mutate(# timestamp =Sys.time(),
-                            timestamp = format(postgres_time),
+                            timestamp = format(postgres_time), 
                             collector_type = ifelse(is.na(collector_type), self$class_type, collector_type))
     
     
@@ -1396,9 +1399,9 @@ formClass <- R6::R6Class(
     
   },
   
-  #' @description update relation table for registration ID
+  #' @description update current relation table for registration ID
   #' @param new_relations The current state that should end up in the relations table 
-  update_relations= function(new_relations, registration_id){ 
+  update_relations = function(new_relations, registration_id){ 
  
     if(!is.null(self$schema)){
       #step 1 detect changes
@@ -1406,7 +1409,8 @@ formClass <- R6::R6Class(
     } else {
       qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$collector_id} = '{registration_id}';")
     } 
-    old_relations <- dbGetQuery(self$con, qu) 
+    old_relations <- dbGetQuery(self$con, qu) %>% 
+      mutate(timestamp = as.character(timestamp))
  
     if(nrow(new_relations) == 0 & nrow(old_relations) == 0) return(TRUE)
     
@@ -1418,28 +1422,30 @@ formClass <- R6::R6Class(
     # ALTERED rows   (in old_relations,     in new_relations, with differences) 
     #
     # actions:
-    # DELETED rows are archived, deleted
+    # DELETED rows are archived, deleted, then the new version is added
     # ALTERED rows are archived, deleted, then the new version is added
     # NEW rows are added
     # UNALTERED rows are left as they are
     
     # get all (old) relations that are ALTERED or DELETED
     altered_or_deleted <- old_relations %>% 
-      left_join(new_relations, by='id', suffix=c("", "_new")) %>% 
-      filter((comment_new != comment & status_new != status) | is.na(collector_id_new))
-    
-    
-    # archive all relations that are ALTERED or DELETED  
-    self$delete_relations(altered_or_deleted$id) 
+      left_join(new_relations, by='id', suffix=c("", "_new"))  %>% 
+      filter((comment_new != comment & status_new != status) | is.na(collector_id_new)) %>%
+      mutate(verwijderd = ifelse(is.na(collector_id_new), TRUE, verwijderd))%>%
+      select(!ends_with('_new'))
+     
+    # archive all relations that are ALTERED or DELETED   
+    self$soft_delete_relations(altered_or_deleted$id) 
     
     # append all relations that are NEW or ALTERED
-    new_and_altered <- new_relations %>% 
+    new  <- new_relations %>% 
       left_join(old_relations, by='id', suffix=c("", "_old"))%>% 
-      filter(comment_old != comment | status_old != status | is.na(status_old)) %>%
+      filter(is.na(status_old)) %>%
       select(!ends_with('_old'))
-      
-    if(nrow(new_and_altered) > 0){
-      self$write_new_relations(new_and_altered)
+  
+    new_data <- dplyr::bind_rows(new, altered_or_deleted)
+    if(nrow(new_data) > 0){
+      self$write_new_relations(new_data)
     }
     
   return(TRUE)

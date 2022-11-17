@@ -272,7 +272,7 @@ formModule <- function(input, output, session, .reg = NULL,
         ), extra[[j]]$module_server_pars)
         
         do.call(callModule, lis_call)
-      })
+      }) 
       
       modules_relations(relation_values)
     }
@@ -286,8 +286,13 @@ formModule <- function(input, output, session, .reg = NULL,
   })
   
   edits_relations <- reactive({
-    req(length(modules_relations())) 
-    dplyr::bind_rows(lapply(modules_relations(), function(x)x())) %>% mutate(username =current_user)
+    req(length(modules_relations()))  
+      
+    rel <- lapply(modules_relations(), function(x)x())
+ 
+      dplyr::bind_rows(rel) %>% 
+        mutate(username =current_user)
+ 
   })
   
   
@@ -382,7 +387,7 @@ formModule <- function(input, output, session, .reg = NULL,
 
     # delete relation data
     current_relations = .reg$get_objects_for_collector(collector_id = current_reg_id())
-    .reg$delete_relations(current_relations$id) 
+    .reg$soft_delete_relations(current_relations$id) 
     
     toastr_success(message_deleted)
     
