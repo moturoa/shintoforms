@@ -109,6 +109,14 @@ formModule <- function(input, output, session, .reg = NULL,
     
   })
   
+  current_reg_id <- reactive({
+    if(write_method() == 'new'){
+      uuid::UUIDgenerate()
+    } else {
+      data()[[.reg$data_columns$id]]
+    }
+  })
+  
   
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet.
   cfg_left <- reactive({
@@ -133,10 +141,10 @@ formModule <- function(input, output, session, .reg = NULL,
     if(is.null(inj))return(NULL)
     
     inj <- lapply(inj, function(x){
-      
+      print( x$columns)
       if(is.null(x$html) & !is.null(x$ui_module)){
         x$id <- uuid::UUIDgenerate()
-        x$html <- x$ui_module(ns(x$id), data = data(), columns = x$columns)
+        x$html <- x$ui_module(ns(x$id), data = data(), columns = x$columns, x$module_ui_pars)
       }
       x
     })
@@ -218,17 +226,21 @@ formModule <- function(input, output, session, .reg = NULL,
   })
   
   modules_extra <- reactiveVal()
+  modules_relations <- reactiveVal()
   
   observe({
     
-    extra <- inject_prep()
-    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null))
+    extra <- inject_prep() 
+    
+    # For all non relations
+    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
+                      sapply(sapply(extra, "[[", "relation"), is.null))
     
     if(length(withmod)){
       
-      values <- lapply(seq_along(withmod), function(i){
+      extra_values <- lapply(seq_along(withmod), function(i){
         j <- withmod[i]
-        
+        print(extra[[j]]$columns)
         lis_call <- c(list(
           module = extra[[j]]$server_module,
           id = extra[[j]]$id,
@@ -239,7 +251,30 @@ formModule <- function(input, output, session, .reg = NULL,
         do.call(callModule, lis_call)
       })
       
-      modules_extra(values)
+      modules_extra(extra_values)
+    }
+    
+    # for all relations
+    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
+                     !sapply(sapply(extra, "[[", "relation"), is.null))
+    
+    if(length(withmod)){
+      
+      relation_values <- lapply(seq_along(withmod), function(i){
+        j <- withmod[i]
+        
+        lis_call <- c(list(
+          module = extra[[j]]$server_module,
+          id = extra[[j]]$id,
+          columns = extra[[j]]$columns,
+          data = data,
+          reg_id=current_reg_id
+        ), extra[[j]]$module_server_pars)
+        
+        do.call(callModule, lis_call)
+      })
+      
+      modules_relations(relation_values)
     }
     
     
@@ -250,9 +285,16 @@ formModule <- function(input, output, session, .reg = NULL,
     lapply(modules_extra(), function(x)x())
   })
   
+  edits_relations <- reactive({
+    req(length(modules_relations())) 
+    dplyr::bind_rows(lapply(modules_relations(), function(x)x())) %>% mutate(username =current_user)
+  })
+  
   
   edits <- reactive({
-    ext <- edits_extra()
+    ext <- edits_extra() 
+    
+    # configured are all 
     out <- edits_configured()
     
     if(length(ext)){
@@ -292,15 +334,18 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   observeEvent(confirm_new_reg(), {
-    
+  
     if(write_method() == "new"){
-      resp <- .reg$write_new_registration(edits(), current_user)
+      resp <- .reg$write_new_registration(edits(), current_user, registration_id=current_reg_id())
+      resp2 <- .reg$write_new_relations(edits_relations())
+      
     } else {
-      resp <- .reg$edit_registration(old_data = data(), new_data = edits(), user_id = current_user)
+      resp <- .reg$edit_registration(old_data = data(), new_data = edits(), user_id = current_user, registration_id=current_reg_id())
+      resp2 <- .reg$update_relations(edits_relations(), registration_id=current_reg_id())
     }
     
     
-    if(resp){
+    if(resp & resp2){
       toastr_success(message_success)
     } else {
       toastr_error(message_error)
@@ -335,6 +380,10 @@ formModule <- function(input, output, session, .reg = NULL,
       .reg$delete_event(data()[[.reg$data_columns$id]])
     }
 
+    # delete relation data
+    current_relations = .reg$get_objects_for_collector(collector_id = current_reg_id())
+    .reg$delete_relations(current_relations$id) 
+    
     toastr_success(message_deleted)
     
     out_ping(runif(1))
