@@ -288,7 +288,7 @@ formModule <- function(input, output, session, .reg = NULL,
   edits_relations <- reactive({
     req(length(modules_relations()))  
       
-    rel <- lapply(modules_relations(), function(x)x())
+    rel <- lapply(modules_relations(), function(x)x() %>% mutate(timestamp=as.character(timestamp)))
  
       dplyr::bind_rows(rel) %>% 
         mutate(username =current_user)

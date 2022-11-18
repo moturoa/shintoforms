@@ -1300,6 +1300,7 @@ formClass <- R6::R6Class(
                                        collector_id=NA,
                                        relation_type=NA,
                                        relation_id=NA,
+                                       object_type=NA, 
                                        filter_verwijderd=T){
     collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
 #    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
@@ -1308,11 +1309,12 @@ formClass <- R6::R6Class(
     A = ifelse(is.na(collector_id), "", glue(" AND {self$relation_columns$collector_id} = '{collector_id}'"))
     B = ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
     C = ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
+    D = ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
     
     if(!is.null(self$schema)){
-      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C};")
+      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C}{D};")
     } else {
-      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C};")
+      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C}{D};")
     } 
     return(dbGetQuery(self$con, qu))
     
@@ -1330,6 +1332,7 @@ formClass <- R6::R6Class(
   # get_objects_for_collector('signaal', relation_type="hoofdadres") 
   get_collector_for_object = function( object_id,
                                        collector_type=NA,
+                                       object_type=NA,
                                        relation_type=NA,
                                        relation_id=NA,
                                        filter_verwijderd=T){
@@ -1337,14 +1340,15 @@ formClass <- R6::R6Class(
     #    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
     V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
     
-    A = ifelse(is.na(collector_type), "", glue(" AND {self$relation_columns$collector_type} = '{collector_type}'"))
-    B = ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
-    C = ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
+    A = ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
+    B = ifelse(is.na(collector_type), "", glue(" AND {self$relation_columns$collector_type} = '{collector_type}'"))
+    C = ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
+    D = ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
     
     if(!is.null(self$schema)){
-      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C};")
+      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C}{D};")
     } else {
-      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C};")
+      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C}{D};")
     }  
     return(dbGetQuery(self$con, qu))
   },
