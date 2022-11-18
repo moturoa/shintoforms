@@ -9,11 +9,11 @@
 formAdminUI <- function(id, 
                         title = "Formulieropstelling",
                         title_deleted = "Verwijderde invoervelden",
-                        header_ui = NULL){
+                        header_ui = NULL, width = 12){
   
   ns <- NS(id)
   
-  softui::tab_box(
+  softui::tab_box(width = width,
     
     softui::tab_panel(
       title = title, 
@@ -119,47 +119,48 @@ formAdminUI <- function(id,
 
 #' @export
 #' @rdname formAdminModule
-formAdminModule <- function(input, output, session, .reg = NULL){
+formAdminModule <- function(input, output, session, .reg = NULL, form_layout = reactive(TRUE)){
   
+  
+  observe({
+    if(!form_layout()){
+      shinyjs::hide("span_edit_formorder")  
+    }
+    
+  })
   
   db_ping <- reactiveVal()
   
   ns <- session$ns
   
-  form_invul_data <- reactive({
+  form_fields_data <- reactive({
     db_ping()
     .reg$get_input_fields(TRUE)
   })
   
   output$dt_form_invoervelden <- DT::renderDataTable({
-    if(.reg$filterable){
-      admin_table <- form_invul_data() %>%
-        select(#"ID" = id_formulierveld, 
-          "Kolomnaam" = column_field, 
-          "Label" = label_field, 
-          "Type" = type_field, 
-          "Kolom" = form_section,
-          "Volgorde" = order_field,
-          "Opties" = options, 
-          "Volgorde opties" = order_options, 
-          "Kleuren" = colors, 
-          "Verwijderbaar" = removable,
-          "Filter" = make_filter,
-          "Tooltip" = tooltip)
-    } else {
-      admin_table <- form_invul_data() %>%
-        select(#"ID" = id_formulierveld, 
-          "Kolomnaam" = column_field, 
-          "Label" = label_field, 
-          "Type" = type_field, 
-          "Kolom" = form_section,
-          "Volgorde" = order_field,
-          "Opties" = options, 
-          "Volgorde opties" = order_options, 
-          "Kleuren" = colors, 
-          "Verwijderbaar" = removable)
-    }
-    admin_table %>%
+    
+    data <- form_fields_data()
+    
+    key <- list(
+      "Kolomnaam" = "column_field", 
+      "Label" = "label_field", 
+      "Type" = "type_field", 
+      "Kolom" = "form_section",
+      "Volgorde" = "order_field",
+      "Opties" = "options", 
+      "Volgorde opties" = "order_options", 
+      "Kleuren" = "colors", 
+      "Verwijderbaar" = "removable",
+      "Filter" = "make_filter",
+      "Tooltip" = "tooltip"
+    )
+  
+    key <- key[key %in% names(data)]
+      
+    data <- dplyr::rename(data, !!!key)
+    
+    data %>%
       softui::datatafel(selection = "single", dom = "tp", 
                         pageLength = 30, scrollX = TRUE, 
                         extensions = list())
@@ -171,7 +172,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     if(is.null(ii)){
       return(NULL)
     }
-    form_invul_data() %>% slice(ii)
+    form_fields_data() %>% slice(ii)
   })
   
   selected_id <- reactive({
@@ -238,7 +239,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   })
   
   form_setup <- callModule(jsonFormSetupModule, "edit_formorder", 
-                           data = form_invul_data,
+                           data = form_fields_data,
                            .reg = .reg,
                            side_column = reactive("form_section"),
                            order_column = reactive("order_field"),
@@ -364,6 +365,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   
   
   observeEvent(colors(), {
+    browser()
     .reg$edit_options_colors(selected_id(), colors())
     db_ping(runif(1))
   })

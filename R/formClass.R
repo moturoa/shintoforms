@@ -77,6 +77,7 @@ formClass <- R6::R6Class(
       
       self$def_table <- def_table
       self$def <- def_columns
+      self$def_fields_are_removable <- "removable" %in% names(def_columns)
          
       
       self$data_table <- data_table
@@ -486,12 +487,16 @@ formClass <- R6::R6Class(
         new = names(self$def)
       )
       
-      if(!all(names(data) %in% key$old)){
-        stop("Not all definition table names configured : check def_columns argument)")
-      }
+      # if(!all(names(data) %in% key$old)){
+      #   stop("Not all definition table names configured : check def_columns argument)")
+      # }
       
       dplyr::rename_with(data, .fn = function(x){
-        key$new[match(x, key$old)]
+        i_m <- match(x, key$old)
+        out <- x
+        out[!is.na(i_m)] <- key$new[i_m[!is.na(i_m)]]  
+        out
+        
       })
       
     },
