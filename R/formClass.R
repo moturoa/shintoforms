@@ -1314,10 +1314,40 @@ formClass <- R6::R6Class(
     } else {
       qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C};")
     } 
-    print(qu)
-    res <- dbGetQuery(self$con, qu)
+    return(dbGetQuery(self$con, qu))
     
   }, 
+
+  #' @description get_collector_for_object 
+  #' @param collector_type Type of collector
+  #' @param collector_id ID of collector
+  #' @param relation_type Description of collector -> object relation
+  #' @param relation_id ID of relation (often session ID of module)
+  #' @param filter_verwijderd when status is zero
+  # examples: 
+  # get_objects_for_collector('signaal')
+  # get_objects_for_collector('signaal', collector_id="12")
+  # get_objects_for_collector('signaal', relation_type="hoofdadres") 
+  get_collector_for_object = function( object_id,
+                                       collector_type=NA,
+                                       relation_type=NA,
+                                       relation_id=NA,
+                                       filter_verwijderd=T){
+    collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
+    #    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
+    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
+    
+    A = ifelse(is.na(collector_type), "", glue(" AND {self$relation_columns$collector_type} = '{collector_type}'"))
+    B = ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
+    C = ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
+    
+    if(!is.null(self$schema)){
+      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C};")
+    } else {
+      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C};")
+    }  
+    return(dbGetQuery(self$con, qu))
+  },
   add_relation = function(id = uuid::UUIDgenerate(),
                           collector_id,
                           collector_type, 
@@ -1449,8 +1479,7 @@ formClass <- R6::R6Class(
     }
     
   return(TRUE)
-  }
-  
+  } 
   )
   
 )
