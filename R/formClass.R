@@ -481,6 +481,7 @@ formClass <- R6::R6Class(
     
     #'@description Rename database table to correct internal column names
     rename_definition_table = function(data){
+      
       # Rename to standard colnames
       key <- data.frame(
         old = unname(unlist(self$def)),
@@ -1014,6 +1015,26 @@ formClass <- R6::R6Class(
       
     },
     
+    #' @description Replace column names of registrations with their labels
+    #' @param data Read in with `read_registrations` or `get_registration_by_id`
+    label_registrations_columns = function(data){
+      
+      labc <- self$def$label_field
+      colc <- self$def$column_field
+      
+      key <- self$read_definition(lazy=TRUE) %>% 
+        select(all_of(c(labc,colc))) %>% 
+        collect
+      
+      ii <- match(names(data), key[[colc]])
+      jj <- which(!is.na(ii))
+      ii <- ii[!is.na(ii)]
+      
+      names(data)[jj] <- key[[labc]][ii]
+      data
+      
+    },
+    
     #' @description Recode select values in registrations data
     #' @param data Dataframe (registrations data)
     recode_registrations = function(data){
@@ -1039,7 +1060,9 @@ formClass <- R6::R6Class(
     data
     },
     
-    
+    #' @description Get a registration with a uuid
+    #' @param id ID of the registration (uuid)
+    #' @param recode If TRUE, recodes integer values to their labels
     get_registration_by_id = function(id, recode = TRUE){
       
       out <- self$read_table(self$data_table, lazy = TRUE) %>%
