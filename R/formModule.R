@@ -140,8 +140,7 @@ formModule <- function(input, output, session, .reg = NULL,
     inj <- .reg$inject
     if(is.null(inj))return(NULL)
     
-    inj <- lapply(inj, function(x){
-      print( x$columns)
+    inj <- lapply(inj, function(x){ 
       if(is.null(x$html) & !is.null(x$ui_module)){
         x$id <- uuid::UUIDgenerate()
         x$html <- x$ui_module(ns(x$id), data = data(), columns = x$columns, x$module_ui_pars)
@@ -239,8 +238,7 @@ formModule <- function(input, output, session, .reg = NULL,
     if(length(withmod)){
       
       extra_values <- lapply(seq_along(withmod), function(i){
-        j <- withmod[i]
-        print(extra[[j]]$columns)
+        j <- withmod[i] 
         lis_call <- c(list(
           module = extra[[j]]$server_module,
           id = extra[[j]]$id,
@@ -287,8 +285,8 @@ formModule <- function(input, output, session, .reg = NULL,
   
   edits_relations <- reactive({
     req(length(modules_relations()))  
-      
-    rel <- lapply(modules_relations(), function(x)x() %>% mutate(timestamp=as.character(timestamp)))
+       
+    rel <- lapply(modules_relations(), function(x)x())  
  
       dplyr::bind_rows(rel) %>% 
         mutate(username =current_user)

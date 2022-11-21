@@ -352,7 +352,7 @@ formClass <- R6::R6Class(
         update_str <- paste(set_values[set_values != ""],  collapse = ", ")
         
         if(!is.null(self$schema)){
-          query <- glue("update {self$schema}.{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = {as.integer(Sys.time())} where ",
+          query <- glue("update {self$schema}.{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = NOW()::timestamp where ",
                         "{col_compare} = ?val_compare") %>% as.character() 
           
           if(self$audit){
@@ -362,7 +362,7 @@ formClass <- R6::R6Class(
           }
         } else {
           
-          query <- glue("update {table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = {as.integer(Sys.time())} where ",
+          query <- glue("update {table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = NOW()::timestamp where ",
                         "{col_compare} = ?val_compare") %>% as.character() 
           if(self$audit){
             audit_query <- glue("insert into {self$audit_table} select * from {table} where ",
@@ -1284,6 +1284,16 @@ formClass <- R6::R6Class(
       # return one dataframe with all mutations for all p_ids
       return(as.data.frame(do.call(rbind, all_mutations)))
       
+  },
+  
+  ## Relations
+  get_all_relations = function(){
+    if(!is.null(self$schema)){
+      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
+    } else {
+      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
+    } 
+    return(dbGetQuery(self$con, qu))  
   },
   
   #' @description get_objects_for_collector 
