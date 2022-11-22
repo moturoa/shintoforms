@@ -22,7 +22,7 @@ formClass <- R6::R6Class(
                           schema = NULL,
                           db_connection = NULL,
                           filterable = FALSE,
-                          audit=FALSE,
+                          audit = FALSE,
                           audit_table = "registrations_audit",
                           def_table = "formulier_velden",
                           def_columns = list(
@@ -86,6 +86,7 @@ formClass <- R6::R6Class(
       if(is.null(db_connection)){
         self$connect_to_database(config_file, schema, what, pool, sqlite)  
       } else {
+        
         if(!DBI::dbIsValid(db_connection)){
           stop("Please pass a valid dbConnection object")
         }
@@ -503,6 +504,7 @@ formClass <- R6::R6Class(
     
     #'@description Rename database table to correct internal column names
     rename_definition_table = function(data){
+      
       # Rename to standard colnames
       key <- data.frame(
         old = unname(unlist(self$def)),
@@ -1049,35 +1051,72 @@ formClass <- R6::R6Class(
       data <- self$read_table(self$data_table)
       
       if(recode){
-        
-        # find select fields. they will be recoded with the actual values
-        def <- self$read_definition() %>% filter(
-          !!sym(self$def[["type_field"]]) %in% c("multiselect","singleselect"),
-          !!sym(self$def[["column_field"]]) %in% names(data))
-        
-        # for every select field, replace values
-        for(i in seq_len(nrow(def))){
-          opt <- def[[self$def$options]][i]
-          key <- self$from_json(opt)
-          col <- def[[self$def$column_field]][i]
-          
-          if(length(key)){
-            data[[col]] <- dplyr::recode(data[[col]], !!!key)   
-          }
-          
-        }
-        
+        data <- self$recode_registrations(data)
       }
       
       data
       
     },
     
-    get_registration_by_id = function(id){
+    #' @description Replace column names of registrations with their labels
+    #' @param data Read in with `read_registrations` or `get_registration_by_id`
+    label_registrations_columns = function(data){
       
-      self$read_table(self$data_table, lazy = TRUE) %>%
+      labc <- self$def$label_field
+      colc <- self$def$column_field
+      
+      key <- self$read_definition(lazy=TRUE) %>% 
+        select(all_of(c(labc,colc))) %>% 
+        collect
+      
+      ii <- match(names(data), key[[colc]])
+      jj <- which(!is.na(ii))
+      ii <- ii[!is.na(ii)]
+      
+      names(data)[jj] <- key[[labc]][ii]
+      data
+      
+    },
+    
+    #' @description Recode select values in registrations data
+    #' @param data Dataframe (registrations data)
+    recode_registrations = function(data){
+      
+      # find select fields. they will be recoded with the actual values
+      def <- self$read_definition(lazy = TRUE) %>% 
+        filter(!!sym(self$def[["type_field"]]) %in% c("multiselect","singleselect"),
+               !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
+        collect
+      
+      # for every select field, replace values
+      for(i in seq_len(nrow(def))){
+        opt <- def[[self$def$options]][i]
+        key <- self$from_json(opt)
+        col <- def[[self$def$column_field]][i]
+        
+        if(length(key)){
+          data[[col]] <- dplyr::recode(data[[col]], !!!key)   
+        }
+        
+      }
+      
+    data
+    },
+    
+    #' @description Get a registration with a uuid
+    #' @param id ID of the registration (uuid)
+    #' @param recode If TRUE, recodes integer values to their labels
+    get_registration_by_id = function(id, recode = TRUE){
+      
+      out <- self$read_table(self$data_table, lazy = TRUE) %>%
         dplyr::filter(!!sym(self$data_columns$id) == !!id) %>%
         collect
+      
+      if(recode){
+        out <- self$recode_registrations(out)
+      }
+      
+      out
       
     },
     
