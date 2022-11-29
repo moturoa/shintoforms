@@ -82,6 +82,7 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
 formModule <- function(input, output, session, .reg = NULL, 
                        ping_update = reactive(NULL),
                        current_user, 
+                       trigger = reactive(NULL),
                        data = reactive(NULL),
                        write_method = reactive("new"),
                        
@@ -101,6 +102,15 @@ formModule <- function(input, output, session, .reg = NULL,
                        ) {
   
   ns <- session$ns
+  
+  current_reg_id <- reactive({ 
+    trigger()
+    if(write_method() == "new"){
+      return(uuid::UUIDgenerate())
+    } else {
+      return(data()[[.reg$data_columns$id]])
+    } 
+  })
   
   # Extra  block with description / other UI / whatever / of the registration
   output$ui_registration_description <- renderUI({
@@ -219,10 +229,12 @@ formModule <- function(input, output, session, .reg = NULL,
   
   modules_extra <- reactiveVal()
   
+  modules_relations <- reactiveVal()
   observe({
     
     extra <- inject_prep()
-    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null))
+    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
+                       sapply(sapply(extra, "[[", "relation"), is.null))
     
     if(length(withmod)){
       
@@ -242,6 +254,27 @@ formModule <- function(input, output, session, .reg = NULL,
       modules_extra(values)
     }
     
+    # for all relations
+    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
+                       !sapply(sapply(extra, "[[", "relation"), is.null))
+    
+    if(length(withmod)){ 
+      
+      relation_values <- lapply(seq_along(withmod), function(i){
+        j <- withmod[i]
+        
+        lis_call <- c(list(
+          module = extra[[j]]$server_module,
+          id = extra[[j]]$id,
+          columns = extra[[j]]$columns, 
+          data = data, 
+          reg_id= current_reg_id
+        ), extra[[j]]$module_server_pars)
+        
+        do.call(callModule, lis_call)
+      }) 
+      modules_relations(relation_values)
+    }
     
   })
   
@@ -262,7 +295,15 @@ formModule <- function(input, output, session, .reg = NULL,
     }
     out
   })
-  
+  edits_relations <- reactive({
+    req(length(modules_relations()))  
+    
+    rel <- lapply(modules_relations(), function(x)x())  
+    
+    dplyr::bind_rows(rel) %>% 
+      mutate(username =current_user)
+    
+  })
   observeEvent(input$btn_register_new_signal, {
     
     showModal(
@@ -294,9 +335,11 @@ formModule <- function(input, output, session, .reg = NULL,
   observeEvent(confirm_new_reg(), {
     
     if(write_method() == "new"){
-      resp <- .reg$write_new_registration(edits(), current_user)
-    } else {
-      resp <- .reg$edit_registration(old_data = data(), new_data = edits(), user_id = current_user)
+      resp <- .reg$write_new_registration(edits(), current_user, current_reg_id())
+      resp2 <- .reg$write_new_relations(edits_relations(), current_user, current_reg_id())
+    } else { 
+      resp <- .reg$edit_registration(old_data = data(), new_data = edits(),relations=edits_relations(), user_id = current_user, current_reg_id())
+      resp2 <- .reg$update_relations(edits_relations(), registration_id=current_reg_id())
     }
     
     
