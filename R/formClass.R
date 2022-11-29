@@ -17,12 +17,12 @@ formClass <- R6::R6Class(
     #' @param sqlite If path to an SQLite file, uses SQLite.
     #' @param default_color Default color
     initialize = function(config_file = "conf/config.yml", 
-                          what,
+                          what, 
                           schema = NULL,
                           class_type="",
                           db_connection = NULL,
                           filterable = FALSE,
-                          audit=FALSE,
+                          audit = FALSE,
                           audit_table = "registrations_audit",
                           def_table = "formulier_velden",
                           def_columns = list(
@@ -49,8 +49,8 @@ formClass <- R6::R6Class(
                             time_modified = "wijzigdatum",
                             user = "user_id",
                             status = "status",
-                            priority = "priority"
-                          ), 
+                            priority = "priority" 
+                          ),  
                           relation_table = "object_relations", 
                           relation_columns = list(
                             id = "id",
@@ -77,6 +77,10 @@ formClass <- R6::R6Class(
       self$audit <- audit
       self$audit_table <- audit_table
       
+      self$relation_table <- relation_table
+      self$relation_columns <- relation_columns
+      self$relation_audit_table <- relation_audit_table
+      
       self$default_color <- default_color
       
       self$relation_table <- relation_table
@@ -86,6 +90,7 @@ formClass <- R6::R6Class(
       if(is.null(db_connection)){
         self$connect_to_database(config_file, schema, what, pool, sqlite)  
       } else {
+        
         if(!DBI::dbIsValid(db_connection)){
           stop("Please pass a valid dbConnection object")
         }
@@ -352,7 +357,7 @@ formClass <- R6::R6Class(
         update_str <- paste(set_values[set_values != ""],  collapse = ", ")
         
         if(!is.null(self$schema)){
-          query <- glue("update {self$schema}.{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = now()::timestamp where ",
+          query <- glue("update {self$schema}.{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = NOW()::timestamp where ",
                         "{col_compare} = ?val_compare") %>% as.character() 
           
           if(self$audit){
@@ -362,7 +367,7 @@ formClass <- R6::R6Class(
           }
         } else {
           
-          query <- glue("update {table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = now()::timestamp where ",
+          query <- glue("update {table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = NOW()::timestamp where ",
                         "{col_compare} = ?val_compare") %>% as.character() 
           if(self$audit){
             audit_query <- glue("insert into {self$audit_table} select * from {table} where ",
@@ -503,6 +508,7 @@ formClass <- R6::R6Class(
     
     #'@description Rename database table to correct internal column names
     rename_definition_table = function(data){
+      
       # Rename to standard colnames
       key <- data.frame(
         old = unname(unlist(self$def)),
@@ -914,14 +920,13 @@ formClass <- R6::R6Class(
       }
       
     },
-    
-    write_new_registration = function(data, user_id, current_reg_id){
-      
+     
+    write_new_registration = function(data, user_id, current_reg_id){ 
       # add missing columns to output etc.
       self$prepare_data_table()
       
-      data_pre <- data.frame(
-        id = current_reg_id,
+      data_pre <- data.frame( 
+        id = current_reg_id, 
         time_created = format(Sys.time()),
         time_modified = format(Sys.time()),
         user = user_id
@@ -962,11 +967,11 @@ formClass <- R6::R6Class(
       return(!inherits(res, "try-error"))
     },
     
-    
+     
     edit_registration = function(old_data, new_data, user_id, current_reg_id){
       
       # id of the registration
-      id <- current_reg_id
+      id <- current_reg_id 
       
       replace_list <- list()
       
@@ -1010,6 +1015,22 @@ formClass <- R6::R6Class(
     
     
     delete_registration = function(registration_id){
+      if(self$audit) {
+        if(!is.null(self$schema)){
+          #step 1 detect changes
+          qu_audit <- glue::glue("insert into {self$schema}.{self$audit_table} select * from ",
+                                 "{self$schema}.{self$data_table} WHERE {self$data_columns$id} =?val_compare;")  
+          
+        } else {
+          qu_audit <- glue::glue("insert into {self$audit_table} select * from ",
+                                 "{self$data_table} WHERE {self$data_columns$id} =?val_compare;")   
+        }  
+        audit_query <- sqlInterpolate(DBI::ANSI(), qu_audit,  val_compare = registration_id) 
+        
+        dbExecute(self$con, audit_query)
+      }
+      
+      
       if(!is.null(self$schema)){
         qu <- glue::glue("DELETE FROM {self$schema}.{self$data_table} WHERE {self$data_columns$id} = '{registration_id}'")
       } else {
@@ -1029,35 +1050,72 @@ formClass <- R6::R6Class(
       data <- self$read_table(self$data_table)
       
       if(recode){
-        
-        # find select fields. they will be recoded with the actual values
-        def <- self$read_definition() %>% filter(
-          !!sym(self$def[["type_field"]]) %in% c("multiselect","singleselect"),
-          !!sym(self$def[["column_field"]]) %in% names(data))
-        
-        # for every select field, replace values
-        for(i in seq_len(nrow(def))){
-          opt <- def[[self$def$options]][i]
-          key <- self$from_json(opt)
-          col <- def[[self$def$column_field]][i]
-          
-          if(length(key)){
-            data[[col]] <- dplyr::recode(data[[col]], !!!key)   
-          }
-          
-        }
-        
+        data <- self$recode_registrations(data)
       }
       
       data
       
     },
     
-    get_registration_by_id = function(id){
+    #' @description Replace column names of registrations with their labels
+    #' @param data Read in with `read_registrations` or `get_registration_by_id`
+    label_registrations_columns = function(data){
       
-      self$read_table(self$data_table, lazy = TRUE) %>%
+      labc <- self$def$label_field
+      colc <- self$def$column_field
+      
+      key <- self$read_definition(lazy=TRUE) %>% 
+        select(all_of(c(labc,colc))) %>% 
+        collect
+      
+      ii <- match(names(data), key[[colc]])
+      jj <- which(!is.na(ii))
+      ii <- ii[!is.na(ii)]
+      
+      names(data)[jj] <- key[[labc]][ii]
+      data
+      
+    },
+    
+    #' @description Recode select values in registrations data
+    #' @param data Dataframe (registrations data)
+    recode_registrations = function(data){
+      
+      # find select fields. they will be recoded with the actual values
+      def <- self$read_definition(lazy = TRUE) %>% 
+        filter(!!sym(self$def[["type_field"]]) %in% c("multiselect","singleselect"),
+               !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
+        collect
+      
+      # for every select field, replace values
+      for(i in seq_len(nrow(def))){
+        opt <- def[[self$def$options]][i]
+        key <- self$from_json(opt)
+        col <- def[[self$def$column_field]][i]
+        
+        if(length(key)){
+          data[[col]] <- dplyr::recode(data[[col]], !!!key)   
+        }
+        
+      }
+      
+    data
+    },
+    
+    #' @description Get a registration with a uuid
+    #' @param id ID of the registration (uuid)
+    #' @param recode If TRUE, recodes integer values to their labels
+    get_registration_by_id = function(id, recode = TRUE){
+      
+      out <- self$read_table(self$data_table, lazy = TRUE) %>%
         dplyr::filter(!!sym(self$data_columns$id) == !!id) %>%
         collect
+      
+      if(recode){
+        out <- self$recode_registrations(out)
+      }
+      
+      out
       
     },
     
@@ -1264,7 +1322,7 @@ formClass <- R6::R6Class(
       # return one dataframe with all mutations for all p_ids
       return(as.data.frame(do.call(rbind, all_mutations)))
       
-  },
+  }, 
   ## Relations
   get_all_relations = function(){
     if(!is.null(self$schema)){
@@ -1274,7 +1332,7 @@ formClass <- R6::R6Class(
     } 
     return(dbGetQuery(self$con, qu))  
   },
-  
+   
   #' @description get_objects_for_collector 
   #' @param collector_type Type of collector
   #' @param collector_id ID of collector
@@ -1291,10 +1349,10 @@ formClass <- R6::R6Class(
                                        relation_id=NA,
                                        object_type=NA, 
                                        filter_verwijderd=T){
-    collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
-    #    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
+    collector_type = ifelse(is.na(collector_type), self$class_type, collector_type) 
+#    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
     V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
-    
+  
     A = ifelse(is.na(collector_id), "", glue(" AND {self$relation_columns$collector_id} = '{collector_id}'"))
     B = ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
     C = ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
@@ -1307,8 +1365,7 @@ formClass <- R6::R6Class(
     } 
     return(dbGetQuery(self$con, qu))
     
-  }, 
-  
+  },  
   #' @description get_collector_for_object 
   #' @param collector_type Type of collector
   #' @param collector_id ID of collector
@@ -1408,11 +1465,11 @@ formClass <- R6::R6Class(
     }
   },  
   #' @description Append relations
-  #' @param data Data to append
+  #' @param data Data to append 
   write_new_relations = function(data, registration_id){ 
     postgres_time<-self$postgres_now()
     # Voor postgres GEBRUIK now()::timestamp
-    data <- data %>% mutate(collector_id=registration_id,
+    data <- data %>% mutate(collector_id=registration_id, 
                             timestamp = format(postgres_time), 
                             collector_type = ifelse(is.na(collector_type), self$class_type, collector_type))
     
@@ -1425,7 +1482,7 @@ formClass <- R6::R6Class(
   #' @description update current relation table for registration ID
   #' @param new_relations The current state that should end up in the relations table 
   update_relations = function(new_relations, registration_id){ 
-    
+ 
     if(!is.null(self$schema)){
       #step 1 detect changes
       qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$collector_id} = '{registration_id}';")
@@ -1433,8 +1490,8 @@ formClass <- R6::R6Class(
       qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$collector_id} = '{registration_id}';")
     } 
     old_relations <- dbGetQuery(self$con, qu) %>% 
-      mutate(timestamp = as.character(timestamp))
-    
+      mutate(timestamp = as.character(timestamp)) 
+     
     if(nrow(new_relations) == 0 & nrow(old_relations) == 0) return(TRUE)
     
     # Explanation:
@@ -1456,7 +1513,7 @@ formClass <- R6::R6Class(
       filter((comment_new != comment & status_new != status) | is.na(collector_id_new)) %>%
       mutate(verwijderd = ifelse(is.na(collector_id_new), TRUE, verwijderd))%>%
       select(!ends_with('_new'))
-    
+ 
     # archive all relations that are ALTERED or DELETED   
     self$soft_delete_relations(altered_or_deleted$id) 
     
@@ -1465,15 +1522,17 @@ formClass <- R6::R6Class(
       left_join(old_relations, by='id', suffix=c("", "_old"))%>% 
       filter(is.na(status_old)) %>%
       select(!ends_with('_old'))
-    
+ 
     new_data <- dplyr::bind_rows(new, altered_or_deleted)
     if(nrow(new_data) > 0){
-      self$write_new_relations(new_data)
+      self$write_new_relations(new_data, registration_id=registration_id)
     }
-    
+     
     return(TRUE)
+  
   } 
   )
    
   
 )
+ 
