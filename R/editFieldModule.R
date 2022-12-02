@@ -41,7 +41,9 @@ editFieldModuleUI <- function(id, column, data,
   value <- make_default_value(column, data, 
                               default = default,
                               array = type == "multiselect")
-  
+ 
+ 
+   
   # integer
   # text
   # boolean
@@ -70,9 +72,14 @@ editFieldModuleUI <- function(id, column, data,
       )
     
   } else if(type == "singleselect"){
-    
+        outval <- tryCatch({ 
+           options[[value]]
+         
+        }, error=function(cond) { 
+           value 
+        }) 
       ui <- selectizeInput(ns("value"), label, choices = c("", options), 
-                     selected = value, 
+                     selected = outval, 
                      multiple = FALSE)
     
   } else if(type == "multiselect"){

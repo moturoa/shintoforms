@@ -49,8 +49,7 @@ formPageModule <- function(input, output, session, .reg = NULL, ping_update = re
   
   show_form <- reactiveVal(FALSE)
   trigger <-reactiveVal() 
-  observeEvent(input$btn_new_registration,ignoreInit = TRUE, {
-    print("AAAA")
+  observeEvent(input$btn_new_registration,ignoreInit = TRUE, { 
     show_form(TRUE)
     trigger(runif(1))
   })
@@ -69,8 +68,7 @@ formPageModule <- function(input, output, session, .reg = NULL, ping_update = re
        tag = "Formulier",
        formUI(session$ns("nieuweRegistratie"))
     )
-  })
-  
+  }) 
   
   new_form_saved_ping <- callModule(formModule, "nieuweRegistratie", 
                                     .reg = .reg, 

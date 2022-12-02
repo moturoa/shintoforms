@@ -263,13 +263,13 @@ formModule <- function(input, output, session, .reg = NULL,
     }
     
     # for all relations
-    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
+    withmod_rel <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
                      !sapply(sapply(extra, "[[", "relation"), is.null))
     
-    if(length(withmod)){
+    if(length(withmod_rel)){
       
-      relation_values <- lapply(seq_along(withmod), function(i){
-        j <- withmod[i]
+      relation_values <- lapply(seq_along(withmod_rel), function(i){
+        j <- withmod_rel[i]
         
         lis_call <- c(list(
           module = extra[[j]]$server_module,
@@ -284,29 +284,7 @@ formModule <- function(input, output, session, .reg = NULL,
       
       modules_relations(relation_values)
     }
-    
-    # for all relations
-    withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
-                       !sapply(sapply(extra, "[[", "relation"), is.null))
-    
-    if(length(withmod)){ 
-      
-      relation_values <- lapply(seq_along(withmod), function(i){
-        j <- withmod[i]
-        
-        lis_call <- c(list(
-          module = extra[[j]]$server_module,
-          id = extra[[j]]$id,
-          columns = extra[[j]]$columns, 
-          data = data, 
-          reg_id= current_reg_id
-        ), extra[[j]]$module_server_pars)
-        
-        do.call(callModule, lis_call)
-      }) 
-      modules_relations(relation_values)
-    }
-    
+     
   })
   
   edits_extra <- reactive({
@@ -376,7 +354,7 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   observeEvent(confirm_new_reg(), {
-  
+ 
     if(write_method() == "new"){ 
       resp <- .reg$write_new_registration(edits(), user_id=current_user, current_reg_id=current_reg_id())
       resp2 <- .reg$write_new_relations(data=edits_relations(),   registration_id=current_reg_id())
