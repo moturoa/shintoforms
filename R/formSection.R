@@ -22,6 +22,7 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
                       label = el$label_field,
                       options = .reg$choices_from_json(el$options),
                       type = el$type_field,
+                      #type_options = el$type_options,  # --> moet ook naar db
                       default = if(el$type_field == "boolean")TRUE else "", 
                       data = data, 
                       disabled = disabled)

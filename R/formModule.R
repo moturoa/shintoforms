@@ -241,6 +241,8 @@ formModule <- function(input, output, session, .reg = NULL,
   observe({
      
     extra <- inject_prep()
+    req(extra)
+    
     withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
                        sapply(sapply(extra, "[[", "relation"), is.null))
  

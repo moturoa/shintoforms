@@ -191,46 +191,47 @@ relationSelectModule <- function(input, output, session ,reg_id, relation_type='
                                 time_modified = "wijzigdatum",
                                 user = "user_id",
                                 status = "status"
-                              ), 
-                      relation_table = "object_relations", 
-                      relation_columns = list(
-                        id = "id",
-                        collector_id = "collector_id",
-                        collector_type = "collector_type",
-                        object_id = "object_id",
-                        object_type = "object_type",
-                        relation_id = "relation_id",
-                        relation_type = "relation_type",   
-                        comment = "comment", 
-                        status = "status",
-                        username = "username", 
-                        timestamp = "timestamp"
-                      ), 
-                      relation_audit_table = "object_relations_audit",
-                      inject = list(
-                        list(position = 1,
-                             section = 1, 
-                             ui_module = fenomeenSelectUI,
-                             server_module = fenomeenSelect,
-                             columns = c("fenomeen","subfenomeen") 
-                        ),
-                        list(position = 1,
-                             section = 2,
-                             relation = TRUE,
-                             ui_module = relationSelectUI,
-                             server_module = relationSelectModule,
-                             module_ui_pars=list("relation_title" = "Hoofdadres"),
-                             module_server_pars=list("relation_type" = "hoofdadres")
-                        ),
-                        list(position = 2,
-                             section = 2,
-                             relation = TRUE,
-                             ui_module = relationSelectUI,
-                             server_module = relationSelectModule,
-                             module_ui_pars=list("relation_title" = "Nevenadressen"),
-                             module_server_pars=list("relation_type" = "nevenadres")
-                        )
-                        ))
+                              ))
+
+                      # relation_table = "object_relations", 
+                      # relation_columns = list(
+                      #   id = "id",
+                      #   collector_id = "collector_id",
+                      #   collector_type = "collector_type",
+                      #   object_id = "object_id",
+                      #   object_type = "object_type",
+                      #   relation_id = "relation_id",
+                      #   relation_type = "relation_type",   
+                      #   comment = "comment", 
+                      #   status = "status",
+                      #   username = "username", 
+                      #   timestamp = "timestamp"
+                      # ), 
+                      # relation_audit_table = "object_relations_audit",
+                      # inject = list(
+                      #   list(position = 1,
+                      #        section = 1, 
+                      #        ui_module = fenomeenSelectUI,
+                      #        server_module = fenomeenSelect,
+                      #        columns = c("fenomeen","subfenomeen") 
+                      #   ),
+                      #   list(position = 1,
+                      #        section = 2,
+                      #        relation = TRUE,
+                      #        ui_module = relationSelectUI,
+                      #        server_module = relationSelectModule,
+                      #        module_ui_pars=list("relation_title" = "Hoofdadres"),
+                      #        module_server_pars=list("relation_type" = "hoofdadres")
+                      #   ),
+                      #   list(position = 2,
+                      #        section = 2,
+                      #        relation = TRUE,
+                      #        ui_module = relationSelectUI,
+                      #        server_module = relationSelectModule,
+                      #        module_ui_pars=list("relation_title" = "Nevenadressen"),
+                      #        module_server_pars=list("relation_type" = "nevenadres")
+                      #   )
+                      #   ))
  
 
 

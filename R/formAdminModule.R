@@ -45,12 +45,22 @@ formAdminUI <- function(id,
                shinyjs::hidden(
                  tags$span(id = ns("span_edit_options"),
                            
-                           softui::action_button(ns("btn_edit_options"),
+                           softui::modal_action_button(ns("btn_edit_options"),
+                                                       ns("modal_edit_options"),
                                                  label = "Keuzelijst", 
                                                  icon = bsicon("pencil-square"), 
-                                                 status = "secondary")
+                                                 status = "secondary"),
                            
-                 )
+                           softui::ui_modal(id = ns("modal_edit_options"), ns = ns,
+                                            title = "Keuzelijst",
+                                            id_confirm = "btn_confirm_edit_options",
+                                            tags$p("Pas de keuzelijst aan voor dit formulierveld."),
+                                            jsonEditModuleUI(ns("modal_json_edit_options")))
+                             
+                             
+                           )
+                           
+                           
                ),
                shinyjs::hidden(
                  tags$span(id = ns("span_edit_order_options"),
@@ -326,19 +336,14 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     
   })
   
-  edited_options <- softui::modalize(trigger_open = reactive(input$btn_edit_options),
-                                     header_ui = tags$p("Pas de keuzelijst aan voor dit formulierveld."),
-                                     ui_module = shintocatman::jsonEditModuleUI,
-                                     server_module = shintocatman::jsonEditModule,
-                                     title = "Keuzelijst",
-                                     server_pars = list(
-                                       options = edit_options,
-                                       edit = reactive("value"),
-                                       widths = c(2,10),
-                                       value = reactive(selected_row()$options)
-                                     ))
+  edited_options <- callModule(jsonEditModule, "modal_json_edit_options",
+                               options = edit_options,
+                               edit = reactive("value"),
+                               widths = c(2,10),
+                               value = reactive(selected_row()$options)
+                               )
   
-  observeEvent(edited_options(), {
+  observeEvent(input$btn_confirm_edit_options, {
     
     .reg$edit_options_field(selected_id(), edited_options())
     .reg$amend_options_order(selected_id(), edited_options())

@@ -29,10 +29,12 @@ assert_input_field_type <- function(type){
 
 editFieldModuleUI <- function(id, column, data, 
                               type, 
+                              #type_options = list(),
                               default = NULL,
                               options = NULL,
                               label = NULL,
-                              disabled = FALSE){
+                              disabled = FALSE,
+                              input_width = getOption("shintoforms_input_width_percent", "80%")){
   
   ns <- NS(id)
   
@@ -42,7 +44,15 @@ editFieldModuleUI <- function(id, column, data,
                               default = default,
                               array = type == "multiselect")
  
- 
+  
+  has_option <- function(what){
+    what %in% names(type_options)
+  }
+  
+  read_option <- function(what){
+    type_options[[what]]
+  }
+  
    
   # integer
   # text
@@ -56,8 +66,7 @@ editFieldModuleUI <- function(id, column, data,
     
     if(!isTruthy(value))value <- 0
     
-    ui <- numericInput(ns("value"), label, 
-                 value = value)
+    ui <- numericInput(ns("value"), label, value = value, width = input_width)
     
     
   } else if(type == "freetext"){
@@ -80,13 +89,15 @@ editFieldModuleUI <- function(id, column, data,
         }) 
       ui <- selectizeInput(ns("value"), label, choices = c("", options), 
                      selected = outval, 
-                     multiple = FALSE)
+                     multiple = FALSE,
+                     width = input_width)
     
   } else if(type == "multiselect"){
     
       ui <- selectizeInput(ns("value"), label, choices = c("", options),
                      selected = value, 
                      multiple = TRUE, 
+                     width = input_width,
                      options = list(plugins = list("remove_button"))
       )
     
@@ -98,6 +109,7 @@ editFieldModuleUI <- function(id, column, data,
     
     ui <- dateInput(ns("value"), label, language = "nl", 
                     weekstart = 1,  # start on monday; should be configurable at some point
+                    #width = input_width,
                     value = value, format = "dd-mm-yyyy")
     
   } else if(type == "singlecheck"){
@@ -108,8 +120,24 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "html"){
 
-    ui <- shintocatman::htmlInput(ns("value"), label = label, value = value)
-
+    # container <- if(is.null(read_option("container"))){
+    #   tags$div
+    # } else {
+    #   
+      container <- function(ui){
+        tags$div(
+          style = "padding-bottom: 24px;",
+          softui::sub_box(ui, title = label, 
+                          icon = bsicon("pencil-square"),
+                          collapsible = TRUE, grey_level = 0.2)  
+        )
+        
+      }
+      
+    #}
+    
+    ui <- shintocatman::htmlInput(ns("value"), label = NULL, value = value)
+    ui <- container(ui)
   }
   
   if(isTRUE(disabled)){
