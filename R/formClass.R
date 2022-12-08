@@ -927,8 +927,8 @@ formClass <- R6::R6Class(
       
       data_pre <- data.frame( 
         id = current_reg_id, 
-        time_created = format(Sys.time()),
-        time_modified = format(Sys.time()),
+        time_created = format(self$postgres_now()),
+        time_modified = format(self$postgres_now()),
         user = user_id
       )
       
@@ -1494,7 +1494,9 @@ formClass <- R6::R6Class(
   #' @description Append relations
   #' @param data Data to append 
   write_new_relations = function(data, registration_id){ 
+    
     postgres_time<-self$postgres_now()
+    
     # Voor postgres GEBRUIK now()::timestamp
     data <- data %>% mutate(collector_id=registration_id, 
                             timestamp = format(postgres_time), 
