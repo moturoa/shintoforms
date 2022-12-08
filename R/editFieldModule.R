@@ -5,6 +5,7 @@ configured_field_types <- c("Tekstinvoer" = "freetext",
                             "Ja/Nee" = "boolean",
                             "Keuzemenu (enkele optie)" = "singleselect",
                             "Keuzemenu (meerdere opties)" = "multiselect",
+                            "Keuzemenu (gekoppelde opties)" = "nestedselect",
                             "Datum" = "date",
                             "Checkbox" = "singlecheck",
                             "Tekst met opmaak" = "html")
@@ -38,13 +39,14 @@ editFieldModuleUI <- function(id, column, data,
   
   ns <- NS(id)
   
+  # doen we niet omdat dan bij een onbekende setting de boel crasht;
+  # beter om gewoon door te gaan en NULL in te vullen
   #assert_input_field_type(type)
   
   value <- make_default_value(column, data, 
                               default = default,
                               array = type == "multiselect")
  
-  
   has_option <- function(what){
     what %in% names(type_options)
   }
@@ -100,6 +102,13 @@ editFieldModuleUI <- function(id, column, data,
                      width = input_width,
                      options = list(plugins = list("remove_button"))
       )
+    
+  } else if(type == "nestedselect"){
+    
+    ui <- tags$p("not yet implemented") 
+    # selectizeInput(ns("value"), label, choices = c("", options), 
+    #                      selected = value, multiple = FALSE, 
+    #                      width = input_width)
     
   } else if(type == "date"){
     

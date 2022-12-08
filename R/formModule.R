@@ -318,6 +318,7 @@ formModule <- function(input, output, session, .reg = NULL,
     }
     out
   })
+  
   edits_relations <- reactive({
     req(length(modules_relations()))  
     
@@ -327,6 +328,7 @@ formModule <- function(input, output, session, .reg = NULL,
       mutate(username =current_user)
     
   })
+  
   observeEvent(input$btn_register_new_signal, {
     
     showModal(

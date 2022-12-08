@@ -1366,6 +1366,7 @@ formClass <- R6::R6Class(
     return(dbGetQuery(self$con, qu))
     
   },  
+
   #' @description get_collector_for_object 
   #' @param collector_type Type of collector
   #' @param collector_id ID of collector
@@ -1428,13 +1429,39 @@ formClass <- R6::R6Class(
     self$append_data(self$relation_table,
                      data) 
     
-  }, 
-  #' @description timstamp in postgres timezone 
+  },
+
+  #' @description timestamp in postgres timezone 
   postgres_now = function(){
     
     return(self$query("select now()", quiet = TRUE)$now)
     
   },
+
+  #' @description Select rows in registration audit table since some timestamp
+  get_rows_since_auditstamp = function(time_since){ 
+    time_since <- format(time_since)  
+    
+    modcol <- self$data_columns$time_modified
+    creacol <- self$data_columns$time_created
+    
+    collect_cols <- c(self$data_columns$id, modcol, creacol)
+    
+    modif <- self$read_table(self$audit_table, lazy = TRUE) %>%
+      filter(!!sym(modcol) > !!time_since) %>%
+      select(all_of(collect_cols)) %>%
+      collect
+    
+    creat <- self$read_table(self$data_table, lazy = TRUE) %>%
+      filter(!!sym(creacol) > !!time_since) %>%
+      select(all_of(collect_cols)) %>%
+      collect
+    
+    dplyr::distinct(rbind(modif, creat))
+    
+  },
+
+
   #' @description Soft delete relations
   #' @param ids ID of rows to delete
   soft_delete_relations = function(ids){
