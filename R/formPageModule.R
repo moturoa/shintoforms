@@ -17,6 +17,7 @@ formPageUI <- function(id,
     softui::fluid_row(
       
        softui::box(title = title, icon = icon, tag = tag,
+                   id = ns("shintoforms-form-box"),
          
           header_ui,
           
@@ -48,10 +49,12 @@ formPageModule <- function(input, output, session, .reg = NULL, ping_update = re
                             current_user, ...){
   
   show_form <- reactiveVal(FALSE)
-  trigger <-reactiveVal() 
-  observeEvent(input$btn_new_registration,ignoreInit = TRUE, { 
+  trigger <- reactiveVal()
+  
+  observeEvent(input$btn_new_registration, ignoreInit = TRUE, { 
     show_form(TRUE)
     trigger(runif(1))
+    softui::collapse_box(session$ns("shintoforms-form-box"))
   })
   
   observeEvent(new_form_saved_ping(), {

@@ -73,7 +73,7 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "freetext"){
     
-    ui <- textInput(ns("value"), label, value = value)
+    ui <- textInput(ns("value"), label, value = value, width = input_width)
     
   } else if(type == "boolean"){
     
@@ -118,7 +118,7 @@ editFieldModuleUI <- function(id, column, data,
     
     ui <- dateInput(ns("value"), label, language = "nl", 
                     weekstart = 1,  # start on monday; should be configurable at some point
-                    #width = input_width,
+                    width = input_width,
                     value = value, format = "dd-mm-yyyy")
     
   } else if(type == "singlecheck"){
