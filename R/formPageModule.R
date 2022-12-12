@@ -78,6 +78,11 @@ formPageModule <- function(input, output, session, .reg = NULL, ping_update = re
                                     trigger= trigger,
                                     ping_update = ping_update,
                                     current_user = current_user, ...)
+  
+  
+  observeEvent(new_form_saved_ping(), {
+    softui::collapse_box(session$ns("shintoforms-form-box"))
+  })
  
 return(new_form_saved_ping)
 }

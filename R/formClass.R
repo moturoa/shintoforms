@@ -491,6 +491,9 @@ formClass <- R6::R6Class(
         out <- out2
       }
       
+      # remove empty choices
+      out <- out[val != ""]
+      
       out
     },
     

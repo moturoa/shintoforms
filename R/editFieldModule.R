@@ -83,13 +83,15 @@ editFieldModuleUI <- function(id, column, data,
       )
     
   } else if(type == "singleselect"){
-        outval <- tryCatch({ 
-           options[[value]]
-         
-        }, error=function(cond) { 
-           value 
-        }) 
-      ui <- selectizeInput(ns("value"), label, choices = c("", options), 
+        
+    outval <- tryCatch({ 
+         options[[value]]
+         }, 
+    error=function(cond) { 
+      value 
+    }) 
+        
+    ui <- selectizeInput(ns("value"), label, choices = c("", options), 
                      selected = outval, 
                      multiple = FALSE,
                      width = input_width)
