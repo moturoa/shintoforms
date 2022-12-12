@@ -35,7 +35,9 @@ editFieldModuleUI <- function(id, column, data,
                               options = NULL,
                               label = NULL,
                               disabled = FALSE,
-                              input_width = getOption("shintoforms_input_width_percent", "80%")){
+                              input_width = getOption("shintoforms_input_width_percent", "80%"),
+                              input_padding = getOption("shintoforms_input_padding_px", "30px")
+                              ){
   
   ns <- NS(id)
   
@@ -154,6 +156,11 @@ editFieldModuleUI <- function(id, column, data,
   if(isTRUE(disabled)){
     ui <- shinyjs::disabled(ui)
   }
+  
+  ui <- tags$div(
+    style = glue::glue("padding-left: {input_padding}; padding-right: {input_padding};"),
+    ui
+  )
   
 ui
 }

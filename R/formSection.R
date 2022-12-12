@@ -33,10 +33,19 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
   if(length(inject)){
     last_pos <- 0
     
+    input_padding <- getOption("shintoforms_input_padding_px", "30px")
+    
+    ui_fun <- function(ui){
+      tags$div(
+        style = glue::glue("padding-left: {input_padding}; padding-right: {input_padding};"),
+        ui
+      )
+    }
+    
     for(i in seq_along(inject)){
       
       obj <- inject[[i]]
-      html_tag <- obj$html
+      html_tag <- ui_fun(obj$html)
       position_tag <- obj$position
       
       if(position_tag < last_pos){
