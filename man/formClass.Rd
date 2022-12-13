@@ -54,6 +54,8 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-edit_registration}{\code{formClass$edit_registration()}}
 \item \href{#method-NA-delete_registration}{\code{formClass$delete_registration()}}
 \item \href{#method-NA-read_registrations}{\code{formClass$read_registrations()}}
+\item \href{#method-NA-label_registrations_columns}{\code{formClass$label_registrations_columns()}}
+\item \href{#method-NA-recode_registrations}{\code{formClass$recode_registrations()}}
 \item \href{#method-NA-get_registration_by_id}{\code{formClass$get_registration_by_id()}}
 \item \href{#method-NA-filter_period}{\code{formClass$filter_period()}}
 \item \href{#method-NA-read_definition}{\code{formClass$read_definition()}}
@@ -61,6 +63,15 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-get_registration_by_json}{\code{formClass$get_registration_by_json()}}
 \item \href{#method-NA-create_timeseries}{\code{formClass$create_timeseries()}}
 \item \href{#method-NA-create_events}{\code{formClass$create_events()}}
+\item \href{#method-NA-get_all_relations}{\code{formClass$get_all_relations()}}
+\item \href{#method-NA-get_objects_for_collector}{\code{formClass$get_objects_for_collector()}}
+\item \href{#method-NA-get_collector_for_object}{\code{formClass$get_collector_for_object()}}
+\item \href{#method-NA-add_relation}{\code{formClass$add_relation()}}
+\item \href{#method-NA-postgres_now}{\code{formClass$postgres_now()}}
+\item \href{#method-NA-get_rows_since_auditstamp}{\code{formClass$get_rows_since_auditstamp()}}
+\item \href{#method-NA-soft_delete_relations}{\code{formClass$soft_delete_relations()}}
+\item \href{#method-NA-write_new_relations}{\code{formClass$write_new_relations()}}
+\item \href{#method-NA-update_relations}{\code{formClass$update_relations()}}
 \item \href{#method-unknown-clone}{\code{formClass$clone()}}
 }
 }
@@ -74,6 +85,8 @@ Make new form object
   config_file = "conf/config.yml",
   what,
   schema = NULL,
+  class_type = "",
+  db_connection = NULL,
   filterable = FALSE,
   audit = FALSE,
   audit_table = "registrations_audit",
@@ -88,6 +101,12 @@ Make new form object
   data_columns = list(id = "id_registratie", name = "naam_registratie", time_created =
     "invoerdatum", time_modified = "wijzigdatum", user = "user_id", status = "status",
     priority = "priority"),
+  relation_table = "object_relations",
+  relation_columns = list(id = "id", collector_id = "collector_id", collector_type =
+    "collector_type", object_id = "object_id", object_type = "object_type", relation_id =
+    "relation_id", relation_type = "relation_type", comment = "comment", status =
+    "status", username = "username", timestamp = "timestamp", verwijderd = "verwijderd"),
+  relation_audit_table = "object_relations_audit",
   inject = NULL,
   pool = TRUE,
   sqlite = NULL,
@@ -527,7 +546,7 @@ Make sure the necessary columns are present in the data_table
 \if{latex}{\out{\hypertarget{method-NA-write_new_registration}{}}}
 \subsection{Method \code{write_new_registration()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$write_new_registration(data, user_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$write_new_registration(data, user_id, current_reg_id)}\if{html}{\out{</div>}}
 }
 
 }
@@ -536,7 +555,7 @@ Make sure the necessary columns are present in the data_table
 \if{latex}{\out{\hypertarget{method-NA-edit_registration}{}}}
 \subsection{Method \code{edit_registration()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_registration(old_data, new_data, user_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_registration(old_data, new_data, user_id, current_reg_id)}\if{html}{\out{</div>}}
 }
 
 }
@@ -567,13 +586,57 @@ Read registrations, recode select values where needed.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-label_registrations_columns"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-label_registrations_columns}{}}}
+\subsection{Method \code{label_registrations_columns()}}{
+Replace column names of registrations with their labels
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$label_registrations_columns(data)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Read in with \code{read_registrations} or \code{get_registration_by_id}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-recode_registrations"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-recode_registrations}{}}}
+\subsection{Method \code{recode_registrations()}}{
+Recode select values in registrations data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$recode_registrations(data)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Dataframe (registrations data)}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_registration_by_id"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-get_registration_by_id}{}}}
 \subsection{Method \code{get_registration_by_id()}}{
+Get a registration with a uuid
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$get_registration_by_id(id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_registration_by_id(id, recode = TRUE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{ID of the registration (uuid)}
+
+\item{\code{recode}}{If TRUE, recodes integer values to their labels}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-filter_period"></a>}}
@@ -632,6 +695,172 @@ Read registrations, recode select values where needed.
 \if{html}{\out{<div class="r">}}\preformatted{formClass$create_events(timeseries, creation_only = FALSE)}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_all_relations"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_all_relations}{}}}
+\subsection{Method \code{get_all_relations()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_all_relations()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_objects_for_collector"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_objects_for_collector}{}}}
+\subsection{Method \code{get_objects_for_collector()}}{
+get_objects_for_collector
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_objects_for_collector(
+  collector_type = NA,
+  collector_id = NA,
+  relation_type = NA,
+  relation_id = NA,
+  object_type = NA,
+  filter_verwijderd = T
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{collector_type}}{Type of collector}
+
+\item{\code{collector_id}}{ID of collector}
+
+\item{\code{relation_type}}{Description of collector -> object relation}
+
+\item{\code{relation_id}}{ID of relation (often session ID of module)}
+
+\item{\code{filter_verwijderd}}{when status is zero}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_collector_for_object"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_collector_for_object}{}}}
+\subsection{Method \code{get_collector_for_object()}}{
+get_collector_for_object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_collector_for_object(
+  object_id,
+  collector_type = NA,
+  object_type = NA,
+  relation_type = NA,
+  relation_id = NA,
+  filter_verwijderd = T
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{collector_type}}{Type of collector}
+
+\item{\code{relation_type}}{Description of collector -> object relation}
+
+\item{\code{relation_id}}{ID of relation (often session ID of module)}
+
+\item{\code{filter_verwijderd}}{when status is zero}
+
+\item{\code{collector_id}}{ID of collector}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-add_relation"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-add_relation}{}}}
+\subsection{Method \code{add_relation()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$add_relation(
+  id = uuid::UUIDgenerate(),
+  collector_id,
+  collector_type,
+  object_id,
+  object_type,
+  relation_id,
+  relation_type,
+  comment = NA,
+  status = "1",
+  verwijderd = FALSE,
+  username,
+  timestamp
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-postgres_now"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-postgres_now}{}}}
+\subsection{Method \code{postgres_now()}}{
+timestamp in postgres timezone
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$postgres_now()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_rows_since_auditstamp"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_rows_since_auditstamp}{}}}
+\subsection{Method \code{get_rows_since_auditstamp()}}{
+Select rows in registration audit table since some timestamp
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_rows_since_auditstamp(time_since)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-soft_delete_relations"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-soft_delete_relations}{}}}
+\subsection{Method \code{soft_delete_relations()}}{
+Soft delete relations
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$soft_delete_relations(ids)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{ID of rows to delete}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-write_new_relations"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-write_new_relations}{}}}
+\subsection{Method \code{write_new_relations()}}{
+Append relations
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$write_new_relations(data, registration_id)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Data to append}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-update_relations"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-update_relations}{}}}
+\subsection{Method \code{update_relations()}}{
+update current relation table for registration ID
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$update_relations(new_relations, registration_id)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{new_relations}}{The current state that should end up in the relations table}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-unknown-clone"></a>}}

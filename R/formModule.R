@@ -104,7 +104,9 @@ formModule <- function(input, output, session, .reg = NULL,
   ns <- session$ns
   
   current_reg_id <- reactive({ 
-    trigger()
+    
+    req(trigger())
+    
     if(write_method() == "new"){
       return(uuid::UUIDgenerate())
     } else {
@@ -118,16 +120,7 @@ formModule <- function(input, output, session, .reg = NULL,
     registration_description_function(data())
     
   })
-  
-  current_reg_id <- reactive({
-    if(write_method() == 'new'){
-      uuid::UUIDgenerate()
-    } else {
-      data()[[.reg$data_columns$id]]
-    }
-  })
-  
-  
+
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet.
   cfg_left <- reactive({
       ping_update()

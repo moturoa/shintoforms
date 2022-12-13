@@ -14,6 +14,7 @@ formModule(
   .reg = NULL,
   ping_update = reactive(NULL),
   current_user,
+  trigger = reactive(NULL),
   data = reactive(NULL),
   write_method = reactive("new"),
   registration_description_function = function(data) NULL,
@@ -23,7 +24,10 @@ formModule(
   callback_confirm = function() {
  },
   callback_cancel = function() {
- }
+ },
+  message_success = "Registratie opgeslagen",
+  message_error = "Er is een fout opgetreden",
+  message_deleted = "Registratie verwijderd"
 )
 }
 \description{
