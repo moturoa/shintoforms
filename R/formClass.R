@@ -1442,25 +1442,24 @@ formClass <- R6::R6Class(
   },
 
   #' @description Select rows in registration audit table since some timestamp
-  get_rows_since_auditstamp = function(time_since){ 
+  get_rows_since_auditstamp = function(time_since){  
     time_since <- format(time_since)  
     
     modcol <- self$data_columns$time_modified
-    creacol <- self$data_columns$time_created
+    #creacol <- self$data_columns$time_created
     
-    collect_cols <- c(self$data_columns$id, modcol, creacol)
+    collect_cols <- c(self$data_columns$id, modcol)#, creacol)
     
-    modif <- self$read_table(self$audit_table, lazy = TRUE) %>%
+    modif <- self$read_table(self$data_table, lazy = TRUE) %>%
       filter(!!sym(modcol) > !!time_since) %>%
       select(all_of(collect_cols)) %>%
       collect
     
-    creat <- self$read_table(self$data_table, lazy = TRUE) %>%
-      filter(!!sym(creacol) > !!time_since) %>%
-      select(all_of(collect_cols)) %>%
-      collect
-    
-    dplyr::distinct(rbind(modif, creat))
+    #creat <- self$read_table(self$data_table, lazy = TRUE) %>%
+    #  filter(!!sym(creacol) > !!time_since) %>%
+    #  select(all_of(collect_cols)) %>%
+    #  collect 
+    dplyr::distinct(modif)#rbind(modif, creat))
     
   },
 
