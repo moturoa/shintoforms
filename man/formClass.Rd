@@ -42,12 +42,15 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-edit_options_colors}{\code{formClass$edit_options_colors()}}
 \item \href{#method-NA-amend_options_colors}{\code{formClass$amend_options_colors()}}
 \item \href{#method-NA-set_options_order}{\code{formClass$set_options_order()}}
+\item \href{#method-NA-prepare_nested_choice_column}{\code{formClass$prepare_nested_choice_column()}}
+\item \href{#method-NA-save_nested_choices}{\code{formClass$save_nested_choices()}}
 \item \href{#method-NA-amend_options_order}{\code{formClass$amend_options_order()}}
 \item \href{#method-NA-edit_formulier_setup}{\code{formClass$edit_formulier_setup()}}
 \item \href{#method-NA-edit_zichtbaarheid_invoerveld}{\code{formClass$edit_zichtbaarheid_invoerveld()}}
 \item \href{#method-NA-edit_verwijder_datum}{\code{formClass$edit_verwijder_datum()}}
 \item \href{#method-NA-amend_formfield_order}{\code{formClass$amend_formfield_order()}}
 \item \href{#method-NA-reset_volgorde_invoerveld}{\code{formClass$reset_volgorde_invoerveld()}}
+\item \href{#method-NA-really_delete_formfield}{\code{formClass$really_delete_formfield()}}
 \item \href{#method-NA-column_type_from_field_type}{\code{formClass$column_type_from_field_type()}}
 \item \href{#method-NA-prepare_data_table}{\code{formClass$prepare_data_table()}}
 \item \href{#method-NA-write_new_registration}{\code{formClass$write_new_registration()}}
@@ -467,6 +470,24 @@ If new options added, make sure the color vector is amended
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-prepare_nested_choice_column"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-prepare_nested_choice_column}{}}}
+\subsection{Method \code{prepare_nested_choice_column()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$prepare_nested_choice_column(id_form, name, options)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-save_nested_choices"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-save_nested_choices}{}}}
+\subsection{Method \code{save_nested_choices()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$save_nested_choices(id_form, nested_choices, nested_key)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-amend_options_order"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-amend_options_order}{}}}
 \subsection{Method \code{amend_options_order()}}{
@@ -518,6 +539,15 @@ If new categories added, make sure the order vector is amended
 \subsection{Method \code{reset_volgorde_invoerveld()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$reset_volgorde_invoerveld(id_formfield, new_volgorde_nummer)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-really_delete_formfield"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-really_delete_formfield}{}}}
+\subsection{Method \code{really_delete_formfield()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$really_delete_formfield(id)}\if{html}{\out{</div>}}
 }
 
 }

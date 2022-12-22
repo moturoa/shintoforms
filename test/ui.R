@@ -51,7 +51,7 @@ header <- softui::dashboard_header(
 
 softui::dashboard_page(title = "Registraties",
                        icon = bsicon("pencil-square"),
-                       loadingscreen_time = 2,
+                       loadingscreen_time = 1,
                        header = header,
                        sidebar = sidebar,
                        body = body)

@@ -770,6 +770,28 @@ formClass <- R6::R6Class(
       
     },
     
+    
+    prepare_nested_choice_column = function(id_form, name, options){
+      
+      key <- setNames(list(options),name)
+      
+      value <- vector("list", length = length(options))
+      names(value) <- names(key[[1]])
+      
+      lis <- list(key = key, value = value)
+      
+      self$edit_options_field(id_form, lis)
+    },
+    
+    save_nested_choices = function(id_form,  nested_choices, nested_key){
+      
+      chc <- self$from_json(nested_choices)
+      lis <- list(key = nested_key, value = chc)
+      self$edit_options_field(id_form, lis)
+      
+    },
+    
+    
     #' @description If new categories added, make sure the order vector is amended
     amend_options_order = function(id_form, options){
       
@@ -858,6 +880,20 @@ formClass <- R6::R6Class(
       dbExecute(self$con, qu)
       
     },
+    
+    
+    really_delete_formfield = function(id){
+      
+      if(!is.null(self$schema)){
+        tab <- glue::glue("{self$schema}.{self$def_table}")
+      } else {
+        tab <- self$def_table
+      }
+      
+      qu <- glue::glue("delete from {tab} where {self$def$id_form} = '{id}'")
+      dbExecute(self$con, qu)
+    },
+    
     
     #' @description Database column type based on field input type
     column_type_from_field_type = function(type){
@@ -1018,6 +1054,7 @@ formClass <- R6::R6Class(
     
     
     delete_registration = function(registration_id){
+      
       if(self$audit) {
         if(!is.null(self$schema)){
           #step 1 detect changes

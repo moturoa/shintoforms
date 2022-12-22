@@ -41,6 +41,44 @@ formAdminUI <- function(id,
                  )
                ),
                
+               shinyjs::hidden(
+                 tags$span(id = ns("span_set_nested_key_column"),
+                           softui::modal_action_button(ns("btn_set_nested_key_column"),
+                                                       ns("modal_set_nested_key_column"),
+                                                       "Gekoppelde kolom", 
+                                                       status = "secondary",
+                                                       icon = bsicon("pencil-square")),
+                           softui::ui_modal(
+                             id = ns("modal_set_nested_key_column"),
+                             title = "Kies gekoppelde kolom",
+                             id_confirm = ns("btn_confirm_set_nested_key_column"),
+                             
+                             selectInput(ns("sel_nested_column"), "Maak keuze",
+                                         choices = NULL)
+                             
+                           )
+                 )
+               ),
+               
+               shinyjs::hidden(
+                 tags$span(id = ns("span_edit_nested_options"),
+                           
+                           softui::modal_action_button(ns("btn_edit_nested_options"),
+                                                       ns("modal_nested_options"),
+                                                       label = "Gekoppelde keuzelijst", 
+                                                       icon = bsicon("pencil-square"), 
+                                                       status = "secondary"),
+                           
+                           softui::ui_modal(
+                             title = "Gekoppelde keuzelijst",
+                             id = ns("modal_nested_options"),
+                             id_confirm = ns("btn_confirm_nested_options"),
+                             
+                             jsonMultiEditUI(ns("mod_edit_nested_options"))
+                           )
+                           
+                 )
+               ),
                
                shinyjs::hidden(
                  tags$span(id = ns("span_edit_options"),
@@ -108,7 +146,11 @@ formAdminUI <- function(id,
                            softui::action_button(ns("btn_restore_formfield"), 
                                                  "Invoerveld terugzetten", 
                                                  status = "secondary", 
-                                                 icon = bsicon("arrow-return-left"))
+                                                 icon = bsicon("arrow-return-left")),
+                           softui::action_button(ns("btn_reallydelete_formfield"), 
+                                                 "Permanent verwijderen", 
+                                                 status = "danger", 
+                                                 icon = bsicon("x-square-fill"))
                     )
                   )
         )
@@ -139,6 +181,11 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   form_invul_data <- reactive({
     db_ping()
     .reg$get_input_fields(TRUE)
+  })
+  
+  observeEvent(form_invul_data(), {
+    cols <- form_invul_data() %>% pull(column_field) %>% sort
+    updateSelectInput(session, "sel_nested_column", choices = cols)
   })
   
   output$dt_form_invoervelden <- DT::renderDataTable({
@@ -273,6 +320,9 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     shinyjs::toggleElement("span_edit_colors", condition = (!is.null(sel) && show_edit_options))
     shinyjs::toggleElement("span_edit_order_options", condition = (!is.null(sel) && show_edit_options))
     shinyjs::toggleElement("span_delete_formfield", condition = (!is.null(sel) && sel$removable))
+    
+    shinyjs::toggleElement("span_set_nested_key_column", condition = (!is.null(sel) && type == "nestedselect"))
+    shinyjs::toggleElement("span_edit_nested_options", condition = (!is.null(sel) && type == "nestedselect"))
   })
   
   
@@ -328,7 +378,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     req(selected_row())
     type <- selected_row()$type_field
     
-    if(type %in% c("singleselect","multiselect")){
+    if(type %in% c("singleselect","multiselect","nestedselect")){
       "add"
     } else {
       NULL
@@ -351,6 +401,65 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     db_ping(runif(1))
     
   })
+  
+  
+  #----- Nested select choices
+  
+  # setting the main column  (level 1 choices)
+  observeEvent(input$btn_confirm_set_nested_key_column, {
+    
+    col_sel <- input$sel_nested_column
+    .reg$prepare_nested_choice_column(selected_id(), 
+                                      name = col_sel, 
+                                      options = .reg$get_field_choices(col_sel))
+    
+    db_ping(runif(1))
+  })
+  
+  
+  # setting level 2 choices 
+  nested_options <- reactive({
+    .reg$from_json(selected_row()$options)
+  })
+  
+  nested_key <- reactive({
+    opt <- nested_options()
+    if(is.null(opt$key)){
+      return(list())
+    } else {
+      return(opt$key[[1]])
+    }
+    
+  })
+  
+  nested_value <- reactive({
+    opt <- nested_options()
+    if(is.null(opt$value)){
+      return(list())
+    } else {
+      return(opt$value)
+    }
+  })
+  
+
+  nested_choices_out <- callModule(jsonMultiEdit, "mod_edit_nested_options",
+                                   edit_names = FALSE, 
+                                   key = nested_key,
+                                   value = nested_value,
+                                   json = FALSE)
+  
+  # ehm dit is nodig om de module een schop te geven anders rendert het niet. ..
+  observeEvent(nested_choices_out(), {
+    invisible()
+  })
+  
+  observeEvent(input$btn_confirm_nested_options, {
+    vals <- nested_choices_out()
+    .reg$save_nested_choices(selected_id(), nested_choices = vals, nested_key = nested_options()$key)
+    db_ping(runif(1))
+  })
+  
+
   
   current_colors <- reactive({
     from_json(selected_row()$colors)
@@ -464,6 +573,16 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     .reg$edit_zichtbaarheid_invoerveld(selected_id_deleted(), TRUE)
     db_ping(runif(1))
   })
+  
+  
+  observeEvent(input$btn_reallydelete_formfield, {
+    id <- selected_id_deleted()
+    req(id)
+    .reg$really_delete_formfield(id)
+    db_ping(runif(1))
+    
+  })
+  
   
   
   return(db_ping)  
