@@ -396,6 +396,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   observeEvent(input$btn_confirm_edit_options, {
     
     .reg$edit_options_field(selected_id(), edited_options())
+    .reg$amend_nested_options_key(selected_id(), edited_options())
     .reg$amend_options_order(selected_id(), edited_options())
     .reg$amend_options_colors(selected_id(), edited_options())
     db_ping(runif(1))
@@ -419,12 +420,16 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   
   # setting level 2 choices 
   nested_options <- reactive({
+    if(is.null(selected_row())){
+      return(NULL)
+    }
     .reg$from_json(selected_row()$options)
   })
   
   nested_key <- reactive({
     opt <- nested_options()
-    if(is.null(opt$key)){
+  
+    if(is.null(opt) || is.null(opt$key)){
       return(list())
     } else {
       return(opt$key[[1]])
@@ -434,7 +439,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   
   nested_value <- reactive({
     opt <- nested_options()
-    if(is.null(opt$value)){
+    if(is.null(opt) || is.null(opt$value)){
       return(list())
     } else {
       return(opt$value)

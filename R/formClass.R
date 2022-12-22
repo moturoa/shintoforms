@@ -446,6 +446,21 @@ formClass <- R6::R6Class(
       
     },
     
+    column_name_from_id = function(id_form){
+      row <- self$get_by_id(id_form)
+      row[[self$def[["column_field"]]]]
+    },
+    
+    get_fields_by_type = function(field_type){
+      
+      self$read_table(self$def_table, lazy = TRUE) %>%
+        dplyr::filter(!!sym(self$def[["type_field"]]) %in% !!field_type,
+                      !!sym(self$def[["visible"]])) %>%
+        collect
+      
+    },
+    
+    
     #' @description Get (recoded) choices for a select field
     get_field_choices = function(column_field){
       
@@ -689,6 +704,7 @@ formClass <- R6::R6Class(
       if(!is.character(new_options)){
         new_options <- self$to_json(new_options)  
       }
+    
       
       if(is.null(names(self$from_json(new_options)))){
         stop("JSON new_options MUST have names (1:n) (edit_options_field)")
@@ -699,6 +715,27 @@ formClass <- R6::R6Class(
                                val_compare = id_form,
                                col_replace = self$def$options, 
                                val_replace = new_options)
+      
+    },
+    
+    amend_nested_options_key = function(id_form, new_options){
+      
+      # check if we have to amend nested select options
+      nested_fields <- self$get_fields_by_type("nestedselect")
+      
+      if(nrow(nested_fields) > 0){
+        colname <- self$column_name_from_id(id_form)
+        
+        for(i in seq_len(nrow(nested_fields))){
+          dat <- slice(nested_fields,i)
+          o <- self$from_json(dat[[self$def$options]])
+          if(names(o$key) == colname){
+            o$key[[1]] <- self$from_json(new_options)
+            self$edit_options_field(dat[[self$def$id_form]], o)
+          }
+        }
+        
+      }
       
     },
     
