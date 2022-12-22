@@ -1594,8 +1594,8 @@ formClass <- R6::R6Class(
     } else {
       qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$collector_id} = '{registration_id}';")
     } 
-    old_relations <- dbGetQuery(self$con, qu) %>% 
-      mutate(timestamp = as.character(timestamp)) 
+    old_relations <- dbGetQuery(self$con, qu)
+#      mutate(timestamp = as.character(timestamp)) 
      
     if(nrow(new_relations) == 0 & nrow(old_relations) == 0) return(TRUE)
     

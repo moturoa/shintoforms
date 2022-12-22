@@ -230,11 +230,12 @@ formModule <- function(input, output, session, .reg = NULL,
   modules_extra <- reactiveVal()
   modules_relations <- reactiveVal()
   
-  modules_relations <- reactiveVal()
+
   observe({
      
     extra <- inject_prep()
     req(extra)
+    req(ui_ping())
     
     withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
                        sapply(sapply(extra, "[[", "relation"), is.null))
@@ -282,21 +283,7 @@ formModule <- function(input, output, session, .reg = NULL,
      
   })
   
-  edits_extra <- reactive({
-    req(length(modules_extra()))
-    lapply(modules_extra(), function(x)x())
-  })
-  
-  edits_relations <- reactive({
-    req(length(modules_relations()))  
-       
-    rel <- lapply(modules_relations(), function(x)x())  
- 
-      dplyr::bind_rows(rel) %>% 
-        mutate(username =current_user)
- 
-  })
-  
+
   
   edits <- reactive({
     ext <- edits_extra() 
@@ -312,13 +299,18 @@ formModule <- function(input, output, session, .reg = NULL,
     out
   })
   
+  edits_extra <- reactive({
+    req(length(modules_extra()))
+    lapply(modules_extra(), function(x)x())
+  })
+  
   edits_relations <- reactive({
     req(length(modules_relations()))  
     
     rel <- lapply(modules_relations(), function(x)x())  
     
     dplyr::bind_rows(rel) %>% 
-      mutate(username =current_user)
+      mutate(username = current_user)
     
   })
   
@@ -353,11 +345,18 @@ formModule <- function(input, output, session, .reg = NULL,
   observeEvent(confirm_new_reg(), {
  
     if(write_method() == "new"){ 
-      resp <- .reg$write_new_registration(edits(), user_id=current_user, current_reg_id=current_reg_id())
-      resp2 <- .reg$write_new_relations(data=edits_relations(),   registration_id=current_reg_id())
+      resp <- .reg$write_new_registration(edits(), 
+                                          user_id = current_user, 
+                                          current_reg_id=current_reg_id())
+      resp2 <- .reg$write_new_relations(data = edits_relations(),   
+                                        registration_id = current_reg_id())
     } else { 
-      resp <- .reg$edit_registration(old_data = data(), new_data = edits(), user_id = current_user, current_reg_id=current_reg_id()) 
-      resp2 <- .reg$update_relations(edits_relations(), registration_id=current_reg_id())
+      resp <- .reg$edit_registration(old_data = data(), 
+                                     new_data = edits(), 
+                                     user_id = current_user, 
+                                     current_reg_id=current_reg_id()) 
+      resp2 <- .reg$update_relations(edits_relations(), 
+                                     registration_id = current_reg_id())
     }
     
     

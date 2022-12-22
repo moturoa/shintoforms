@@ -23,6 +23,8 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-replace_value_where_multi}{\code{formClass$replace_value_where_multi()}}
 \item \href{#method-NA-replace_value_where}{\code{formClass$replace_value_where()}}
 \item \href{#method-NA-get_by_id}{\code{formClass$get_by_id()}}
+\item \href{#method-NA-column_name_from_id}{\code{formClass$column_name_from_id()}}
+\item \href{#method-NA-get_fields_by_type}{\code{formClass$get_fields_by_type()}}
 \item \href{#method-NA-get_field_choices}{\code{formClass$get_field_choices()}}
 \item \href{#method-NA-make_choices}{\code{formClass$make_choices()}}
 \item \href{#method-NA-choices_from_json}{\code{formClass$choices_from_json()}}
@@ -38,6 +40,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-from_json}{\code{formClass$from_json()}}
 \item \href{#method-NA-to_json}{\code{formClass$to_json()}}
 \item \href{#method-NA-edit_options_field}{\code{formClass$edit_options_field()}}
+\item \href{#method-NA-amend_nested_options_key}{\code{formClass$amend_nested_options_key()}}
 \item \href{#method-NA-is_color}{\code{formClass$is_color()}}
 \item \href{#method-NA-edit_options_colors}{\code{formClass$edit_options_colors()}}
 \item \href{#method-NA-amend_options_colors}{\code{formClass$amend_options_colors()}}
@@ -266,6 +269,24 @@ Get a row from the form definition by the form id.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-column_name_from_id"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-column_name_from_id}{}}}
+\subsection{Method \code{column_name_from_id()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$column_name_from_id(id_form)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_fields_by_type"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_fields_by_type}{}}}
+\subsection{Method \code{get_fields_by_type()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_fields_by_type(field_type)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_field_choices"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-get_field_choices}{}}}
 \subsection{Method \code{get_field_choices()}}{
@@ -428,6 +449,15 @@ Edit the label for an input field
 \subsection{Method \code{edit_options_field()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_options_field(id_form, new_options)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-amend_nested_options_key"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-amend_nested_options_key}{}}}
+\subsection{Method \code{amend_nested_options_key()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$amend_nested_options_key(id_form, new_options)}\if{html}{\out{</div>}}
 }
 
 }
