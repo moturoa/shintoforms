@@ -316,9 +316,9 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     show_edit_options <- isTRUE(!type %in% c("freetext","numeric","date", "singlecheck"))
     
     shinyjs::toggleElement("span_edit_formfield", condition = !is.null(sel))
-    shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options))
-    shinyjs::toggleElement("span_edit_colors", condition = (!is.null(sel) && show_edit_options))
-    shinyjs::toggleElement("span_edit_order_options", condition = (!is.null(sel) && show_edit_options))
+    shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options && type != "nestedselect"))
+    shinyjs::toggleElement("span_edit_colors", condition = (!is.null(sel) && show_edit_options && type != "nestedselect"))
+    shinyjs::toggleElement("span_edit_order_options", condition = (!is.null(sel) && show_edit_options && type != "nestedselect"))
     shinyjs::toggleElement("span_delete_formfield", condition = (!is.null(sel) && sel$removable))
     
     shinyjs::toggleElement("span_set_nested_key_column", condition = (!is.null(sel) && type == "nestedselect"))
@@ -420,7 +420,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   
   # setting level 2 choices 
   nested_options <- reactive({
-    if(is.null(selected_row())){
+    if(is.null(selected_row()) || nrow(selected_row()) == 0){
       return(NULL)
     }
     .reg$from_json(selected_row()$options)
