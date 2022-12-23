@@ -14,17 +14,17 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
     ),
     
     softui::fluid_row(id = ns("form_container"),
-          shiny::column(6,
-              shiny::uiOutput(ns("ui_input_left"))
-          ),
-          shiny::column(6,
-              shiny::uiOutput(ns("ui_input_right"))
-          )
+        shiny::column(6,
+            shiny::uiOutput(ns("ui_input_left"))
+        ),
+        shiny::column(6,
+            shiny::uiOutput(ns("ui_input_right"))
+        )
     ),
     softui::fluid_row(id = ns("form_container_btm"),
-          shiny::column(12,
-              shiny::uiOutput(ns("ui_input_bottom"))
-          )
+        shiny::column(12,
+            shiny::uiOutput(ns("ui_input_bottom"))
+        )
     ),
     
     # tags$div(style = "display: none;",
@@ -38,11 +38,21 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
                         
                         shiny::tags$hr(),
                         
-                        shiny::column(6,
+                        if(deletable){
+                          shiny::column(3,
+                                softui::action_button(ns("btn_delete_registratie"), 
+                                                      "Verwijderen ...", 
+                                                      icon = bsicon("trash"), 
+                                                      status = "danger")
+                                )
+                        },
+                        shiny::column(6),
+                        
+                        shiny::column(3,
                                softui::action_button(ns("btn_cancel"), 
                                                      "Annuleren", 
                                                      icon = bsicon("x-lg"), 
-                                                     status = "danger"),      
+                                                     status = "warning"),      
                                softui::action_button(ns("btn_register_new_signal"), 
                                                      "Opslaan", 
                                                      icon = bsicon("cloud-arrow-up"), 
@@ -51,25 +61,8 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
       )
       
       
-    },
-    
-    
-    if(deletable){
-      
-      softui::fluid_row(class = "justify-content-center",
-                        
-                        shiny::tags$hr(),
-                        
-                        shiny::column(3,
-                               softui::action_button(ns("btn_delete_registratie"), 
-                                                     "Verwijderen", 
-                                                     icon = bsicon("trash"), 
-                                                     status = "danger")
-                        )
-      )
-      
-      
     }
+
     
   )
   
@@ -390,14 +383,16 @@ formModule <- function(input, output, session, .reg = NULL,
 
   observeEvent(input$btn_confirm_delete_registration, {
     
-    .reg$delete_registration(data()[[.reg$data_columns$id]])
+    .reg$delete_registration(data()[[.reg$data_columns$id]],
+                             method = "soft")
+    
     if(!is.null(.reg$event_data)){
       .reg$delete_event(data()[[.reg$data_columns$id]])
     }
 
     # delete relation data
-    current_relations = .reg$get_objects_for_collector(collector_id = current_reg_id())
-    .reg$soft_delete_relations(current_relations$id) 
+    # current_relations = .reg$get_objects_for_collector(collector_id = current_reg_id())
+    # .reg$soft_delete_relations(current_relations$id) 
     
     toastr_success(message_deleted)
     

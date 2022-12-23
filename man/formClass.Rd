@@ -623,10 +623,23 @@ Make sure the necessary columns are present in the data_table
 \if{html}{\out{<a id="method-NA-delete_registration"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-delete_registration}{}}}
 \subsection{Method \code{delete_registration()}}{
+Soft/hard/(un)delete a registration. \code{deleted} field will be set to 1.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$delete_registration(registration_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$delete_registration(
+  registration_id,
+  method = c("soft", "hard", "undelete")
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{registration_id}}{ID of the registration}
+
+\item{\code{method}}{Either 'soft', 'hard' (really delete), 'undelete'}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-read_registrations"></a>}}

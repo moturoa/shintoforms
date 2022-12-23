@@ -110,6 +110,12 @@ formClass <- R6::R6Class(
       self$data_table <- data_table
       self$data_columns <- data_columns
       
+      # check new 'deleted' field
+      datacols <- self$table_columns(self$data_table)
+      if(!"deleted" %in% datacols){
+        stop("Must have 'deleted' column in registrations data (`alter table <<table>> add column deleted integer default 0.")
+      }
+      
       self$filterable <- filterable
       
       # Check
@@ -119,12 +125,7 @@ formClass <- R6::R6Class(
         stop(paste("Columns in def_columns not found:", paste(defcols[!di1], collapse=",")))
       }
       
-      # datacols <- self$table_columns(self$data_table)
-      # di2 <- unlist(self$data_columns) %in% datacols
-      # 
-      # if(any(!di2)){
-      #   stop(paste("Columns in data_columns not found:", paste(unlist(self$data_columns)[!di2], collapse=",")))
-      # }
+      
       
       
       # Extra custom fields (modules, can be anything even static HTML)
@@ -1090,7 +1091,12 @@ formClass <- R6::R6Class(
     },
     
     
-    delete_registration = function(registration_id){
+    #' @description Soft/hard/(un)delete a registration. `deleted` field will be set to 1.
+    #' @param registration_id ID of the registration
+    #' @param method Either 'soft', 'hard' (really delete), 'undelete'
+    delete_registration = function(registration_id, method = c("soft","hard","undelete")){
+      
+      method <- match.arg(method)
       
       if(self$audit) {
         if(!is.null(self$schema)){
@@ -1107,19 +1113,22 @@ formClass <- R6::R6Class(
         dbExecute(self$con, audit_query)
       }
       
-      
-      if(!is.null(self$schema)){
-        qu <- glue::glue("DELETE FROM {self$schema}.{self$data_table} WHERE {self$data_columns$id} = '{registration_id}'")
-      } else {
-        qu <- glue::glue("DELETE FROM {self$data_table} WHERE {self$data_columns$id} = '{registration_id}'")
+      if(method %in% c("soft","undelete")){
+        flag <- ifelse(method == "soft", 1, 0)
+        self$replace_value_where(self$data_table, col_replace = "deleted", val_replace = flag,
+                                 col_compare = self$data_columns$id, val_compare = registration_id)  
+        
+      } else if(method == "hard"){
+        
+        self$delete_rows_where(self$data_table, col_compare = self$data_columns$id, val_compare = registration_id)
+        
+        # TODO
+        # audit en relations ook kunnen verwijderen voor AVG
       }
-      
-      dbExecute(self$con, qu)
       
     },
     
-    
-    
+
     #' @description Read registrations, recode select values where needed.
     #' @param recode If TRUE (default), replaces codes with labels (for select fields)
     read_registrations = function(recode = TRUE){
@@ -1567,6 +1576,7 @@ formClass <- R6::R6Class(
       dbExecute(self$con, qu_delete) 
     }
   },  
+
   #' @description Append relations
   #' @param data Data to append 
   write_new_relations = function(data, registration_id){ 
