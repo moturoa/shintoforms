@@ -647,7 +647,11 @@ Soft/hard/(un)delete a registration. \code{deleted} field will be set to 1.
 \subsection{Method \code{read_registrations()}}{
 Read registrations, recode select values where needed.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$read_registrations(recode = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$read_registrations(
+  recode = TRUE,
+  include_deleted = TRUE,
+  deleted_only = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

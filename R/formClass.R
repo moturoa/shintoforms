@@ -1113,6 +1113,14 @@ formClass <- R6::R6Class(
         dbExecute(self$con, audit_query)
       }
       
+      # time_modified
+      tabl <- ifelse(is.null(self$schema),self$data_table,glue("{self$schema}.{self$data_table}"))
+      mod_query <- glue("update {tabl} set {self$data_columns$time_modified} = NOW()::timestamp where ",
+                    "{self$data_columns$id} = '{registration_id}'") %>% as.character() 
+      if(!is.null(mod_query)){
+        dbExecute(self$con, mod_query)
+      }
+      
       if(method %in% c("soft","undelete")){
         flag <- ifelse(method == "soft", 1, 0)
         self$replace_value_where(self$data_table, col_replace = "deleted", val_replace = flag,
@@ -1131,9 +1139,18 @@ formClass <- R6::R6Class(
 
     #' @description Read registrations, recode select values where needed.
     #' @param recode If TRUE (default), replaces codes with labels (for select fields)
-    read_registrations = function(recode = TRUE){
+    read_registrations = function(recode = TRUE, 
+                                  include_deleted = TRUE,
+                                  deleted_only = FALSE
+                                  ){
       
-      data <- self$read_table(self$data_table)
+      data <- self$read_table(self$data_table, lazy = TRUE)
+      if(deleted_only){
+        data <- filter(data, deleted == 1)
+      } else if(!include_deleted){
+        data <- filter(data, deleted == 0)
+      }
+      data <- dplyr::collect(data)
       
       if(recode){
         data <- self$recode_registrations(data)
