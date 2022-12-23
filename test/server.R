@@ -27,16 +27,20 @@ function(input, output, session){
   
   # -------- Overzicht  
   
+
   signal_data <- reactive({ 
+    edit_ping()
     .reg$read_registrations()
   })
   
   
   output$dt_signalen_overzicht <- renderReactable({ 
     
-    signal_data() %>% mutate(registration_id=id_registratie) %>% 
+    signal_data() %>% 
+      mutate(registration_id=id_registratie) %>% 
+      filter(deleted == 0) %>%
       reactable(
-        highlight = TRUE, 
+        highlight = TRUE, defaultPageSize = 5,
         onClick = reactable_click_handler("row_signal_select") ) 
   })  
   
@@ -46,7 +50,8 @@ function(input, output, session){
       softui::modal(
         title = "Signaal bewerken", size = "fullscreen",
         id_confirm = "btn_confirm_registration_edit",
-        confirm_txt = "Opslaan",
+        confirm_button = FALSE, close_button = FALSE,
+        
         
         softui::fluid_row(class = "justify-content-center",
                           
@@ -54,7 +59,9 @@ function(input, output, session){
                                  
                                  tags$h5("Signaal"),
                                  tags$div(id = "form_view_container",
-                                          shintoforms::formUI(session$ns("form_selection"), buttons = FALSE, deletable = TRUE)                 
+                                          shintoforms::formUI(session$ns("form_selection"), 
+                                                              buttons = TRUE, 
+                                                              deletable = TRUE)                 
                                  )
                                  
                           )

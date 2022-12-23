@@ -161,6 +161,10 @@ relationSelectModule <- function(input, output, session ,reg_id, relation_type='
 
 
 
+#con <- dbConnect(RSQLite::SQLite(), "test/data/registraties.sqlite")
+#dbExecute(con, "alter table registraties add column deleted integer default 0")
+#dbExecute(con, "alter table registraties_audit add column deleted integer default 0")
+
 # Database connection
 .reg <- formClass$new(sqlite = "data/registraties.sqlite",
                               def_table = "formulier_velden",

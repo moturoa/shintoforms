@@ -38,21 +38,22 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
                         
                         shiny::tags$hr(),
                         
-                        if(deletable){
-                          shiny::column(3,
-                                softui::action_button(ns("btn_delete_registratie"), 
-                                                      "Verwijderen ...", 
-                                                      icon = bsicon("trash"), 
-                                                      status = "danger")
-                                )
-                        },
-                        shiny::column(6),
-                        
                         shiny::column(3,
+                          if(deletable){
+                            softui::action_button(ns("btn_delete_registratie"), 
+                                                  "Verwijderen ...", 
+                                                  icon = bsicon("trash"), 
+                                                  status = "danger")
+                          }
+                        ),
+                        shiny::column(5),
+                        shiny::column(2,
                                softui::action_button(ns("btn_cancel"), 
                                                      "Annuleren", 
                                                      icon = bsicon("x-lg"), 
-                                                     status = "warning"),      
+                                                     status = "warning")
+                        ),
+                        shiny::column(2,
                                softui::action_button(ns("btn_register_new_signal"), 
                                                      "Opslaan", 
                                                      icon = bsicon("cloud-arrow-up"), 

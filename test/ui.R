@@ -28,7 +28,11 @@ body <- softui::dashboard_body(
     ),
     softui::tab_item("overzicht", 
                      
-                     reactable::reactableOutput( "dt_signalen_overzicht") 
+         softui::box(
+           title = "Signalen",
+           width = 12,
+           reactable::reactableOutput( "dt_signalen_overzicht") 
+         )
     ),
     if(GLOBAL_AUDIT){
       softui::tab_item("audit",
