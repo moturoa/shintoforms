@@ -102,6 +102,9 @@ formClass <- R6::R6Class(
         
       }
       
+      # 'schema' string for query building
+      self$schema_str <- ifelse(is.null(self$schema), "", paste0(self$schema,"."))
+      
       
       self$def_table <- def_table
       self$def <- def_columns
@@ -231,13 +234,9 @@ formClass <- R6::R6Class(
     
     make_column = function(table, column, type = "varchar"){
       
-      if(is.null(self$schema)){
-        qu <- glue::glue("alter table {table} add column {column} {type}")
-      } else {
-        qu <- glue::glue("alter table {self$schema}.{table} add column {column} {type}")  
-      }
+      qu <- glue::glue("alter table {self$schema_str}{table} add column {column} {type}")
       
-      dbExecute(self$con, qu)
+      self$execute_query(qu)
       
     },
     
@@ -290,14 +289,24 @@ formClass <- R6::R6Class(
       
     },
     
+    #' @description Delete rows from a table given a single logical condition
+    #' @param table Table name
+    #' @param col_compare Column where to make logical comparison
+    #' @param val_compare Values in `col_compare` where rows will be deleted
+    #' @details Do not use inside shiny apps or otherwise, only as a tool to clean up tables.
+    delete_rows_where = function(table, col_compare, val_compare){
+      
+      query <- glue("delete from {self$schema_str}{table} where {col_compare}= ?val")
+      query <- DBI::sqlInterpolate(DBI::ANSI(), query, val = val_compare)
+      
+      self$execute_query(query)
+      
+    },
+    
+    
     table_columns = function(table){
       
-      if(is.null(self$schema)){
-        names(self$query(glue("select * from {table} where false")))
-      } else {
-        names(self$query(glue("select * from {self$schema}.{table} where false")))
-      }
-      
+       names(self$query(glue("select * from {self$schema_str}{table} where false")))
       
     },
     
@@ -315,13 +324,18 @@ formClass <- R6::R6Class(
       
     },
     
+    
+    execute_query = function(txt,...){
+      
+      try(
+        dbExecute(self$con, txt, ...)
+      )
+      
+    },
+    
     has_value = function(table, column, value){
       
-      if(!is.null(self$schema)){
-        out <- self$query(glue("select {column} from {self$schema}.{table} where {column} = '{value}' limit 1"))  
-      } else {
-        out <- self$query(glue("select {column} from {table} where {column} = '{value}' limit 1"))  
-      }
+      out <- self$query(glue("select {column} from {self$schema_str}{table} where {column} = '{value}' limit 1"))  
       
       nrow(out) > 0
     },
@@ -355,27 +369,20 @@ formClass <- R6::R6Class(
           }
           return(query)
         })
+        
         update_str <- paste(set_values[set_values != ""],  collapse = ", ")
         
         if(!is.null(self$schema)){
-          query <- glue("update {self$schema}.{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = NOW()::timestamp where ",
+          query <- glue("update {self$schema_str}{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = NOW()::timestamp where ",
                         "{col_compare} = ?val_compare") %>% as.character() 
           
           if(self$audit){
-            audit_query <- glue("insert into {self$schema}.{self$audit_table} select * from ",
-                                "{self$schema}.{table} where {col_compare}=?val_compare;") %>% as.character() 
+            audit_query <- glue("insert into {self$schema_str}{self$audit_table} select * from ",
+                                "{self$schema_str}{table} where {col_compare}=?val_compare;") %>% as.character() 
             audit_query <- sqlInterpolate(DBI::ANSI(), audit_query,  val_compare = val_compare) 
           }
-        } else {
-          
-          query <- glue("update {table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = NOW()::timestamp where ",
-                        "{col_compare} = ?val_compare") %>% as.character() 
-          if(self$audit){
-            audit_query <- glue("insert into {self$audit_table} select * from {table} where ",
-                                "{col_compare}=?val_compare;") %>% as.character()  
-            audit_query <- sqlInterpolate(DBI::ANSI(),  audit_query,  val_compare = val_compare)
-          }
-        } 
+        }
+        
         query <- sqlInterpolate(DBI::ANSI(), 
                                 query, 
                                 val_compare = val_compare)
@@ -390,10 +397,10 @@ formClass <- R6::R6Class(
         }
         
         if(self$audit){ 
-          dbExecute(self$con, audit_query)
+          self$execute_query(audit_query)
         }
         
-        dbExecute(self$con, query)   
+        self$execute_query(query)   
       }
     }, 
     
@@ -402,26 +409,14 @@ formClass <- R6::R6Class(
     replace_value_where = function(table, col_replace, val_replace, col_compare, val_compare,
                                    query_only = FALSE, quiet = FALSE){
       
-      
-      if(!is.null(self$schema)){
-        if(is.logical(val_replace) & !is.na(val_replace)){
-          query <- glue("update {self$schema}.{table} set {col_replace} = ?val_replace::boolean where ",
-                        "{col_compare} = ?val_compare") %>% as.character() 
-        } else {
-          query <- glue("update {self$schema}.{table} set {col_replace} = ?val_replace where ",
-                        "{col_compare} = ?val_compare") %>% as.character() 
-        }
-        
+      if(is.logical(val_replace) & !is.na(val_replace)){
+        query <- glue("update {self$schema_str}{table} set {col_replace} = ?val_replace::boolean where ",
+                      "{col_compare} = ?val_compare") %>% as.character() 
       } else {
-        if(is.logical(val_replace) & !is.na(val_replace)){
-          query <- glue("update {table} set {col_replace} = ?val_replace::boolean where ",
-                        "{col_compare} = ?val_compare") %>% as.character()
-        } else {
-          query <- glue("update {table} set {col_replace} = ?val_replace where ",
-                        "{col_compare} = ?val_compare") %>% as.character()
-        }
-        
+        query <- glue("update {self$schema_str}{table} set {col_replace} = ?val_replace where ",
+                      "{col_compare} = ?val_compare") %>% as.character() 
       }
+        
       
       query <- sqlInterpolate(DBI::ANSI(), 
                               query, 
@@ -429,11 +424,7 @@ formClass <- R6::R6Class(
       
       if(query_only)return(query)
       
-      # if(!quiet){
-      #   flog.info(query, name = "DBR6")  
-      # }
-      
-      dbExecute(self$con, query)
+      self$execute_query(query)
       
     },
      
@@ -559,11 +550,7 @@ formClass <- R6::R6Class(
     #' @description Get form fields for left or right column of the form
     get_form_fields = function(form_section){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
-      } else {
-        qu <- glue::glue("SELECT * FROM {self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
-      }
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       
       out <- dbGetQuery(self$con, qu)
       out <- out[order(out[[self$def$order_field]]),]
@@ -575,11 +562,7 @@ formClass <- R6::R6Class(
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
     get_next_formorder_number = function(form_section){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema}.{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
-      } else {
-        qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
-      }
+      qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema_str}{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       
       count <- dbGetQuery(self$con, qu)
       return(count[[1]]+1)
@@ -658,11 +641,7 @@ formClass <- R6::R6Class(
     
     check_uniqueness_column_name =  function(column){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {self$schema}.{self$def_table} WHERE {self$def$column_field} = '{column}'")
-      } else {
-        qu <- glue::glue("SELECT * FROM {self$def_table} WHERE {self$def$column_field} = '{column}'")
-      }
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$column_field} = '{column}'")
       
       res <- dbGetQuery(self$con, qu)
       return(nrow(res)==0)
@@ -859,13 +838,9 @@ formClass <- R6::R6Class(
         side <- new_setup$side[x]
         order <- new_setup$order[x]
         
-        if(!is.null(self$schema)){
-          qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$form_section} = '{side}', \"{self$def$order_field}\" = '{order}'  WHERE {self$def$id_form} = '{id}'")
-        } else {
-          qu <- glue::glue("UPDATE {self$def_table} SET {self$def$form_section} = '{side}', \"{self$def$order_field}\" = '{order}'  WHERE {self$def$id_form} = '{id}'")
-        }
+        qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET {self$def$form_section} = '{side}', \"{self$def$order_field}\" = '{order}'  WHERE {self$def$id_form} = '{id}'")
         
-        dbExecute(self$con, qu)
+        self$execute_query(qu)
         
       })
       
@@ -873,63 +848,44 @@ formClass <- R6::R6Class(
     
     edit_zichtbaarheid_invoerveld = function(id_formfield, new_zichtbaarheid){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
-      } else {
-        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
-      }
+      qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
       
-      dbExecute(self$con, qu)
+      self$execute_query(qu)
       
     },
     
     edit_verwijder_datum = function(id_formfield, new_date){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
-      } else {
-        qu <- glue::glue("UPDATE {self$def_table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
-      }
+      qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
       
-      dbExecute(self$con, qu)
+      self$execute_query(qu)
       
     },
     
     # hoeft alleen voor zichtbare velden
     amend_formfield_order = function(formside, deleted_number){
       
-      if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET \"{self$def$order_field}\" = \"{self$def$order_field}\" - 1 WHERE {self$def$form_section} = '{formside}' AND \"{self$def$order_field}\" > {deleted_number} AND {self$def$visible} = TRUE")
-      } else {
-        qu <- glue::glue("UPDATE {self$def_table} SET \"{self$def$order_field}\" = \"{self$def$order_field}\" - 1 WHERE {self$def$form_section} = '{formside}' AND \"{self$def$order_field}\" > {deleted_number} AND {self$def$visible} = TRUE")
-      }
+      qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET \"{self$def$order_field}\" = \"{self$def$order_field}\" - 1 WHERE {self$def$form_section} = '{formside}' AND \"{self$def$order_field}\" > {deleted_number} AND {self$def$visible} = TRUE")
       
-      dbExecute(self$con, qu)
+      self$execute_query(qu)
       
     },
     
     reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
-      if(!is.null(self$schema)){
-        qu <- glue::glue("UPDATE {self$schema}.{self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
-      } else {
-        qu <- glue::glue("UPDATE {self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
-      }
-      
-      dbExecute(self$con, qu)
+
+      qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
+
+      self$execute_query(qu)
       
     },
     
     
     really_delete_formfield = function(id){
       
-      if(!is.null(self$schema)){
-        tab <- glue::glue("{self$schema}.{self$def_table}")
-      } else {
-        tab <- self$def_table
-      }
+      tab <- glue::glue("{self$schema_str}{self$def_table}")
       
       qu <- glue::glue("delete from {tab} where {self$def$id_form} = '{id}'")
-      dbExecute(self$con, qu)
+      self$execute_query(qu)
     },
     
     
@@ -961,7 +917,7 @@ formClass <- R6::R6Class(
                "text"   # if not in list
         )
       } else {
-        stop("DB type not supported (column_type_from_field_type)")
+        stop("DB type not supported ($column_type_from_field_type)")
       }
       
     },
@@ -998,6 +954,22 @@ formClass <- R6::R6Class(
       
     },
      
+    
+    #' @description Rename registrations data (as read with $read_registrations) to 
+    #' internal column names as defined in `data_columns` argument
+    rename_registrations_intern = function(data){
+      
+      cols <- self$data_columns
+      ii <- match(names(data), unlist(cols))
+      mtch <- which(!is.na(ii))
+      
+      names(data)[mtch] <- names(cols)[ii[mtch]]
+      
+      data
+    },
+    
+    
+    
     write_new_registration = function(data, user_id, current_reg_id){ 
       # add missing columns to output etc.
       self$prepare_data_table()
@@ -1099,18 +1071,13 @@ formClass <- R6::R6Class(
       method <- match.arg(method)
       
       if(self$audit) {
-        if(!is.null(self$schema)){
-          #step 1 detect changes
-          qu_audit <- glue::glue("insert into {self$schema}.{self$audit_table} select * from ",
-                                 "{self$schema}.{self$data_table} WHERE {self$data_columns$id} =?val_compare;")  
-          
-        } else {
-          qu_audit <- glue::glue("insert into {self$audit_table} select * from ",
-                                 "{self$data_table} WHERE {self$data_columns$id} =?val_compare;")   
-        }  
+        
+        qu_audit <- glue::glue("insert into {self$schema_str}{self$audit_table} select * from ",
+                               "{self$schema_str}{self$data_table} WHERE {self$data_columns$id} =?val_compare;")  
+ 
         audit_query <- sqlInterpolate(DBI::ANSI(), qu_audit,  val_compare = registration_id) 
         
-        dbExecute(self$con, audit_query)
+        self$execute_query(audit_query)
       }
       
       # time_modified
@@ -1118,7 +1085,7 @@ formClass <- R6::R6Class(
       mod_query <- glue("update {tabl} set {self$data_columns$time_modified} = NOW()::timestamp where ",
                     "{self$data_columns$id} = '{registration_id}'") %>% as.character() 
       if(!is.null(mod_query)){
-        dbExecute(self$con, mod_query)
+        self$execute_query(mod_query)
       }
       
       if(method %in% c("soft","undelete")){
@@ -1244,12 +1211,8 @@ formClass <- R6::R6Class(
     
     get_occurences = function(table, column, record){
       
-      if(is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {table} WHERE {column} = '{record}'")
-      } else {
-        qu <- glue::glue("SELECT * FROM {self$schema}.{table} WHERE {column} = '{record}'")  
-      }
-      
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column} = '{record}'")  
+
       res <- dbGetQuery(self$con, qu)
       
       return(res)
@@ -1257,16 +1220,12 @@ formClass <- R6::R6Class(
     },
     
     get_registration_by_json = function(table, column, record){
-      if(is.null(self$schema)){
-        qu <- glue::glue("SELECT * FROM {table} WHERE {column}::jsonb ? '{record}'")
-      } else {
-        qu <- glue::glue("SELECT * FROM {self$schema}.{table} WHERE {column}::jsonb ? '{record}'")
-      }
-      
+
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column}::jsonb ? '{record}'")
+
       res <- dbGetQuery(self$con, qu)
       
       return(res)
-      
       
     },
     
@@ -1426,14 +1385,14 @@ formClass <- R6::R6Class(
       return(as.data.frame(do.call(rbind, all_mutations)))
       
   }, 
+  
   ## Relations
   get_all_relations = function(){
-    if(!is.null(self$schema)){
-      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
-    } else {
-      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
-    } 
-    return(dbGetQuery(self$con, qu))  
+
+    qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
+
+    self$query(qu)
+    
   },
    
   #' @description get_objects_for_collector 
@@ -1451,22 +1410,20 @@ formClass <- R6::R6Class(
                                        relation_type=NA,
                                        relation_id=NA,
                                        object_type=NA, 
-                                       filter_verwijderd=T){
-    collector_type = ifelse(is.na(collector_type), self$class_type, collector_type) 
-#    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
-    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
-  
-    A = ifelse(is.na(collector_id), "", glue(" AND {self$relation_columns$collector_id} = '{collector_id}'"))
-    B = ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
-    C = ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
-    D = ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
+                                       filter_verwijderd=TRUE){
     
-    if(!is.null(self$schema)){
-      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C}{D};")
-    } else {
-      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C}{D};")
-    } 
-    return(dbGetQuery(self$con, qu))
+    collector_type = ifelse(is.na(collector_type), self$class_type, collector_type) 
+    
+    # Build query parts
+    V <- ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
+    A <- ifelse(is.na(collector_id), "", glue(" AND {self$relation_columns$collector_id} = '{collector_id}'"))
+    B <- ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
+    C <- ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
+    D <- ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
+
+    qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C}{D};")
+
+    self$query(qu)
     
   },  
 
@@ -1487,21 +1444,20 @@ formClass <- R6::R6Class(
                                        relation_id=NA,
                                        filter_verwijderd=T){
     collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
-    #    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$status} != '0'"), "")
-    V = ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
+
+    # Build query parts
+    V <- ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
+    A <- ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
+    B <- ifelse(is.na(collector_type), "", glue(" AND {self$relation_columns$collector_type} = '{collector_type}'"))
+    C <- ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
+    D <- ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
     
-    A = ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
-    B = ifelse(is.na(collector_type), "", glue(" AND {self$relation_columns$collector_type} = '{collector_type}'"))
-    C = ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
-    D = ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
+    qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C}{D};")
+
+    self$query(qu)
     
-    if(!is.null(self$schema)){
-      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C}{D};")
-    } else {
-      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C}{D};")
-    }  
-    return(dbGetQuery(self$con, qu))
   },
+  
   add_relation = function(id = uuid::UUIDgenerate(),
                           collector_id,
                           collector_type, 
@@ -1529,20 +1485,20 @@ formClass <- R6::R6Class(
     
     names(data) <- self$relation_columns
     
-    self$append_data(self$relation_table,
-                     data) 
+    self$append_data(self$relation_table, data) 
     
   },
 
   #' @description timestamp in postgres timezone 
   postgres_now = function(){
     
-    return(self$query("select now()", quiet = TRUE)$now)
+    self$query("select now()", quiet = TRUE)$now
     
   },
 
   #' @description Select rows in registration audit table since some timestamp
   get_rows_since_auditstamp = function(time_since){  
+    
     time_since <- format(time_since)  
     
     modcol <- self$data_columns$time_modified
@@ -1559,7 +1515,7 @@ formClass <- R6::R6Class(
     #  filter(!!sym(creacol) > !!time_since) %>%
     #  select(all_of(collect_cols)) %>%
     #  collect 
-    dplyr::distinct(modif)#rbind(modif, creat))
+    dplyr::distinct(modif) #rbind(modif, creat))
     
   },
 
@@ -1568,29 +1524,19 @@ formClass <- R6::R6Class(
   #' @param ids ID of rows to delete
   soft_delete_relations = function(ids){
     
-    if(length(ids) > 0){ 
+    if(length(ids) > 0){
+      
       if(self$audit) {
-        if(!is.null(self$schema)){
-          #step 1 detect changes
-          qu_audit <- glue::glue("insert into {self$schema}.{self$relation_audit_table} select * from ",
-                                 "{self$schema}.{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');") %>% as.character() 
-          
-        } else {
-          qu_audit <- glue::glue("insert into {self$relation_audit_table} select * from ",
-                                 "{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');") %>% as.character() 
-        } 
-        
-        dbExecute(self$con, qu_audit)
+        qu_audit <- glue::glue("insert into {self$schema_str}{self$relation_audit_table} select * from ",
+                                 "{self$schema_str}{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');") %>% as.character() 
+
+        self$execute_query(qu_audit)
       }
       
       # delete all relations that are ALTERED or DELETED
-      if(!is.null(self$schema)){
-        qu_delete <- glue::glue("DELETE FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');")
-      } else {
-        qu_delete <- glue::glue("DELETE FROM {self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');")
-        
-      }
-      dbExecute(self$con, qu_delete) 
+      qu_delete <- glue::glue("DELETE FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');")
+
+      self$execute_query(qu_delete)
     }
   },  
 
@@ -1598,12 +1544,13 @@ formClass <- R6::R6Class(
   #' @param data Data to append 
   write_new_relations = function(data, registration_id){ 
     
-    postgres_time<-self$postgres_now()
+    postgres_time <- self$postgres_now()
     
     # Voor postgres GEBRUIK now()::timestamp
-    data <- data %>% mutate(collector_id=registration_id, 
-                            timestamp = format(postgres_time), 
-                            collector_type = ifelse(is.na(collector_type), self$class_type, collector_type))
+    data <- data %>% 
+      mutate(collector_id = registration_id, 
+             timestamp = format(postgres_time), 
+             collector_type = ifelse(is.na(collector_type), self$class_type, collector_type))
     
     
     self$append_data(self$relation_table,
@@ -1615,14 +1562,9 @@ formClass <- R6::R6Class(
   #' @param new_relations The current state that should end up in the relations table 
   update_relations = function(new_relations, registration_id){ 
  
-    if(!is.null(self$schema)){
-      #step 1 detect changes
-      qu <- glue::glue("SELECT * FROM {self$schema}.{self$relation_table} WHERE {self$relation_columns$collector_id} = '{registration_id}';")
-    } else {
-      qu <- glue::glue("SELECT * FROM {self$relation_table} WHERE {self$relation_columns$collector_id} = '{registration_id}';")
-    } 
+    qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$collector_id} = '{registration_id}';")
+
     old_relations <- dbGetQuery(self$con, qu)
-#      mutate(timestamp = as.character(timestamp)) 
      
     if(nrow(new_relations) == 0 & nrow(old_relations) == 0) return(TRUE)
     
@@ -1643,7 +1585,7 @@ formClass <- R6::R6Class(
     altered_or_deleted <- old_relations %>% 
       left_join(new_relations, by='id', suffix=c("", "_new"))  %>% 
       filter((comment_new != comment & status_new != status) | is.na(collector_id_new)) %>%
-      mutate(verwijderd = ifelse(is.na(collector_id_new), TRUE, verwijderd))%>%
+      mutate(verwijderd = ifelse(is.na(collector_id_new), TRUE, verwijderd)) %>%
       select(!ends_with('_new'))
  
     # archive all relations that are ALTERED or DELETED   

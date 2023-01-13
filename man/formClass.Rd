@@ -17,8 +17,10 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-make_column}{\code{formClass$make_column()}}
 \item \href{#method-NA-read_table}{\code{formClass$read_table()}}
 \item \href{#method-NA-append_data}{\code{formClass$append_data()}}
+\item \href{#method-NA-delete_rows_where}{\code{formClass$delete_rows_where()}}
 \item \href{#method-NA-table_columns}{\code{formClass$table_columns()}}
 \item \href{#method-NA-query}{\code{formClass$query()}}
+\item \href{#method-NA-execute_query}{\code{formClass$execute_query()}}
 \item \href{#method-NA-has_value}{\code{formClass$has_value()}}
 \item \href{#method-NA-replace_value_where_multi}{\code{formClass$replace_value_where_multi()}}
 \item \href{#method-NA-replace_value_where}{\code{formClass$replace_value_where()}}
@@ -56,6 +58,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-really_delete_formfield}{\code{formClass$really_delete_formfield()}}
 \item \href{#method-NA-column_type_from_field_type}{\code{formClass$column_type_from_field_type()}}
 \item \href{#method-NA-prepare_data_table}{\code{formClass$prepare_data_table()}}
+\item \href{#method-NA-rename_registrations_intern}{\code{formClass$rename_registrations_intern()}}
 \item \href{#method-NA-write_new_registration}{\code{formClass$write_new_registration()}}
 \item \href{#method-NA-edit_registration}{\code{formClass$edit_registration()}}
 \item \href{#method-NA-delete_registration}{\code{formClass$delete_registration()}}
@@ -198,6 +201,31 @@ Close database connection
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-delete_rows_where"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-delete_rows_where}{}}}
+\subsection{Method \code{delete_rows_where()}}{
+Delete rows from a table given a single logical condition
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$delete_rows_where(table, col_compare, val_compare)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{table}}{Table name}
+
+\item{\code{col_compare}}{Column where to make logical comparison}
+
+\item{\code{val_compare}}{Values in \code{col_compare} where rows will be deleted}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Do not use inside shiny apps or otherwise, only as a tool to clean up tables.
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-table_columns"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-table_columns}{}}}
 \subsection{Method \code{table_columns()}}{
@@ -212,6 +240,15 @@ Close database connection
 \subsection{Method \code{query()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$query(txt, glue = TRUE, quiet = FALSE)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-execute_query"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-execute_query}{}}}
+\subsection{Method \code{execute_query()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$execute_query(txt, ...)}\if{html}{\out{</div>}}
 }
 
 }
@@ -602,6 +639,17 @@ Make sure the necessary columns are present in the data_table
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-rename_registrations_intern"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-rename_registrations_intern}{}}}
+\subsection{Method \code{rename_registrations_intern()}}{
+Rename registrations data (as read with $read_registrations) to
+internal column names as defined in \code{data_columns} argument
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$rename_registrations_intern(data)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-write_new_registration"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-write_new_registration}{}}}
 \subsection{Method \code{write_new_registration()}}{
@@ -794,7 +842,7 @@ get_objects_for_collector
   relation_type = NA,
   relation_id = NA,
   object_type = NA,
-  filter_verwijderd = T
+  filter_verwijderd = TRUE
 )}\if{html}{\out{</div>}}
 }
 
