@@ -1151,9 +1151,9 @@ formClass <- R6::R6Class(
     #' @param data Dataframe (registrations data)
     recode_registrations = function(data){
       
-      # find select fields. they will be recoded with the actual values
+      # Single select, can use a direct `dplyr::recode`
       def <- self$read_definition(lazy = TRUE) %>% 
-        filter(!!sym(self$def[["type_field"]]) %in% c("multiselect","singleselect"),
+        filter(!!sym(self$def[["type_field"]]) == "singleselect",
                !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
         collect
       
@@ -1167,6 +1167,31 @@ formClass <- R6::R6Class(
           data[[col]] <- dplyr::recode(data[[col]], !!!key)   
         }
         
+      }
+      
+      # Multi-select, paste values with ";" to be compatible with shinyfilterset
+      def_multi <- self$read_definition(lazy = TRUE) %>% 
+        filter(!!sym(self$def[["type_field"]]) == "multiselect",
+               !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
+        collect
+      
+      
+      for(i in seq_len(nrow(def_multi))){
+      
+        opt <- def_multi[[self$def$options]][i]
+        key <- self$from_json(opt)
+        col <- def_multi[[self$def$column_field]][i]
+        
+        if(length(key)){
+          
+          val <- lapply(data[[col]], function(x)if(x %in% c("[]","{}"))NA_character_ else self$from_json(x))
+          
+          new_val <- sapply(val, function(x)paste(dplyr::recode(x, !!!key),collapse=";"), USE.NAMES = FALSE)
+          new_val[new_val == "NA"] <- NA
+          
+          data[[col]] <- new_val
+        }
+      
       }
       
     data
