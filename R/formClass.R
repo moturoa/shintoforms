@@ -1169,7 +1169,7 @@ formClass <- R6::R6Class(
         
       }
       
-      # Multi-select, paste values with ";" to be compatible with shinyfilterset
+      # Multi-select, make JSON values
       def_multi <- self$read_definition(lazy = TRUE) %>% 
         filter(!!sym(self$def[["type_field"]]) == "multiselect",
                !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
@@ -1186,7 +1186,7 @@ formClass <- R6::R6Class(
           
           val <- lapply(data[[col]], function(x)if(x %in% c("[]","{}"))NA_character_ else self$from_json(x))
           
-          new_val <- sapply(val, function(x)paste(dplyr::recode(x, !!!key),collapse=";"), USE.NAMES = FALSE)
+          new_val <- sapply(val, function(x)self$to_json(dplyr::recode(x, !!!key)), USE.NAMES = FALSE)
           new_val[new_val == "NA"] <- NA
           
           data[[col]] <- new_val
@@ -1517,7 +1517,15 @@ formClass <- R6::R6Class(
   #' @description timestamp in postgres timezone 
   postgres_now = function(){
     
-    self$query("select now()", quiet = TRUE)$now
+    tm <- try({
+      self$query("select now()", quiet = TRUE)$now  
+    }, silent = TRUE)
+    
+    if(inherits(tm, "try-error")){
+      return(Sys.time())
+    }
+    
+    tm
     
   },
 

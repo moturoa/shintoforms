@@ -100,8 +100,10 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "multiselect"){
     
+      sels <- options[match(value,names(options))]
+    
       ui <- selectizeInput(ns("value"), label, choices = c("", options),
-                     selected = value, 
+                     selected = sels, 
                      multiple = TRUE, 
                      width = input_width,
                      options = list(plugins = list("remove_button"))
