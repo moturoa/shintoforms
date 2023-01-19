@@ -137,6 +137,8 @@ formModule <- function(input, output, session, .reg = NULL,
     inj <- .reg$inject
     if(is.null(inj))return(NULL)
     
+    trigger()
+    
     inj <- lapply(inj, function(x){ 
       if(is.null(x$html) & !is.null(x$ui_module)){
         x$id <- uuid::UUIDgenerate()
