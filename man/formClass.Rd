@@ -38,6 +38,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-add_input_field_to_form}{\code{formClass$add_input_field_to_form()}}
 \item \href{#method-NA-check_uniqueness_column_name}{\code{formClass$check_uniqueness_column_name()}}
 \item \href{#method-NA-edit_label_field}{\code{formClass$edit_label_field()}}
+\item \href{#method-NA-edit_field_type}{\code{formClass$edit_field_type()}}
 \item \href{#method-NA-edit_filterable_column}{\code{formClass$edit_filterable_column()}}
 \item \href{#method-NA-from_json}{\code{formClass$from_json()}}
 \item \href{#method-NA-to_json}{\code{formClass$to_json()}}
@@ -450,6 +451,15 @@ Adds an input field to a form
 Edit the label for an input field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_label_field(id_form, new_label)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-edit_field_type"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_field_type}{}}}
+\subsection{Method \code{edit_field_type()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_field_type(id_form, new_type)}\if{html}{\out{</div>}}
 }
 
 }

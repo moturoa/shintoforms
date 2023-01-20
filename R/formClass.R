@@ -657,6 +657,14 @@ formClass <- R6::R6Class(
                                val_replace = new_label)
     },
     
+    edit_field_type = function(id_form, new_type){
+      
+      self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
+                               col_replace = self$def$type_field, 
+                               val_replace = new_type)
+      
+    },
+    
     edit_filterable_column = function(id_form, new_filter_boolean, new_tooltip){
       self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
                                col_replace = self$def$make_filter, 

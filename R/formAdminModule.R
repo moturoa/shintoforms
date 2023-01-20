@@ -339,6 +339,13 @@ formAdminModule <- function(input, output, session, .reg = NULL){
         textInput(session$ns("txt_edit_formfield_label"), "Label", 
                   value = selected_row()$label_field),
         
+        
+        if(selected_row()$type_field %in% c("freetext","html")){
+          selectInput(session$ns("sel_new_formfield_type"), "Selecteer nieuw input veld type",
+                      choices = c("freetext","html","singleselect","multiselect"), 
+                      selected = selected_row()$type_field)
+        },
+        
         if(.reg$filterable){
           
           tagList(
@@ -358,6 +365,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   
   
   observeEvent(input$btn_confirm_edit_label, {
+    
     req(selected_row())
     
     if(stringr::str_trim(input$txt_edit_formfield_label, side = "both") != ""){
@@ -365,11 +373,26 @@ formAdminModule <- function(input, output, session, .reg = NULL){
       if(.reg$filterable){
         .reg$edit_filterable_column(selected_id(), input$rad_edit_make_filter, input$txt_edit_tooltip)
       }
+      
+      sel_new <- input$sel_new_formfield_type
+      if(!is.null(sel_new) && sel_new != ""){
+        allowed_new <- c("html","freetext","singleselect","multiselect")
+        if(sel_new %in% allowed_new){
+          .reg$edit_field_type(selected_id(), sel_new)  
+        } else {
+          toastr_error("Ongeldig nieuw veld type")
+        }
+        
+      }
+      
       db_ping(runif(1))
       removeModal()
     } else {
       toastr_error("Vul een label in")
     }
+    
+    
+    
     
   })
   
