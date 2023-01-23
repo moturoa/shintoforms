@@ -807,15 +807,7 @@ formClass <- R6::R6Class(
       
       self$edit_options_field(id_form, lis)
     },
-    
-    save_nested_choices = function(id_form,  nested_choices, nested_key){
-      
-      chc <- self$from_json(nested_choices)
-      lis <- list(key = nested_key, value = chc)
-      self$edit_options_field(id_form, lis)
-      
-    },
-    
+
     
     #' @description If new categories added, make sure the order vector is amended
     amend_options_order = function(id_form, options){

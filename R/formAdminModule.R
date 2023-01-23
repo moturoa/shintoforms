@@ -72,9 +72,13 @@ formAdminUI <- function(id,
                            softui::ui_modal(
                              title = "Gekoppelde keuzelijst",
                              id = ns("modal_nested_options"),
+                             size = "l", 
+                             confirm_txt = "Opslaan", close_txt = "Annuleren",
                              id_confirm = ns("btn_confirm_nested_options"),
                              
-                             jsonMultiEditUI(ns("mod_edit_nested_options"))
+                             subChoiceEditorUI(ns("mod_edit_nested_options"))
+                           
+                             #jsonMultiEditUI(ns("mod_edit_nested_options"))
                            )
                            
                  )
@@ -449,41 +453,45 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     .reg$from_json(selected_row()$options)
   })
   
-  nested_key <- reactive({
-    opt <- nested_options()
+  # nested_key <- reactive({
+  #   opt <- nested_options()
+  # 
+  #   if(is.null(opt) || is.null(opt$key)){
+  #     return(list())
+  #   } else {
+  #     return(opt$key[[1]])
+  #   }
+  #   
+  # })
+  # 
+  # nested_value <- reactive({
+  #   opt <- nested_options()
+  #   if(is.null(opt) || is.null(opt$value)){
+  #     return(list())
+  #   } else {
+  #     return(opt$value)
+  #   }
+  # })
   
-    if(is.null(opt) || is.null(opt$key)){
-      return(list())
-    } else {
-      return(opt$key[[1]])
-    }
-    
-  })
+  nested_choices_out <- callModule(subChoiceEditor, "mod_edit_nested_options", data = nested_options, json = FALSE)
   
-  nested_value <- reactive({
-    opt <- nested_options()
-    if(is.null(opt) || is.null(opt$value)){
-      return(list())
-    } else {
-      return(opt$value)
-    }
-  })
   
-
-  nested_choices_out <- callModule(jsonMultiEdit, "mod_edit_nested_options",
-                                   edit_names = FALSE, 
-                                   key = nested_key,
-                                   value = nested_value,
-                                   json = FALSE)
+  # nested_choices_out <- callModule(jsonMultiEdit, "mod_edit_nested_options",
+  #                                  edit_names = FALSE, 
+  #                                  key = nested_key,
+  #                                  value = nested_value,
+  #                                  json = FALSE)
   
   # ehm dit is nodig om de module een schop te geven anders rendert het niet. ..
-  observeEvent(nested_choices_out(), {
-    invisible()
-  })
+  # observeEvent(nested_choices_out(), {
+  #   
+  #   invisible()
+  # })
   
   observeEvent(input$btn_confirm_nested_options, {
-    vals <- nested_choices_out()
-    .reg$save_nested_choices(selected_id(), nested_choices = vals, nested_key = nested_options()$key)
+    
+    .reg$edit_options_field(selected_id(), nested_choices_out())
+    
     db_ping(runif(1))
   })
   
