@@ -30,10 +30,10 @@ nestedSelectModule <- function(input, output, session, cfg, data){
   
   observeEvent(input$sel_column_1, {
 
+      req(input$sel_column_1)
       colname <- names(opts()$value)
       chc <- opts()$value[[1]][[input$sel_column_1]]
       sel_val <- data[[colname]]
-      
       updateVirtualSelect("sel_column_2", choices = chc, selected = sel_val)
 
   })

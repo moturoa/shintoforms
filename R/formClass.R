@@ -489,7 +489,7 @@ formClass <- R6::R6Class(
       nms <- unlist(unname(val))
       
       out <- setNames(names(val), nms)
-      
+
       out2 <- suppressWarnings({
         setNames(as.integer(out), nms)
       })
@@ -605,7 +605,7 @@ formClass <- R6::R6Class(
         }
         choice_values <- list(key = setNames(list(NULL),column_name),
                               value = setNames(list(NULL),column_2_name)) %>% 
-          .reg$to_json()
+          self$to_json()
       }
       
       data <- data.frame(
@@ -1179,7 +1179,7 @@ formClass <- R6::R6Class(
       # Single select, can use a direct `dplyr::recode`
       def <- self$read_definition(lazy = TRUE) %>% 
         filter(!!sym(self$def[["type_field"]]) %in% c("singleselect","nestedselect"),
-               !!sym(self$def[["visible"]]) == 1,
+               !!sym(self$def[["visible"]]),
                !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
         collect
       

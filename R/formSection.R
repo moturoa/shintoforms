@@ -25,7 +25,10 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
     if(el$type_field == "nestedselect"){
       chc <- jsonlite::fromJSON(el$options)
     } else {
-      chc <- .reg$choices_from_json(el$options)
+      chc <- try(.reg$choices_from_json(el$options),silent=TRUE)
+      if(inherits(chc, "try-error")){
+        chc <- NA
+      }
     }
     
     editFieldModuleUI(ns(el$id_form), 
