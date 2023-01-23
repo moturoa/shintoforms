@@ -2,6 +2,9 @@
 
 
 
+old <- c(1:3,5,7)
+
+
 #--- formSection: 
 # a vertical column with input fields (and nothing else)
 # typically right or left side of a formUI
@@ -13,14 +16,22 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
   ns <- NS(id)
   
   # Configured UI from definition table
-  els <- split(cfg, 1:nrow(cfg))[cfg$order_field]
+  els <- split(cfg, 1:nrow(cfg))
+  els <- els[order(cfg$order_field)]
+  #els <- dropNulls(els)
   
   ui <- lapply(els, function(el){
+    
+    if(el$type_field == "nestedselect"){
+      chc <- jsonlite::fromJSON(el$options)
+    } else {
+      chc <- .reg$choices_from_json(el$options)
+    }
     
     editFieldModuleUI(ns(el$id_form), 
                       column = el$column_field, 
                       label = el$label_field,
-                      options = .reg$choices_from_json(el$options),
+                      options = chc,
                       type = el$type_field,
                       #type_options = el$type_options,  # --> moet ook naar db
                       default = if(el$type_field == "boolean")TRUE else "", 
@@ -67,10 +78,11 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
 
 
 formSectionModule <- function(input, output, session, cfg = reactive(NULL), 
-                              .reg){
+                              .reg, data = reactive(NULL)){
   
 
   values <- reactive({
+    
     cfg <- cfg()
     
     if(nrow(cfg) == 0){
@@ -80,9 +92,15 @@ formSectionModule <- function(input, output, session, cfg = reactive(NULL),
     lapply(split(cfg, 1:nrow(cfg)), function(el){
       col <- el$column_field
       id <- el$id_form
-      callModule(editFieldModule, id, .reg = .reg, type = el$type_field)
+      callModule(editFieldModule, id, .reg = .reg, type = el$type_field, cfg = el, data = data())
     }) %>% setNames(cfg$column_field)
   })
+  
+  observeEvent(values(), {
+    
+    invisible()
+  })
+  
   
   return(values)
   

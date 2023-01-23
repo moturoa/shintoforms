@@ -107,7 +107,7 @@ subChoiceEditor <- function(input, output, session, data = reactive(NULL), json 
       
       id <- paste0("mod_",el)
       lab <- data$key[[1]][[el]]
-      prev_choices <- data$value[[el]]
+      prev_choices <- data$value[[1]][[el]]
       ui <- subChoiceEditorRowUI(session$ns(id),
                                  label = lab,
                                  values = prev_choices)  
@@ -163,15 +163,16 @@ subChoiceEditor <- function(input, output, session, data = reactive(NULL), json 
     data <- data[!i_is_null]
     
     column_name <- names(data_input()$key)
+    column_2_name <- names(data_input()$value)
     
     slots <- stringr::str_extract(names(data), "[0-9]+")
     keys <- lapply(data, "[[", "key")
     vals <- lapply(data, "[[", "value")
     ii <- order(as.integer(slots))
     out <- list(key = setNames(list(setNames(keys,slots)[ii]),column_name),
-                value = setNames(vals,slots)[ii])
+                value = setNames(list(setNames(vals,slots)[ii]),column_2_name))
     
-    out$value <- lapply(out$value, function(el){
+    out$value[[1]] <- lapply(out$value[[1]], function(el){
       if(is.null(el)){
         return(list())
       } else {

@@ -17,6 +17,8 @@ assert_input_field_type <- function(type){
 }
 
 
+
+
 #---- editFieldmodule: module voor een enkele input (bv numeric, text, oid)
 
 # TODO type / subtype:
@@ -111,10 +113,8 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "nestedselect"){
     
-    ui <- tags$p("not yet implemented") 
-    # selectizeInput(ns("value"), label, choices = c("", options), 
-    #                      selected = value, multiple = FALSE, 
-    #                      width = input_width)
+    ui <- nestedSelectModuleUI(ns("value"), label, data, column, value, options,
+                               width = input_width)
     
   } else if(type == "date"){
     
@@ -167,7 +167,8 @@ editFieldModuleUI <- function(id, column, data,
 ui
 }
 
-editFieldModule <- function(input, output, session, .reg, type){
+
+editFieldModule <- function(input, output, session, .reg, type, cfg = NULL, data = NULL){
   
   # #---- Input validator
   # val_i <- shinyvalidate::InputValidator$new()
@@ -178,22 +179,15 @@ editFieldModule <- function(input, output, session, .reg, type){
   # 
   # val_i$enable()
   
-  # #---- HTML edit field
-  # if(b$type == "html_editor"){ 
-  #   html_edit <- callModule(freetextEditModule, "value", 
-  #                           data = data,
-  #                           kolom = column,
-  #                           label = b$label)
-  # }
   
   #--- Output reactive
   value <- reactive({
     
-    # if(b$type == "html_editor"){
-    #   return(html_edit())
-    # }
-    
-    out <- input$value
+    if(type == "nestedselect"){
+      out <- callModule(nestedSelectModule, "value", cfg = cfg, data = data)
+    } else {
+      out <- input$value  
+    }
     
     # Extra processing of output
     if(type == "boolean"){
@@ -210,6 +204,11 @@ editFieldModule <- function(input, output, session, .reg, type){
     
     out
     
+  })
+  
+  observeEvent(value(), {
+
+    invisible()
   })
   
   

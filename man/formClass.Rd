@@ -49,7 +49,6 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-amend_options_colors}{\code{formClass$amend_options_colors()}}
 \item \href{#method-NA-set_options_order}{\code{formClass$set_options_order()}}
 \item \href{#method-NA-prepare_nested_choice_column}{\code{formClass$prepare_nested_choice_column()}}
-\item \href{#method-NA-save_nested_choices}{\code{formClass$save_nested_choices()}}
 \item \href{#method-NA-amend_options_order}{\code{formClass$amend_options_order()}}
 \item \href{#method-NA-edit_formulier_setup}{\code{formClass$edit_formulier_setup()}}
 \item \href{#method-NA-edit_zichtbaarheid_invoerveld}{\code{formClass$edit_zichtbaarheid_invoerveld()}}
@@ -419,7 +418,9 @@ Adds an input field to a form
   type_field,
   form_section,
   filterable = NULL,
-  tooltip = NULL
+  tooltip = NULL,
+  column_name = NULL,
+  column_2_name = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -552,15 +553,6 @@ If new options added, make sure the color vector is amended
 \subsection{Method \code{prepare_nested_choice_column()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$prepare_nested_choice_column(id_form, name, options)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-save_nested_choices"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-save_nested_choices}{}}}
-\subsection{Method \code{save_nested_choices()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$save_nested_choices(id_form, nested_choices, nested_key)}\if{html}{\out{</div>}}
 }
 
 }

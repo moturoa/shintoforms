@@ -41,24 +41,24 @@ formAdminUI <- function(id,
                  )
                ),
                
-               shinyjs::hidden(
-                 tags$span(id = ns("span_set_nested_key_column"),
-                           softui::modal_action_button(ns("btn_set_nested_key_column"),
-                                                       ns("modal_set_nested_key_column"),
-                                                       "Gekoppelde kolom", 
-                                                       status = "secondary",
-                                                       icon = bsicon("pencil-square")),
-                           softui::ui_modal(
-                             id = ns("modal_set_nested_key_column"),
-                             title = "Kies gekoppelde kolom",
-                             id_confirm = ns("btn_confirm_set_nested_key_column"),
-                             
-                             selectInput(ns("sel_nested_column"), "Maak keuze",
-                                         choices = NULL)
-                             
-                           )
-                 )
-               ),
+               # shinyjs::hidden(
+               #   tags$span(id = ns("span_set_nested_key_column"),
+               #             softui::modal_action_button(ns("btn_set_nested_key_column"),
+               #                                         ns("modal_set_nested_key_column"),
+               #                                         "Gekoppelde kolom", 
+               #                                         status = "secondary",
+               #                                         icon = bsicon("pencil-square")),
+               #             softui::ui_modal(
+               #               id = ns("modal_set_nested_key_column"),
+               #               title = "Kies gekoppelde kolom",
+               #               id_confirm = ns("btn_confirm_set_nested_key_column"),
+               #               
+               #               selectInput(ns("sel_nested_column"), "Maak keuze",
+               #                           choices = NULL)
+               #               
+               #             )
+               #   )
+               # ),
                
                shinyjs::hidden(
                  tags$span(id = ns("span_edit_nested_options"),
@@ -251,6 +251,9 @@ formAdminModule <- function(input, output, session, .reg = NULL){
         textInput(session$ns("txt_column_name"), "Naam invoerveld"),
         radioButtons(session$ns("rad_type_formfield"), "Type invoerveld",
                      choices = configured_field_types),
+        
+        uiOutput(session$ns("ui_nested_select_options")),
+        
         radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
                      choices = c("Links" = 1,
                                  "Rechts" = 2)),
@@ -268,6 +271,17 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     )
   })
   
+  
+  output$ui_nested_select_options <- renderUI({
+    
+    req(isTRUE(input$rad_type_formfield == "nestedselect"))
+    
+    textInput(session$ns("txt_secondary_column_name"), "Naam gekoppeld invoerveld")
+    
+    
+  })
+  
+  
   observeEvent(input$btn_confirm_add_formfield, {
     
     if(.reg$filterable){
@@ -278,22 +292,24 @@ formAdminModule <- function(input, output, session, .reg = NULL){
       tooltip <- NULL
     }
     
-    if(stringr::str_trim(input$txt_column_name, side = "both") != ""){
-      resp <- .reg$add_input_field_to_form(input$txt_column_name, 
-                                           input$rad_type_formfield, 
-                                           as.integer(input$rad_side_formfield),
-                                           make_filter, tooltip)
-      
-      if(resp < 0){
-        toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
-      } else {
-        db_ping(runif(1))
-        removeModal()  
-      }
-      
-      
-    } else {
+    colname <- stringr::str_trim(input$txt_column_name, side = "both")
+    
+    if(colname == ""){
       toastr_error("Vul een label in")
+    }
+    req(colname)
+    
+    resp <- .reg$add_input_field_to_form(input$txt_column_name, 
+                                         input$rad_type_formfield, 
+                                         as.integer(input$rad_side_formfield),
+                                         make_filter, tooltip,
+                                         column_2_name = input$txt_secondary_column_name)
+    
+    if(resp < 0){
+      toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
+    } else {
+      db_ping(runif(1))
+      removeModal()  
     }
     
   })

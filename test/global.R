@@ -6,7 +6,7 @@ devtools::load_all()
 
 library(lubridate)
 
-
+options(shiny.fullstacktrace = TRUE)
 # Set - see 1Pass
 mcekey <- Sys.getenv("TINYMCE_API_KEY")
 options(mce_api_key = mcekey)

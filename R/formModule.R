@@ -206,9 +206,9 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   
-  edit_left <- callModule(formSectionModule, "form_left", cfg = cfg_left, .reg = .reg)
-  edit_right <- callModule(formSectionModule, "form_right", cfg = cfg_right, .reg = .reg)
-  edit_bottom <- callModule(formSectionModule, "form_bottom", cfg = cfg_bottom, .reg = .reg)
+  edit_left <- callModule(formSectionModule, "form_left", cfg = cfg_left, .reg = .reg, data = data)
+  edit_right <- callModule(formSectionModule, "form_right", cfg = cfg_right, .reg = .reg, data = data)
+  edit_bottom <- callModule(formSectionModule, "form_bottom", cfg = cfg_bottom, .reg = .reg, data = data)
   
   
   
@@ -218,6 +218,13 @@ formModule <- function(input, output, session, .reg = NULL,
     
     out <- c(lapply(edit_left(), function(x)x()),
              lapply(edit_right(), function(x)x()))
+    
+    i_rea <- which(sapply(out, is.reactive))
+    if(length(i_rea)){
+      names(out)[i_rea] <- ""
+      out <- lapply(out, function(x)if(is.reactive(x)){x()}else{x})
+      out <- do.call(c, out)
+    }
     
     out
     
@@ -345,19 +352,19 @@ formModule <- function(input, output, session, .reg = NULL,
       resp <- .reg$write_new_registration(edits(), 
                                           user_id = current_user, 
                                           current_reg_id=current_reg_id())
-      resp2 <- .reg$write_new_relations(data = edits_relations(),
-                                        registration_id = current_reg_id())
+      # resp2 <- .reg$write_new_relations(data = edits_relations(),
+      #                                   registration_id = current_reg_id())
     } else { 
       resp <- .reg$edit_registration(old_data = data(), 
                                      new_data = edits(), 
                                      user_id = current_user, 
                                      current_reg_id=current_reg_id()) 
-      resp2 <- .reg$update_relations(edits_relations(),
-                                     registration_id = current_reg_id())
+      # resp2 <- .reg$update_relations(edits_relations(),
+      #                                registration_id = current_reg_id())
     }
     
 
-    if(resp & resp2){
+    if(resp ){  #& resp2
       toastr_success(message_success)
     } else {
       toastr_error(message_error)
