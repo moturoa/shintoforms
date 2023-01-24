@@ -179,6 +179,7 @@ formModule <- function(input, output, session, .reg = NULL,
   output$ui_input_left <- renderUI({
     
     ui_ping(runif(1))
+    trigger()
     formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg,
                         data = data(), disabled = disabled(),
                         inject = inject_left())
@@ -188,6 +189,7 @@ formModule <- function(input, output, session, .reg = NULL,
   output$ui_input_right <- renderUI({
     
     ui_ping(runif(1))
+    trigger()
     formSectionModuleUI(session$ns("form_right"), cfg = cfg_right(), .reg = .reg,
                         data = data(), disabled = disabled(),
                         inject = inject_right())
@@ -198,6 +200,7 @@ formModule <- function(input, output, session, .reg = NULL,
   output$ui_input_bottom <- renderUI({
     
     ui_ping(runif(1))
+    trigger()
     formSectionModuleUI(session$ns("form_bottom"), cfg = cfg_bottom(), .reg = .reg,
                         data = data(), disabled = disabled(),
                         inject = inject_bottom())
@@ -206,9 +209,9 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   
-  edit_left <- callModule(formSectionModule, "form_left", cfg = cfg_left, .reg = .reg, data = data)
-  edit_right <- callModule(formSectionModule, "form_right", cfg = cfg_right, .reg = .reg, data = data)
-  edit_bottom <- callModule(formSectionModule, "form_bottom", cfg = cfg_bottom, .reg = .reg, data = data)
+  edit_left <- callModule(formSectionModule, "form_left", cfg = cfg_left, .reg = .reg, data = data, trigger = trigger)
+  edit_right <- callModule(formSectionModule, "form_right", cfg = cfg_right, .reg = .reg, data = data, trigger = trigger)
+  edit_bottom <- callModule(formSectionModule, "form_bottom", cfg = cfg_bottom, .reg = .reg, data = data, trigger = trigger)
   
   
   

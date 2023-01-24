@@ -4,9 +4,11 @@ nestedSelectModuleUI <- function(id, label, data, columns, value, options, width
   
   ns <- NS(id)
   
-  main_chc <- unlist(options$key[[1]])
-  
+  main_chc <- unlist(options$key[[1]]) 
   main_chc <- setNames(names(main_chc),unlist(main_chc))
+  
+  sec_chc <- options$value[[1]][[main_chc[value]]]
+  sec_sel <- data[[names(options$value)]]
   
   tagList(
     
@@ -19,7 +21,9 @@ nestedSelectModuleUI <- function(id, label, data, columns, value, options, width
     softui::virtual_select_input(ns("sel_column_2"), 
                                  options$label, 
                                  width = width,
-                                 choices = NULL, autoSelectFirstOption = FALSE)
+                                 choices = sec_chc, 
+                                 selected = sec_sel,
+                                 autoSelectFirstOption = FALSE)
   )
   
   
@@ -27,7 +31,8 @@ nestedSelectModuleUI <- function(id, label, data, columns, value, options, width
 
 
 
-nestedSelectModule <- function(input, output, session, cfg, data){
+nestedSelectModule <- function(input, output, session, cfg, data,
+                               trigger = reactive(NULL)){
   
   opts <- reactive({
      jsonlite::fromJSON(cfg$options)
@@ -35,8 +40,10 @@ nestedSelectModule <- function(input, output, session, cfg, data){
   
   observeEvent(input$sel_column_1, {
 
+    trigger()
+    print(paste("trigger():", trigger()))
       req(input$sel_column_1)
-    
+
       colname <- names(opts()$value)
       chc <- opts()$value[[1]][[input$sel_column_1]]
       req(length(chc)>0)

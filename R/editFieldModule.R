@@ -165,7 +165,8 @@ ui
 }
 
 
-editFieldModule <- function(input, output, session, .reg, type, cfg = NULL, data = NULL){
+editFieldModule <- function(input, output, session, .reg, type, cfg = NULL, 
+                            data = NULL, trigger = reactive(NULL)){
   
   # #---- Input validator
   # val_i <- shinyvalidate::InputValidator$new()
@@ -181,7 +182,7 @@ editFieldModule <- function(input, output, session, .reg, type, cfg = NULL, data
   value <- reactive({
     
     if(type == "nestedselect"){
-      out <- callModule(nestedSelectModule, "value", cfg = cfg, data = data)
+      out <- callModule(nestedSelectModule, "value", cfg = cfg, data = data, trigger = trigger)
     } else {
       out <- input$value  
     }

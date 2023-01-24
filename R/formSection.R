@@ -81,7 +81,8 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
 
 
 formSectionModule <- function(input, output, session, cfg = reactive(NULL), 
-                              .reg, data = reactive(NULL)){
+                              .reg, data = reactive(NULL),
+                              trigger = reactive(NULL)){
   
 
   values <- reactive({
@@ -95,7 +96,8 @@ formSectionModule <- function(input, output, session, cfg = reactive(NULL),
     lapply(split(cfg, 1:nrow(cfg)), function(el){
       col <- el$column_field
       id <- el$id_form
-      callModule(editFieldModule, id, .reg = .reg, type = el$type_field, cfg = el, data = data())
+      callModule(editFieldModule, id, .reg = .reg, type = el$type_field, cfg = el, 
+                 data = data(), trigger = trigger)
     }) %>% setNames(cfg$column_field)
   })
   
