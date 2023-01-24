@@ -43,7 +43,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-from_json}{\code{formClass$from_json()}}
 \item \href{#method-NA-to_json}{\code{formClass$to_json()}}
 \item \href{#method-NA-edit_options_field}{\code{formClass$edit_options_field()}}
-\item \href{#method-NA-amend_nested_options_key}{\code{formClass$amend_nested_options_key()}}
+\item \href{#method-NA-edit_nested_column_label}{\code{formClass$edit_nested_column_label()}}
 \item \href{#method-NA-is_color}{\code{formClass$is_color()}}
 \item \href{#method-NA-edit_options_colors}{\code{formClass$edit_options_colors()}}
 \item \href{#method-NA-amend_options_colors}{\code{formClass$amend_options_colors()}}
@@ -501,11 +501,12 @@ Edit the label for an input field
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-amend_nested_options_key"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-amend_nested_options_key}{}}}
-\subsection{Method \code{amend_nested_options_key()}}{
+\if{html}{\out{<a id="method-NA-edit_nested_column_label"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_nested_column_label}{}}}
+\subsection{Method \code{edit_nested_column_label()}}{
+Label for nested column is kept in options list
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$amend_nested_options_key(id_form, new_options)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_nested_column_label(id_form, opts, new_label)}\if{html}{\out{</div>}}
 }
 
 }

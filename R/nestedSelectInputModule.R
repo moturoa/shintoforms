@@ -9,10 +9,15 @@ nestedSelectModuleUI <- function(id, label, data, columns, value, options, width
   main_chc <- setNames(names(main_chc),unlist(main_chc))
   
   tagList(
+    
+    # tags$h5("Label"),
+    # textInput(ns("txt_column_2_label"), "Label voor sub-keuze kolom", value = options$label),
+    # 
     softui::virtual_select_input(ns("sel_column_1"), label, choices = main_chc, 
                                  width = width,
                                  selected = main_chc[value], autoSelectFirstOption = FALSE),
-    softui::virtual_select_input(ns("sel_column_2"), "Sub-keuze", 
+    softui::virtual_select_input(ns("sel_column_2"), 
+                                 options$label, 
                                  width = width,
                                  choices = NULL, autoSelectFirstOption = FALSE)
   )
@@ -31,8 +36,10 @@ nestedSelectModule <- function(input, output, session, cfg, data){
   observeEvent(input$sel_column_1, {
 
       req(input$sel_column_1)
+    
       colname <- names(opts()$value)
       chc <- opts()$value[[1]][[input$sel_column_1]]
+      req(length(chc)>0)
       sel_val <- data[[colname]]
       updateVirtualSelect("sel_column_2", choices = chc, selected = sel_val)
 

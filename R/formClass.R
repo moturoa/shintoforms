@@ -713,26 +713,41 @@ formClass <- R6::R6Class(
       
     },
     
-    amend_nested_options_key = function(id_form, new_options){
+    #' @description Label for nested column is kept in options list
+    edit_nested_column_label = function(id_form, opts, new_label){
       
-      # check if we have to amend nested select options
-      nested_fields <- self$get_fields_by_type("nestedselect")
+      opts <- self$from_json(opts)
+      opts$label <- new_label
       
-      if(nrow(nested_fields) > 0){
-        colname <- self$column_name_from_id(id_form)
-        
-        for(i in seq_len(nrow(nested_fields))){
-          dat <- slice(nested_fields,i)
-          o <- self$from_json(dat[[self$def$options]])
-          if(names(o$key) == colname){
-            o$key[[1]] <- self$from_json(new_options)
-            self$edit_options_field(dat[[self$def$id_form]], o)
-          }
-        }
-        
-      }
+      self$replace_value_where(self$def_table, 
+                               col_compare = self$def$id_form, 
+                               val_compare = id_form,
+                               col_replace = self$def$options, 
+                               val_replace = as.character(self$to_json(opts)))
       
     },
+    
+    
+    # amend_nested_options_key = function(id_form, new_options){
+    #   
+    #   # check if we have to amend nested select options
+    #   nested_fields <- self$get_fields_by_type("nestedselect")
+    #   
+    #   if(nrow(nested_fields) > 0){
+    #     colname <- self$column_name_from_id(id_form)
+    #     
+    #     for(i in seq_len(nrow(nested_fields))){
+    #       dat <- slice(nested_fields,i)
+    #       o <- self$from_json(dat[[self$def$options]])
+    #       if(names(o$key) == colname){
+    #         o$key[[1]] <- self$from_json(new_options)
+    #         self$edit_options_field(dat[[self$def$id_form]], o)
+    #       }
+    #     }
+    #     
+    #   }
+    #   
+    # },
     
     #' @description Is the provided color(s) valid?
     is_color = function(colors){

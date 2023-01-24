@@ -81,19 +81,16 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "boolean"){
     
-      ui <- radioButtons(ns("value"), label, inline = TRUE, 
-                   choices = setNames(c(TRUE,FALSE),names(options)),
-                   selected = as.character(value)
-      )
+    ui <- radioButtons(ns("value"), label, inline = TRUE, 
+                 choices = setNames(c(TRUE,FALSE),names(options)),
+                 selected = as.character(value))
     
   } else if(type == "singleselect"){
         
-    outval <- tryCatch({ 
-         options[[value]]
-         }, 
-    error=function(cond) { 
-      value 
-    }) 
+    outval <- tryCatch(options[[value]], 
+      error = function(cond) { 
+        value 
+      })
         
     ui <- selectizeInput(ns("value"), label, choices = c("", options), 
                      selected = outval, 
