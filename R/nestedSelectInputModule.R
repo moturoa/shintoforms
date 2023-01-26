@@ -8,6 +8,7 @@ nestedSelectModuleUI <- function(id, label, data, columns, value, options, width
   main_chc <- setNames(names(main_chc),unlist(main_chc))
   
   sec_chc <- options$value[[1]][[main_chc[value]]]
+  if(length(sec_chc) == 0)sec_chc <- NULL # virtualSelectInput crasht met choices=list()
   sec_sel <- data[[names(options$value)]]
   
   tagList(
