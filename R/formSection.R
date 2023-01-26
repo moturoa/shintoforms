@@ -97,7 +97,7 @@ formSectionModule <- function(input, output, session, cfg = reactive(NULL),
       col <- el$column_field
       id <- el$id_form
       callModule(editFieldModule, id, .reg = .reg, type = el$type_field, cfg = el, 
-                 data = data(), trigger = trigger)
+                 data = data, trigger = trigger)
     }) %>% setNames(cfg$column_field)
   })
   

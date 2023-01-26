@@ -32,25 +32,31 @@ nestedSelectModuleUI <- function(id, label, data, columns, value, options, width
 
 
 
-nestedSelectModule <- function(input, output, session, cfg, data,
+nestedSelectModule <- function(input, output, session, cfg, 
+                               data = reactive(NULL),
                                trigger = reactive(NULL)){
   
   opts <- reactive({
      jsonlite::fromJSON(cfg$options)
   })
   
-  observeEvent(input$sel_column_1, {
+  observe({
 
-    trigger()
-    print(paste("trigger():", trigger()))
+      #trigger()
       req(input$sel_column_1)
+      #cur_val <- input$sel_column_2
 
       colname <- names(opts()$value)
       chc <- opts()$value[[1]][[input$sel_column_1]]
-      req(length(chc)>0)
-      sel_val <- data[[colname]]
-      updateVirtualSelect("sel_column_2", choices = chc, selected = sel_val)
+      if(length(chc) == 0)chc <- NULL
 
+      sel_val <- data()[[colname]]
+      
+      # print(paste("chc:", paste(chc, collapse= ", ")))
+      # print(paste("sel:", sel_val))
+      
+      updateVirtualSelect("sel_column_2", choices = chc, selected = sel_val)
+      
   })
   
   

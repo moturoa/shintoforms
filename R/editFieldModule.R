@@ -166,7 +166,7 @@ ui
 
 
 editFieldModule <- function(input, output, session, .reg, type, cfg = NULL, 
-                            data = NULL, trigger = reactive(NULL)){
+                            data = reactive(NULL), trigger = reactive(NULL)){
   
   # #---- Input validator
   # val_i <- shinyvalidate::InputValidator$new()
