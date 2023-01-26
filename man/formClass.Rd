@@ -38,17 +38,17 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-add_input_field_to_form}{\code{formClass$add_input_field_to_form()}}
 \item \href{#method-NA-check_uniqueness_column_name}{\code{formClass$check_uniqueness_column_name()}}
 \item \href{#method-NA-edit_label_field}{\code{formClass$edit_label_field()}}
+\item \href{#method-NA-edit_field_type}{\code{formClass$edit_field_type()}}
 \item \href{#method-NA-edit_filterable_column}{\code{formClass$edit_filterable_column()}}
 \item \href{#method-NA-from_json}{\code{formClass$from_json()}}
 \item \href{#method-NA-to_json}{\code{formClass$to_json()}}
 \item \href{#method-NA-edit_options_field}{\code{formClass$edit_options_field()}}
-\item \href{#method-NA-amend_nested_options_key}{\code{formClass$amend_nested_options_key()}}
+\item \href{#method-NA-edit_nested_column_label}{\code{formClass$edit_nested_column_label()}}
 \item \href{#method-NA-is_color}{\code{formClass$is_color()}}
 \item \href{#method-NA-edit_options_colors}{\code{formClass$edit_options_colors()}}
 \item \href{#method-NA-amend_options_colors}{\code{formClass$amend_options_colors()}}
 \item \href{#method-NA-set_options_order}{\code{formClass$set_options_order()}}
 \item \href{#method-NA-prepare_nested_choice_column}{\code{formClass$prepare_nested_choice_column()}}
-\item \href{#method-NA-save_nested_choices}{\code{formClass$save_nested_choices()}}
 \item \href{#method-NA-amend_options_order}{\code{formClass$amend_options_order()}}
 \item \href{#method-NA-edit_formulier_setup}{\code{formClass$edit_formulier_setup()}}
 \item \href{#method-NA-edit_zichtbaarheid_invoerveld}{\code{formClass$edit_zichtbaarheid_invoerveld()}}
@@ -418,7 +418,9 @@ Adds an input field to a form
   type_field,
   form_section,
   filterable = NULL,
-  tooltip = NULL
+  tooltip = NULL,
+  column_name = NULL,
+  column_2_name = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -450,6 +452,15 @@ Adds an input field to a form
 Edit the label for an input field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_label_field(id_form, new_label)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-edit_field_type"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_field_type}{}}}
+\subsection{Method \code{edit_field_type()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_field_type(id_form, new_type)}\if{html}{\out{</div>}}
 }
 
 }
@@ -490,11 +501,12 @@ Edit the label for an input field
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-amend_nested_options_key"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-amend_nested_options_key}{}}}
-\subsection{Method \code{amend_nested_options_key()}}{
+\if{html}{\out{<a id="method-NA-edit_nested_column_label"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_nested_column_label}{}}}
+\subsection{Method \code{edit_nested_column_label()}}{
+Label for nested column is kept in options list
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$amend_nested_options_key(id_form, new_options)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_nested_column_label(id_form, opts, new_label)}\if{html}{\out{</div>}}
 }
 
 }
@@ -542,15 +554,6 @@ If new options added, make sure the color vector is amended
 \subsection{Method \code{prepare_nested_choice_column()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$prepare_nested_choice_column(id_form, name, options)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-save_nested_choices"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-save_nested_choices}{}}}
-\subsection{Method \code{save_nested_choices()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$save_nested_choices(id_form, nested_choices, nested_key)}\if{html}{\out{</div>}}
 }
 
 }

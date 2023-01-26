@@ -489,7 +489,7 @@ formClass <- R6::R6Class(
       nms <- unlist(unname(val))
       
       out <- setNames(names(val), nms)
-      
+
       out2 <- suppressWarnings({
         setNames(as.integer(out), nms)
       })
@@ -573,7 +573,9 @@ formClass <- R6::R6Class(
     #' @param label_field Label for the field
     #' @param type_field Type of field (options : TODO)
     #' @param form_section Left or right
-    add_input_field_to_form = function(label_field, type_field, form_section, filterable = NULL, tooltip = NULL){
+    add_input_field_to_form = function(label_field, type_field, form_section, filterable = NULL, 
+                                       tooltip = NULL, column_name = NULL, column_2_name = NULL
+                                       ){
       
       
       #assert_input_field_type(type_field)
@@ -581,61 +583,66 @@ formClass <- R6::R6Class(
       id <- uuid::UUIDgenerate()
       
       # Sanitize column name
-      kol_nm_veld <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
-      
-      if(self$check_uniqueness_column_name(kol_nm_veld)){
-        
-        volg_veld <- self$get_next_formorder_number(form_section)
-        
-        if(type_field == "boolean"){
-          opties <- '{"1":"Ja","2":"Nee"}'
-          #volgorde <- self$to_json('[1,2]')
-        } else {
-          opties <- "[]"
-          #volgorde <- "[]"
-        }
-        
-        data <- data.frame(
-          id_form = id,
-          column_field = kol_nm_veld,
-          label_field = label_field,
-          type_field = type_field,
-          order_field = volg_veld,
-          form_section = form_section,
-          visible = TRUE,
-          options = opties,
-          order_options = "[]",
-          colors = '[]',
-          removable = TRUE
-        )
-        
-        if(self$filterable){
-          data <- data %>%
-            mutate(make_filter = filterable,
-                   tooltip = tooltip)
-        }
-        
-        
-        data <- dplyr::rename_with(data, 
-                                   .fn = function(x){
-                                     unname(unlist(self$def[x]))
-                                   })
-        
-        self$append_data(self$def_table, data)
-        
-        if(type_field == "boolean"){
-          self$amend_options_order(id, opties)
-          self$amend_options_colors(id, opties)
-        }
-        
-        return(0)
-        
-      } else {
-        
-        return(-1)
-        
+      if(is.null(column_name)){
+        column_name <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
       }
       
+      if(!self$check_uniqueness_column_name(column_name))return(-1)
+      if(!is.null(column_2_name) && !self$check_uniqueness_column_name(column_2_name))return(-1)
+        
+      field_order_nr <- self$get_next_formorder_number(form_section)
+      
+      if(type_field == "boolean"){
+        choice_values <- '{"1":"Ja","2":"Nee"}'
+      } else {
+        choice_values <- "[]"
+      }
+      
+      if(type_field == "nestedselect"){
+        if(is.null(column_2_name)){
+          message("column_2_name must be provided for type field: nestedselect")
+          return(-1)
+        }
+        choice_values <- list(key = setNames(list(NULL),column_name),
+                              value = setNames(list(NULL),column_2_name)) %>% 
+          self$to_json()
+      }
+      
+      data <- data.frame(
+        id_form = id,
+        column_field = column_name,
+        label_field = label_field,
+        type_field = type_field,
+        order_field = field_order_nr,
+        form_section = form_section,
+        visible = TRUE,
+        options = as.character(choice_values),
+        order_options = "[]",
+        colors = '[]',
+        removable = TRUE
+      )
+      
+      if(self$filterable){
+        data <- data %>%
+          mutate(make_filter = filterable,
+                 tooltip = tooltip)
+      }
+      
+      
+      data <- dplyr::rename_with(data, 
+                                 .fn = function(x){
+                                   unname(unlist(self$def[x]))
+                                 })
+      
+      self$append_data(self$def_table, data)
+      
+      if(type_field == "boolean"){
+        self$amend_options_order(id, opties)
+        self$amend_options_colors(id, opties)
+      }
+      
+      return(0)
+        
       
     },
     
@@ -655,6 +662,14 @@ formClass <- R6::R6Class(
       self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
                                col_replace = self$def$label_field, 
                                val_replace = new_label)
+    },
+    
+    edit_field_type = function(id_form, new_type){
+      
+      self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
+                               col_replace = self$def$type_field, 
+                               val_replace = new_type)
+      
     },
     
     edit_filterable_column = function(id_form, new_filter_boolean, new_tooltip){
@@ -698,26 +713,41 @@ formClass <- R6::R6Class(
       
     },
     
-    amend_nested_options_key = function(id_form, new_options){
+    #' @description Label for nested column is kept in options list
+    edit_nested_column_label = function(id_form, opts, new_label){
       
-      # check if we have to amend nested select options
-      nested_fields <- self$get_fields_by_type("nestedselect")
+      opts <- self$from_json(opts)
+      opts$label <- new_label
       
-      if(nrow(nested_fields) > 0){
-        colname <- self$column_name_from_id(id_form)
-        
-        for(i in seq_len(nrow(nested_fields))){
-          dat <- slice(nested_fields,i)
-          o <- self$from_json(dat[[self$def$options]])
-          if(names(o$key) == colname){
-            o$key[[1]] <- self$from_json(new_options)
-            self$edit_options_field(dat[[self$def$id_form]], o)
-          }
-        }
-        
-      }
+      self$replace_value_where(self$def_table, 
+                               col_compare = self$def$id_form, 
+                               val_compare = id_form,
+                               col_replace = self$def$options, 
+                               val_replace = as.character(self$to_json(opts)))
       
     },
+    
+    
+    # amend_nested_options_key = function(id_form, new_options){
+    #   
+    #   # check if we have to amend nested select options
+    #   nested_fields <- self$get_fields_by_type("nestedselect")
+    #   
+    #   if(nrow(nested_fields) > 0){
+    #     colname <- self$column_name_from_id(id_form)
+    #     
+    #     for(i in seq_len(nrow(nested_fields))){
+    #       dat <- slice(nested_fields,i)
+    #       o <- self$from_json(dat[[self$def$options]])
+    #       if(names(o$key) == colname){
+    #         o$key[[1]] <- self$from_json(new_options)
+    #         self$edit_options_field(dat[[self$def$id_form]], o)
+    #       }
+    #     }
+    #     
+    #   }
+    #   
+    # },
     
     #' @description Is the provided color(s) valid?
     is_color = function(colors){
@@ -799,15 +829,7 @@ formClass <- R6::R6Class(
       
       self$edit_options_field(id_form, lis)
     },
-    
-    save_nested_choices = function(id_form,  nested_choices, nested_key){
-      
-      chc <- self$from_json(nested_choices)
-      lis <- list(key = nested_key, value = chc)
-      self$edit_options_field(id_form, lis)
-      
-    },
-    
+
     
     #' @description If new categories added, make sure the order vector is amended
     amend_options_order = function(id_form, options){
@@ -924,11 +946,27 @@ formClass <- R6::R6Class(
     
     #' @description Make sure the necessary columns are present in the data_table
     prepare_data_table = function(){
+      
       tab <- self$get_input_fields()
       
       cols_output <- self$table_columns(self$data_table)
       
       for(i in seq_len(nrow(tab))){
+        
+        if(tab$type_field[i] == "nestedselect"){
+          
+          column_2 <- names(self$from_json(tab$options[i])$value)
+          
+          if(!column_2 %in% cols_output){
+            self$make_column(self$data_table, column_2, "text")
+            
+            # wanneer audit -> kolom ook aan audit table toevoegen
+            if(self$audit){
+              self$make_column(self$audit_table, column_2, "text")
+            }
+          }
+        }
+        
         
         if(!tab$column_field[i] %in% cols_output){
           
@@ -1112,11 +1150,13 @@ formClass <- R6::R6Class(
                                   ){
       
       data <- self$read_table(self$data_table, lazy = TRUE)
+      
       if(deleted_only){
         data <- filter(data, deleted == 1)
       } else if(!include_deleted){
         data <- filter(data, deleted == 0)
       }
+      
       data <- dplyr::collect(data)
       
       if(recode){
@@ -1153,14 +1193,22 @@ formClass <- R6::R6Class(
       
       # Single select, can use a direct `dplyr::recode`
       def <- self$read_definition(lazy = TRUE) %>% 
-        filter(!!sym(self$def[["type_field"]]) == "singleselect",
+        filter(!!sym(self$def[["type_field"]]) %in% c("singleselect","nestedselect"),
+               !!sym(self$def[["visible"]]),
                !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
         collect
       
       # for every select field, replace values
       for(i in seq_len(nrow(def))){
+        
         opt <- def[[self$def$options]][i]
+        
         key <- self$from_json(opt)
+        
+        if(def[[self$def[["type_field"]]]][i] == "nestedselect"){
+          key <- key$key[[1]]
+        }
+        
         col <- def[[self$def$column_field]][i]
         
         if(length(key)){
@@ -1169,7 +1217,7 @@ formClass <- R6::R6Class(
         
       }
       
-      # Multi-select, paste values with ";" to be compatible with shinyfilterset
+      # Multi-select, make JSON values
       def_multi <- self$read_definition(lazy = TRUE) %>% 
         filter(!!sym(self$def[["type_field"]]) == "multiselect",
                !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
@@ -1186,7 +1234,7 @@ formClass <- R6::R6Class(
           
           val <- lapply(data[[col]], function(x)if(x %in% c("[]","{}"))NA_character_ else self$from_json(x))
           
-          new_val <- sapply(val, function(x)paste(dplyr::recode(x, !!!key),collapse=";"), USE.NAMES = FALSE)
+          new_val <- sapply(val, function(x)self$to_json(dplyr::recode(x, !!!key)), USE.NAMES = FALSE)
           new_val[new_val == "NA"] <- NA
           
           data[[col]] <- new_val
@@ -1517,7 +1565,15 @@ formClass <- R6::R6Class(
   #' @description timestamp in postgres timezone 
   postgres_now = function(){
     
-    self$query("select now()", quiet = TRUE)$now
+    tm <- try({
+      self$query("select now()", quiet = TRUE)$now  
+    }, silent = TRUE)
+    
+    if(inherits(tm, "try-error")){
+      return(Sys.time())
+    }
+    
+    tm
     
   },
 
@@ -1570,14 +1626,14 @@ formClass <- R6::R6Class(
   write_new_relations = function(data, registration_id){ 
     
     postgres_time <- self$postgres_now()
-    
+
     # Voor postgres GEBRUIK now()::timestamp
-    data <- data %>% 
-      mutate(collector_id = registration_id, 
-             timestamp = format(postgres_time), 
+    data <- data %>%
+      mutate(collector_id = registration_id,
+             timestamp = format(postgres_time),
              collector_type = ifelse(is.na(collector_type), self$class_type, collector_type))
-    
-    
+
+
     self$append_data(self$relation_table,
                      data)
     

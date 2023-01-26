@@ -41,24 +41,24 @@ formAdminUI <- function(id,
                  )
                ),
                
-               shinyjs::hidden(
-                 tags$span(id = ns("span_set_nested_key_column"),
-                           softui::modal_action_button(ns("btn_set_nested_key_column"),
-                                                       ns("modal_set_nested_key_column"),
-                                                       "Gekoppelde kolom", 
-                                                       status = "secondary",
-                                                       icon = bsicon("pencil-square")),
-                           softui::ui_modal(
-                             id = ns("modal_set_nested_key_column"),
-                             title = "Kies gekoppelde kolom",
-                             id_confirm = ns("btn_confirm_set_nested_key_column"),
-                             
-                             selectInput(ns("sel_nested_column"), "Maak keuze",
-                                         choices = NULL)
-                             
-                           )
-                 )
-               ),
+               # shinyjs::hidden(
+               #   tags$span(id = ns("span_set_nested_key_column"),
+               #             softui::modal_action_button(ns("btn_set_nested_key_column"),
+               #                                         ns("modal_set_nested_key_column"),
+               #                                         "Gekoppelde kolom", 
+               #                                         status = "secondary",
+               #                                         icon = bsicon("pencil-square")),
+               #             softui::ui_modal(
+               #               id = ns("modal_set_nested_key_column"),
+               #               title = "Kies gekoppelde kolom",
+               #               id_confirm = ns("btn_confirm_set_nested_key_column"),
+               #               
+               #               selectInput(ns("sel_nested_column"), "Maak keuze",
+               #                           choices = NULL)
+               #               
+               #             )
+               #   )
+               # ),
                
                shinyjs::hidden(
                  tags$span(id = ns("span_edit_nested_options"),
@@ -72,9 +72,13 @@ formAdminUI <- function(id,
                            softui::ui_modal(
                              title = "Gekoppelde keuzelijst",
                              id = ns("modal_nested_options"),
+                             size = "l", 
+                             confirm_txt = "Opslaan", close_txt = "Annuleren",
                              id_confirm = ns("btn_confirm_nested_options"),
                              
-                             jsonMultiEditUI(ns("mod_edit_nested_options"))
+                             subChoiceEditorUI(ns("mod_edit_nested_options"))
+                           
+                             #jsonMultiEditUI(ns("mod_edit_nested_options"))
                            )
                            
                  )
@@ -247,6 +251,9 @@ formAdminModule <- function(input, output, session, .reg = NULL){
         textInput(session$ns("txt_column_name"), "Naam invoerveld"),
         radioButtons(session$ns("rad_type_formfield"), "Type invoerveld",
                      choices = configured_field_types),
+        
+        uiOutput(session$ns("ui_nested_select_options")),
+        
         radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
                      choices = c("Links" = 1,
                                  "Rechts" = 2)),
@@ -264,6 +271,17 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     )
   })
   
+  
+  output$ui_nested_select_options <- renderUI({
+    
+    req(isTRUE(input$rad_type_formfield == "nestedselect"))
+    
+    textInput(session$ns("txt_secondary_column_name"), "Naam gekoppeld invoerveld")
+    
+    
+  })
+  
+  
   observeEvent(input$btn_confirm_add_formfield, {
     
     if(.reg$filterable){
@@ -274,22 +292,24 @@ formAdminModule <- function(input, output, session, .reg = NULL){
       tooltip <- NULL
     }
     
-    if(stringr::str_trim(input$txt_column_name, side = "both") != ""){
-      resp <- .reg$add_input_field_to_form(input$txt_column_name, 
-                                           input$rad_type_formfield, 
-                                           as.integer(input$rad_side_formfield),
-                                           make_filter, tooltip)
-      
-      if(resp < 0){
-        toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
-      } else {
-        db_ping(runif(1))
-        removeModal()  
-      }
-      
-      
-    } else {
+    colname <- stringr::str_trim(input$txt_column_name, side = "both")
+    
+    if(colname == ""){
       toastr_error("Vul een label in")
+    }
+    req(colname)
+    
+    resp <- .reg$add_input_field_to_form(input$txt_column_name, 
+                                         input$rad_type_formfield, 
+                                         as.integer(input$rad_side_formfield),
+                                         make_filter, tooltip,
+                                         column_2_name = input$txt_secondary_column_name)
+    
+    if(resp < 0){
+      toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
+    } else {
+      db_ping(runif(1))
+      removeModal()  
     }
     
   })
@@ -326,10 +346,19 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   })
   
   
+  cur_column_2_label <- reactive({
+    row <- selected_row()
+    if(row$type_field == "nestedselect"){
+      opts <- .reg$from_json(row$options)
+      opts$label
+    }
+  })
+  
   
   observeEvent(input$btn_edit_formfield, {
     
-    req(selected_row())
+    row <- selected_row()
+    req(row)
     
     showModal(
       softui::modal(
@@ -337,7 +366,19 @@ formAdminModule <- function(input, output, session, .reg = NULL){
         remove_modal_on_confirm = FALSE,
         
         textInput(session$ns("txt_edit_formfield_label"), "Label", 
-                  value = selected_row()$label_field),
+                  value = row$label_field),
+        
+        if(row$type_field == "nestedselect"){
+          textInput(session$ns("txt_edit_column_2_label"), "Gekoppelde keuze label", 
+                    value = cur_column_2_label())
+        },
+        
+        if(row$type_field %in% c("freetext","html")){
+          selectInput(session$ns("sel_new_formfield_type"), "Selecteer nieuw input veld type",
+                      choices = c("freetext","html","singleselect","multiselect"), 
+                      selected = row$type_field)
+        },
+        
         
         if(.reg$filterable){
           
@@ -345,8 +386,8 @@ formAdminModule <- function(input, output, session, .reg = NULL){
             radioButtons(session$ns("rad_edit_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
                          choices = c("Ja" = TRUE,
                                      "Nee" = FALSE),
-                         selected = selected_row()$make_filter),
-            textInput(session$ns("txt_edit_tooltip"), "Tooltip", value = selected_row()$tooltip)  
+                         selected = row$make_filter),
+            textInput(session$ns("txt_edit_tooltip"), "Tooltip", value = row$tooltip)  
           )
           
         },
@@ -358,18 +399,41 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   
   
   observeEvent(input$btn_confirm_edit_label, {
-    req(selected_row())
+    
+    row <- selected_row()
+    req(row)
     
     if(stringr::str_trim(input$txt_edit_formfield_label, side = "both") != ""){
+      
       .reg$edit_label_field(selected_id(), input$txt_edit_formfield_label)
+      
+      if(row$type_field == "nestedselect"){
+        .reg$edit_nested_column_label(selected_id(), row$options, input$txt_edit_column_2_label)
+      }
+      
       if(.reg$filterable){
         .reg$edit_filterable_column(selected_id(), input$rad_edit_make_filter, input$txt_edit_tooltip)
       }
+      
+      sel_new <- input$sel_new_formfield_type
+      if(!is.null(sel_new) && sel_new != ""){
+        allowed_new <- c("html","freetext","singleselect","multiselect")
+        if(sel_new %in% allowed_new){
+          .reg$edit_field_type(selected_id(), sel_new)  
+        } else {
+          toastr_error("Ongeldig nieuw veld type")
+        }
+        
+      }
+      
       db_ping(runif(1))
       removeModal()
     } else {
       toastr_error("Vul een label in")
     }
+    
+    
+    
     
   })
   
@@ -396,7 +460,7 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   observeEvent(input$btn_confirm_edit_options, {
     
     .reg$edit_options_field(selected_id(), edited_options())
-    .reg$amend_nested_options_key(selected_id(), edited_options())
+    #.reg$amend_nested_options_key(selected_id(), edited_options())
     .reg$amend_options_order(selected_id(), edited_options())
     .reg$amend_options_colors(selected_id(), edited_options())
     db_ping(runif(1))
@@ -426,41 +490,45 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     .reg$from_json(selected_row()$options)
   })
   
-  nested_key <- reactive({
-    opt <- nested_options()
+  # nested_key <- reactive({
+  #   opt <- nested_options()
+  # 
+  #   if(is.null(opt) || is.null(opt$key)){
+  #     return(list())
+  #   } else {
+  #     return(opt$key[[1]])
+  #   }
+  #   
+  # })
+  # 
+  # nested_value <- reactive({
+  #   opt <- nested_options()
+  #   if(is.null(opt) || is.null(opt$value)){
+  #     return(list())
+  #   } else {
+  #     return(opt$value)
+  #   }
+  # })
   
-    if(is.null(opt) || is.null(opt$key)){
-      return(list())
-    } else {
-      return(opt$key[[1]])
-    }
-    
-  })
+  nested_choices_out <- callModule(subChoiceEditor, "mod_edit_nested_options", data = nested_options, json = FALSE)
   
-  nested_value <- reactive({
-    opt <- nested_options()
-    if(is.null(opt) || is.null(opt$value)){
-      return(list())
-    } else {
-      return(opt$value)
-    }
-  })
   
-
-  nested_choices_out <- callModule(jsonMultiEdit, "mod_edit_nested_options",
-                                   edit_names = FALSE, 
-                                   key = nested_key,
-                                   value = nested_value,
-                                   json = FALSE)
+  # nested_choices_out <- callModule(jsonMultiEdit, "mod_edit_nested_options",
+  #                                  edit_names = FALSE, 
+  #                                  key = nested_key,
+  #                                  value = nested_value,
+  #                                  json = FALSE)
   
   # ehm dit is nodig om de module een schop te geven anders rendert het niet. ..
-  observeEvent(nested_choices_out(), {
-    invisible()
-  })
+  # observeEvent(nested_choices_out(), {
+  #   
+  #   invisible()
+  # })
   
   observeEvent(input$btn_confirm_nested_options, {
-    vals <- nested_choices_out()
-    .reg$save_nested_choices(selected_id(), nested_choices = vals, nested_key = nested_options()$key)
+    
+    .reg$edit_options_field(selected_id(), nested_choices_out())
+    
     db_ping(runif(1))
   })
   

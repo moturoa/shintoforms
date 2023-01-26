@@ -5,7 +5,7 @@ configured_field_types <- c("Tekstinvoer" = "freetext",
                             "Ja/Nee" = "boolean",
                             "Keuzemenu (enkele optie)" = "singleselect",
                             "Keuzemenu (meerdere opties)" = "multiselect",
-                            #"Keuzemenu (gekoppelde opties)" = "nestedselect",
+                            "Keuzemenu (gekoppelde opties)" = "nestedselect",
                             "Datum" = "date",
                             "Checkbox" = "singlecheck",
                             "Tekst met opmaak" = "html")
@@ -15,6 +15,8 @@ assert_input_field_type <- function(type){
     stop(paste("type_field must be one of:", paste(configured_field_types,collapse=",")))
   }  
 }
+
+
 
 
 #---- editFieldmodule: module voor een enkele input (bv numeric, text, oid)
@@ -79,19 +81,16 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "boolean"){
     
-      ui <- radioButtons(ns("value"), label, inline = TRUE, 
-                   choices = setNames(c(TRUE,FALSE),names(options)),
-                   selected = as.character(value)
-      )
+    ui <- radioButtons(ns("value"), label, inline = TRUE, 
+                 choices = setNames(c(TRUE,FALSE),names(options)),
+                 selected = as.character(value))
     
   } else if(type == "singleselect"){
         
-    outval <- tryCatch({ 
-         options[[value]]
-         }, 
-    error=function(cond) { 
-      value 
-    }) 
+    outval <- tryCatch(options[[value]], 
+      error = function(cond) { 
+        value 
+      })
         
     ui <- selectizeInput(ns("value"), label, choices = c("", options), 
                      selected = outval, 
@@ -100,8 +99,10 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "multiselect"){
     
+      sels <- options[match(value,names(options))]
+    
       ui <- selectizeInput(ns("value"), label, choices = c("", options),
-                     selected = value, 
+                     selected = sels, 
                      multiple = TRUE, 
                      width = input_width,
                      options = list(plugins = list("remove_button"))
@@ -109,10 +110,8 @@ editFieldModuleUI <- function(id, column, data,
     
   } else if(type == "nestedselect"){
     
-    ui <- tags$p("not yet implemented") 
-    # selectizeInput(ns("value"), label, choices = c("", options), 
-    #                      selected = value, multiple = FALSE, 
-    #                      width = input_width)
+    ui <- nestedSelectModuleUI(ns("value"), label, data, column, value, options,
+                               width = input_width)
     
   } else if(type == "date"){
     
@@ -165,7 +164,9 @@ editFieldModuleUI <- function(id, column, data,
 ui
 }
 
-editFieldModule <- function(input, output, session, .reg, type){
+
+editFieldModule <- function(input, output, session, .reg, type, cfg = NULL, 
+                            data = NULL, trigger = reactive(NULL)){
   
   # #---- Input validator
   # val_i <- shinyvalidate::InputValidator$new()
@@ -176,22 +177,15 @@ editFieldModule <- function(input, output, session, .reg, type){
   # 
   # val_i$enable()
   
-  # #---- HTML edit field
-  # if(b$type == "html_editor"){ 
-  #   html_edit <- callModule(freetextEditModule, "value", 
-  #                           data = data,
-  #                           kolom = column,
-  #                           label = b$label)
-  # }
   
   #--- Output reactive
   value <- reactive({
     
-    # if(b$type == "html_editor"){
-    #   return(html_edit())
-    # }
-    
-    out <- input$value
+    if(type == "nestedselect"){
+      out <- callModule(nestedSelectModule, "value", cfg = cfg, data = data, trigger = trigger)
+    } else {
+      out <- input$value  
+    }
     
     # Extra processing of output
     if(type == "boolean"){
@@ -208,6 +202,11 @@ editFieldModule <- function(input, output, session, .reg, type){
     
     out
     
+  })
+  
+  observeEvent(value(), {
+
+    invisible()
   })
   
   
