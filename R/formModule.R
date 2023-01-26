@@ -367,7 +367,7 @@ formModule <- function(input, output, session, .reg = NULL,
     }
     
 
-    if(resp ){  #& resp2
+    if(resp & resp2){
       toastr_success(message_success)
     } else {
       toastr_error(message_error)
