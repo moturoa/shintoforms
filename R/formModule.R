@@ -355,15 +355,15 @@ formModule <- function(input, output, session, .reg = NULL,
       resp <- .reg$write_new_registration(edits(), 
                                           user_id = current_user, 
                                           current_reg_id=current_reg_id())
-      # resp2 <- .reg$write_new_relations(data = edits_relations(),
-      #                                   registration_id = current_reg_id())
+      resp2 <- .reg$write_new_relations(data = edits_relations(),
+                                        registration_id = current_reg_id())
     } else { 
       resp <- .reg$edit_registration(old_data = data(), 
                                      new_data = edits(), 
                                      user_id = current_user, 
                                      current_reg_id=current_reg_id()) 
-      # resp2 <- .reg$update_relations(edits_relations(),
-      #                                registration_id = current_reg_id())
+      resp2 <- .reg$update_relations(edits_relations(),
+                                     registration_id = current_reg_id())
     }
     
 
