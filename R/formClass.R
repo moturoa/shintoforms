@@ -1146,7 +1146,8 @@ formClass <- R6::R6Class(
     #' @param recode If TRUE (default), replaces codes with labels (for select fields)
     read_registrations = function(recode = TRUE, 
                                   include_deleted = TRUE,
-                                  deleted_only = FALSE
+                                  deleted_only = FALSE,
+                                  lazy = FALSE
                                   ){
       
       data <- self$read_table(self$data_table, lazy = TRUE)
@@ -1157,11 +1158,13 @@ formClass <- R6::R6Class(
         data <- filter(data, deleted == 0)
       }
       
-      data <- dplyr::collect(data)
-      
-      if(recode){
-        data <- self$recode_registrations(data)
-      }
+      if(!lazy){
+        data <- dplyr::collect(data)
+        
+        if(recode){
+          data <- self$recode_registrations(data)
+        }
+      } 
       
       data
       

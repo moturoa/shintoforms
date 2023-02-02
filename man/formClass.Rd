@@ -701,7 +701,8 @@ Read registrations, recode select values where needed.
 \if{html}{\out{<div class="r">}}\preformatted{formClass$read_registrations(
   recode = TRUE,
   include_deleted = TRUE,
-  deleted_only = FALSE
+  deleted_only = FALSE,
+  lazy = FALSE
 )}\if{html}{\out{</div>}}
 }
 
