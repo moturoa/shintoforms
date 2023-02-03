@@ -289,8 +289,6 @@ formModule <- function(input, output, session, .reg = NULL,
      
   })
   
-
-  
   edits <- reactive({
     ext <- edits_extra() 
     
