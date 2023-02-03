@@ -174,7 +174,6 @@ formClass <- R6::R6Class(
         self$schema <- schema
         self$dbname <- what
         self$pool <- pool
-        self$dbuser <- cf$dbuser
         self$dbtype <- "postgres"
         
         response <- try({
