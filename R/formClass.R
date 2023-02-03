@@ -167,40 +167,18 @@ formClass <- R6::R6Class(
         self$schema <- schema
         self$dbname <- what
         self$pool <- pool
-        
-        cf <- config::get(what, file = config_file)
-        
-        flog.info(glue::glue("Connecting to DB: {cf$dbname} on host : {cf$dbhost}"))
-        flog.info(glue::glue("Connecting with user: {cf$dbuser}"))
-        
         self$dbuser <- cf$dbuser
+        self$dbtype <- "postgres"
         
-        if(pool){
-          flog.info("pool::dbPool", name = "DBR6")
-          response <- try(pool::dbPool(RPostgres::Postgres(),
-                                       dbname = cf$dbname,
-                                       host = cf$dbhost,
-                                       port = cf$dbport,
-                                       user = cf$dbuser,
-                                       password = cf$dbpassword,
-                                       minSize = 1,
-                                       maxSize = 25,
-                                       idleTimeout = 60*60*1000))
-        } else {
-          flog.info("DBI::dbConnect", name = "DBR6")
-          response <- try(DBI::dbConnect(RPostgres::Postgres(),
-                                         dbname = cf$dbname,
-                                         host = cf$dbhost,
-                                         port = cf$dbport,
-                                         user = cf$dbuser,
-                                         password = cf$dbpassword))
-        }
+        response <- try({
+          shintodb::connect(what, pool = pool)
+        })
         
         if(!inherits(response, "try-error")){
           self$con <- response
+        } else {
+          stop("Error when connecting to DB : check your configs!")
         }
-        
-        self$dbtype <- "postgres"
         
       }
       
