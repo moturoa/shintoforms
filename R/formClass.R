@@ -1,5 +1,6 @@
 #' R6 Class voor Registratie formulier
 #' @importFrom R6 R6Class
+#' @importFrom shintodb connect
 #' @export
 formClass <- R6::R6Class(
   lock_objects = FALSE,
@@ -135,6 +136,12 @@ formClass <- R6::R6Class(
       self$inject <- inject
     },
     
+    
+    #--- logger
+    log =  function(...){
+      futile.logger::flog.info(...)
+    },
+    
     #----- Generic database methods
     
     #' @description Connect to a database
@@ -184,7 +191,7 @@ formClass <- R6::R6Class(
       
       # check if audit table is present 
       if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
-        stop(glue("Audit feature is on but there is no table named {self$audit_table}")) 
+        stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
       } 
       
     },
@@ -195,17 +202,17 @@ formClass <- R6::R6Class(
       if(!is.null(self$con) && dbIsValid(self$con)){
         
         if(self$pool){
-          flog.info("poolClose", name = "DBR6")
+          self$log("poolClose")
           
-          poolClose(self$con)
+          pool::poolClose(self$con)
         } else {
-          flog.info("dbDisconnect", name = "DBR6")
+          self$log("dbDisconnect")
           
-          dbDisconnect(self$con)
+          DBI::dbDisconnect(self$con)
         }
         
       } else {
-        flog.info("Not closing an invalid or null connection", name = "DBR6")
+        self$log("Not closing an invalid or null connection")
       }
     },
     
@@ -242,12 +249,10 @@ formClass <- R6::R6Class(
     
     append_data = function(table, data){
       
-      #flog.info(glue("dbWriteTable({table})"), append = TRUE, name = "DBR6")
-      
       if(!is.null(self$schema)){
         
         try(
-          dbWriteTable(self$con,
+          DBI::dbWriteTable(self$con,
                        name = DBI::Id(schema = self$schema, table = table),
                        value = data,
                        append = TRUE)
@@ -256,7 +261,7 @@ formClass <- R6::R6Class(
       } else {
         
         try(
-          dbWriteTable(self$con,
+          DBI::dbWriteTable(self$con,
                        name = table,
                        value = data,
                        append = TRUE)
@@ -291,13 +296,9 @@ formClass <- R6::R6Class(
     query = function(txt, glue = TRUE, quiet = FALSE){
       
       if(glue)txt <- glue::glue(txt)
-      # if(!quiet){
-      #   flog.info(glue("query({txt})"), name = "DBR6")  
-      # }
-      # 
       
       try(
-        dbGetQuery(self$con, txt)
+        DBI::dbGetQuery(self$con, txt)
       )
       
     },
@@ -368,9 +369,9 @@ formClass <- R6::R6Class(
         if(query_only)return(query)
         
         if(!quiet){
-          flog.info(query, name = "DBR6")  
+          self$log(query)  
           if(self$audit){ 
-            flog.info(audit_query, name = "DBR6")  
+            self$log(audit_query)  
           }
         }
         
