@@ -103,14 +103,17 @@ formClass <- R6::R6Class(
         
       }
       
+      # check if audit table is present 
+      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
+        stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
+      }
+      
       # 'schema' string for query building
       self$schema_str <- ifelse(is.null(self$schema), "", paste0(self$schema,"."))
       
       
       self$def_table <- def_table
       self$def <- def_columns
-         
-      
       self$data_table <- data_table
       self$data_columns <- data_columns
       
@@ -128,9 +131,6 @@ formClass <- R6::R6Class(
       if(any(!di1)){
         stop(paste("Columns in def_columns not found:", paste(defcols[!di1], collapse=",")))
       }
-      
-      
-      
       
       # Extra custom fields (modules, can be anything even static HTML)
       self$inject <- inject
@@ -187,11 +187,6 @@ formClass <- R6::R6Class(
         }
         
       }
-      
-      # check if audit table is present 
-      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
-        stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
-      } 
       
     },
     
