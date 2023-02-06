@@ -78,6 +78,7 @@ formModule <- function(input, output, session, .reg = NULL,
                        current_user, 
                        trigger = reactive(NULL),
                        data = reactive(NULL),
+                       bucket_data = reactive(NULL),
                        write_method = reactive("new"),
                        
                        registration_description_function = function(data)NULL,
@@ -151,6 +152,8 @@ formModule <- function(input, output, session, .reg = NULL,
     
   })
   
+  
+ 
   inject_left <- reactive({
     
     obj <- inject_prep()
@@ -236,7 +239,28 @@ formModule <- function(input, output, session, .reg = NULL,
   modules_extra <- reactiveVal()
   modules_relations <- reactiveVal()
   
-
+  # fill in the object relation
+  bucket_data_formatted <- reactiveVal(NULL)
+  observeEvent(current_reg_id(),{
+    if(is.null(bucket_data())){
+      bucket_data_formatted(NULL)
+    } else {
+      buckid <-   uuid::UUIDgenerate()
+      
+      bucketinfo <- bucket_data()
+      bucketinfo$collector_id <- current_reg_id()
+      bucketinfo$collector_type <- .reg$class_type
+      bucketinfo$id <- buckid
+      bucketinfo$relation_id <- buckid
+      bucketinfo$relation_type <- 'primary'
+      bucketinfo$comment <- ''
+      bucketinfo$timestamp <- .reg$postgres_now()
+      bucketinfo$status <- "1" 
+      
+      bucket_data_formatted(as.data.frame(bucketinfo))
+    }
+    
+  })
   observe({
      
     extra <- inject_prep()
@@ -278,6 +302,7 @@ formModule <- function(input, output, session, .reg = NULL,
           id = extra[[j]]$id,
           columns = extra[[j]]$columns,
           data = data,
+          bucket_data = bucket_data_formatted,
           reg_id=current_reg_id
         ), extra[[j]]$module_server_pars)
         
