@@ -1216,7 +1216,7 @@ formClass <- R6::R6Class(
           
           val[val == "NA"] <- NA
           
-          data[[col]] <- val
+          data[[col]] <- unlist(val)
         }
       
       }
