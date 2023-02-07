@@ -12,6 +12,7 @@ R6 Class voor Registratie formulier
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-NA-new}{\code{formClass$new()}}
+\item \href{#method-NA-log}{\code{formClass$log()}}
 \item \href{#method-NA-connect_to_database}{\code{formClass$connect_to_database()}}
 \item \href{#method-NA-close}{\code{formClass$close()}}
 \item \href{#method-NA-make_column}{\code{formClass$make_column()}}
@@ -146,6 +147,15 @@ Make new form object
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-log"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-log}{}}}
+\subsection{Method \code{log()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$log(...)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-connect_to_database"></a>}}
