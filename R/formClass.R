@@ -1174,6 +1174,8 @@ formClass <- R6::R6Class(
                !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
         collect
       
+      
+      
       # for every select field, replace values
       for(i in seq_len(nrow(def))){
         
@@ -1209,11 +1211,12 @@ formClass <- R6::R6Class(
         if(length(key)){
           
           val <- lapply(data[[col]], function(x)if(x %in% c("[]","{}"))NA_character_ else self$from_json(x))
+          i_val <- vapply(val, function(x)!all(is.na(x)), FUN.VALUE = logical(1))
+          val[i_val]  <- sapply(val[i_val], function(x)self$to_json(unname(unlist(key[x]))))
           
-          new_val <- sapply(val, function(x)self$to_json(dplyr::recode(x, !!!key)), USE.NAMES = FALSE)
-          new_val[new_val == "NA"] <- NA
+          val[val == "NA"] <- NA
           
-          data[[col]] <- new_val
+          data[[col]] <- val
         }
       
       }
