@@ -1079,6 +1079,10 @@ formClass <- R6::R6Class(
     #' @param method Either 'soft', 'hard' (really delete), 'undelete'
     delete_registration = function(registration_id, method = c("soft","hard","undelete")){
       
+      if(length(registration_id) > 1){
+        registration_id <- registration_id[1]
+        message("Warning: $delete_registration is not vectorized, send one registration_id!")
+      }
       method <- match.arg(method)
       
       if(self$audit) {
