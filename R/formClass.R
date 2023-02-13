@@ -1,8 +1,10 @@
 #' R6 Class voor Registratie formulier
 #' @importFrom R6 R6Class
 #' @importFrom shintodb connect
+#' @importFrom shintodb databaseClass
 #' @export
 formClass <- R6::R6Class(
+  inherit = shintodb::databaseClass,
   lock_objects = FALSE,
   
   public = list(
@@ -88,20 +90,9 @@ formClass <- R6::R6Class(
       self$relation_columns <- relation_columns
       self$relation_audit_table <- relation_audit_table
       
-      if(is.null(db_connection)){
-        self$connect_to_database(config_file, schema, what, pool, sqlite)  
-      } else {
-        
-        if(!DBI::dbIsValid(db_connection)){
-          stop("Please pass a valid dbConnection object")
-        }
-        
-        self$con <- db_connection
-        self$schema <- schema
-        self$pool <- pool  #unused with passed db_connection?
-        self$dbtype <- "postgres"
-        
-      }
+      
+      super$initialize(what = what, config_file = config_file, schema = schema,
+                       pool = pool, sqlite = sqlite, db_connection = db_connection)
       
       # check if audit table is present 
       if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
@@ -142,176 +133,8 @@ formClass <- R6::R6Class(
       futile.logger::flog.info(...)
     },
     
+    
     #----- Generic database methods
-    
-    #' @description Connect to a database
-    connect_to_database = function(config_file = NULL, 
-                                   schema = NULL, 
-                                   what = NULL, 
-                                   pool = TRUE, 
-                                   sqlite = NULL){
-      
-      if(!is.null(sqlite)){
-        
-        if(!file.exists(sqlite)){
-          stop("SQlite not found, check path")
-        }
-        
-        self$schema <- NULL
-        self$dbname <- sqlite
-        self$pool <- pool
-        
-        if(pool){
-          self$con <- dbPool(RSQLite::SQLite(), dbname = sqlite)  
-        } else {
-          self$con <- dbConnect(RSQLite::SQLite(), dbname = sqlite)  
-        }
-        
-        self$dbtype <- "sqlite"
-        
-      } else {
-        
-        self$schema <- schema
-        self$dbname <- what
-        self$pool <- pool
-        self$dbtype <- "postgres"
-        
-        response <- try({
-          shintodb::connect(what, pool = pool)
-        })
-        
-        if(!inherits(response, "try-error")){
-          self$con <- response
-        } else {
-          stop("Error when connecting to DB : check your configs!")
-        }
-        
-      }
-      
-    },
-    
-    #' @description Close database connection
-    close = function(){
-      
-      if(!is.null(self$con) && dbIsValid(self$con)){
-        
-        if(self$pool){
-          self$log("poolClose")
-          
-          pool::poolClose(self$con)
-        } else {
-          self$log("dbDisconnect")
-          
-          DBI::dbDisconnect(self$con)
-        }
-        
-      } else {
-        self$log("Not closing an invalid or null connection")
-      }
-    },
-    
-    
-    make_column = function(table, column, type = "varchar"){
-      
-      qu <- glue::glue("alter table {self$schema_str}{table} add column {column} {type}")
-      
-      self$execute_query(qu)
-      
-    },
-    
-    
-    read_table = function(table, lazy = FALSE){
-      
-      #tictoc::tic(glue("tbl({table})"))
-      
-      if(!is.null(self$schema)){
-        out <- tbl(self$con, in_schema(self$schema, table))  
-      } else {
-        out <- tbl(self$con, table)
-      }
-      
-      
-      if(!lazy){
-        out <- collect(out)
-      }
-      
-      #tictoc::toc()
-      
-      out
-      
-    },
-    
-    append_data = function(table, data){
-      
-      if(!is.null(self$schema)){
-        
-        try(
-          DBI::dbWriteTable(self$con,
-                       name = DBI::Id(schema = self$schema, table = table),
-                       value = data,
-                       append = TRUE)
-        )  
-        
-      } else {
-        
-        try(
-          DBI::dbWriteTable(self$con,
-                       name = table,
-                       value = data,
-                       append = TRUE)
-        )
-        
-      }
-      
-      
-    },
-    
-    #' @description Delete rows from a table given a single logical condition
-    #' @param table Table name
-    #' @param col_compare Column where to make logical comparison
-    #' @param val_compare Values in `col_compare` where rows will be deleted
-    #' @details Do not use inside shiny apps or otherwise, only as a tool to clean up tables.
-    delete_rows_where = function(table, col_compare, val_compare){
-      
-      query <- glue("delete from {self$schema_str}{table} where {col_compare}= ?val")
-      query <- DBI::sqlInterpolate(DBI::ANSI(), query, val = val_compare)
-      
-      self$execute_query(query)
-      
-    },
-    
-    
-    table_columns = function(table){
-      
-       names(self$query(glue("select * from {self$schema_str}{table} where false")))
-      
-    },
-    
-    query = function(txt, glue = TRUE, quiet = FALSE){
-      
-      if(glue)txt <- glue::glue(txt)
-      
-      try(
-        DBI::dbGetQuery(self$con, txt)
-      )
-      
-    },
-    
-    
-    execute_query = function(txt,...){
-      
-      try(
-        dbExecute(self$con, txt, ...)
-      )
-      
-    },
-    
-    has_value = function(table, column, value){
-      
-      out <- self$query(glue("select {column} from {self$schema_str}{table} where {column} = '{value}' limit 1"))  
-      
-      nrow(out) > 0
-    },
     
     # meerdere tegelijk
     replace_value_where_multi = function(table, replace_list, col_compare, val_compare,
@@ -377,30 +200,6 @@ formClass <- R6::R6Class(
       }
     }, 
     
-    # set verwijderd=1 where naam=gekozennaam.
-    # replace_value_where("table", 'verwijderd', 'true', 'naam', 'gekozennaam')
-    replace_value_where = function(table, col_replace, val_replace, col_compare, val_compare,
-                                   query_only = FALSE, quiet = FALSE){
-      
-      if(is.logical(val_replace) & !is.na(val_replace)){
-        query <- glue("update {self$schema_str}{table} set {col_replace} = ?val_replace::boolean where ",
-                      "{col_compare} = ?val_compare") %>% as.character() 
-      } else {
-        query <- glue("update {self$schema_str}{table} set {col_replace} = ?val_replace where ",
-                      "{col_compare} = ?val_compare") %>% as.character() 
-      }
-        
-      
-      query <- sqlInterpolate(DBI::ANSI(), 
-                              query, 
-                              val_replace = val_replace, val_compare = val_compare)
-      
-      if(query_only)return(query)
-      
-      self$execute_query(query)
-      
-    },
-     
     #----- Form registration methods
     #' @description Get a row from the form definition by the form id.
     get_by_id = function(id_form){
@@ -700,27 +499,6 @@ formClass <- R6::R6Class(
       
     },
     
-    
-    # amend_nested_options_key = function(id_form, new_options){
-    #   
-    #   # check if we have to amend nested select options
-    #   nested_fields <- self$get_fields_by_type("nestedselect")
-    #   
-    #   if(nrow(nested_fields) > 0){
-    #     colname <- self$column_name_from_id(id_form)
-    #     
-    #     for(i in seq_len(nrow(nested_fields))){
-    #       dat <- slice(nested_fields,i)
-    #       o <- self$from_json(dat[[self$def$options]])
-    #       if(names(o$key) == colname){
-    #         o$key[[1]] <- self$from_json(new_options)
-    #         self$edit_options_field(dat[[self$def$id_form]], o)
-    #       }
-    #     }
-    #     
-    #   }
-    #   
-    # },
     
     #' @description Is the provided color(s) valid?
     is_color = function(colors){

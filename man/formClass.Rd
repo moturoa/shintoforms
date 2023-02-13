@@ -8,23 +8,15 @@ R6 Class voor Registratie formulier
 
 R6 Class voor Registratie formulier
 }
+\section{Super class}{
+\code{shintodb::NA}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-NA-new}{\code{formClass$new()}}
 \item \href{#method-NA-log}{\code{formClass$log()}}
-\item \href{#method-NA-connect_to_database}{\code{formClass$connect_to_database()}}
-\item \href{#method-NA-close}{\code{formClass$close()}}
-\item \href{#method-NA-make_column}{\code{formClass$make_column()}}
-\item \href{#method-NA-read_table}{\code{formClass$read_table()}}
-\item \href{#method-NA-append_data}{\code{formClass$append_data()}}
-\item \href{#method-NA-delete_rows_where}{\code{formClass$delete_rows_where()}}
-\item \href{#method-NA-table_columns}{\code{formClass$table_columns()}}
-\item \href{#method-NA-query}{\code{formClass$query()}}
-\item \href{#method-NA-execute_query}{\code{formClass$execute_query()}}
-\item \href{#method-NA-has_value}{\code{formClass$has_value()}}
 \item \href{#method-NA-replace_value_where_multi}{\code{formClass$replace_value_where_multi()}}
-\item \href{#method-NA-replace_value_where}{\code{formClass$replace_value_where()}}
 \item \href{#method-NA-get_by_id}{\code{formClass$get_by_id()}}
 \item \href{#method-NA-column_name_from_id}{\code{formClass$column_name_from_id()}}
 \item \href{#method-NA-get_fields_by_type}{\code{formClass$get_fields_by_type()}}
@@ -85,6 +77,30 @@ R6 Class voor Registratie formulier
 \item \href{#method-unknown-clone}{\code{formClass$clone()}}
 }
 }
+\if{html}{\out{
+<details><summary>Inherited methods</summary>
+<ul>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="append_data"><a href='../../shintodb/html/NA.html#method-NA-append_data'><code>shintodb::NA$append_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="close"><a href='../../shintodb/html/NA.html#method-NA-close'><code>shintodb::NA$close()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="connect_to_database"><a href='../../shintodb/html/NA.html#method-NA-connect_to_database'><code>shintodb::NA$connect_to_database()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="delete_rows_where"><a href='../../shintodb/html/NA.html#method-NA-delete_rows_where'><code>shintodb::NA$delete_rows_where()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="execute_query"><a href='../../shintodb/html/NA.html#method-NA-execute_query'><code>shintodb::NA$execute_query()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="get_query"><a href='../../shintodb/html/NA.html#method-NA-get_query'><code>shintodb::NA$get_query()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="has_value"><a href='../../shintodb/html/NA.html#method-NA-has_value'><code>shintodb::NA$has_value()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="have_column"><a href='../../shintodb/html/NA.html#method-NA-have_column'><code>shintodb::NA$have_column()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="list_tables"><a href='../../shintodb/html/NA.html#method-NA-list_tables'><code>shintodb::NA$list_tables()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="make_column"><a href='../../shintodb/html/NA.html#method-NA-make_column'><code>shintodb::NA$make_column()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="query"><a href='../../shintodb/html/NA.html#method-NA-query'><code>shintodb::NA$query()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="read_table"><a href='../../shintodb/html/NA.html#method-NA-read_table'><code>shintodb::NA$read_table()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="replace_value_where"><a href='../../shintodb/html/NA.html#method-NA-replace_value_where'><code>shintodb::NA$replace_value_where()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="replace_value_where2"><a href='../../shintodb/html/NA.html#method-NA-replace_value_where2'><code>shintodb::NA$replace_value_where2()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="table_columns"><a href='../../shintodb/html/NA.html#method-NA-table_columns'><code>shintodb::NA$table_columns()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="table_info"><a href='../../shintodb/html/NA.html#method-NA-table_info'><code>shintodb::NA$table_info()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="update_where"><a href='../../shintodb/html/NA.html#method-NA-update_where'><code>shintodb::NA$update_where()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="write_table_overwrite"><a href='../../shintodb/html/NA.html#method-NA-write_table_overwrite'><code>shintodb::NA$write_table_overwrite()</code></a></span></li>
+</ul>
+</details>
+}}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-new"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-new}{}}}
@@ -158,120 +174,6 @@ Make new form object
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-connect_to_database"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-connect_to_database}{}}}
-\subsection{Method \code{connect_to_database()}}{
-Connect to a database
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$connect_to_database(
-  config_file = NULL,
-  schema = NULL,
-  what = NULL,
-  pool = TRUE,
-  sqlite = NULL
-)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-close"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-close}{}}}
-\subsection{Method \code{close()}}{
-Close database connection
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$close()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-make_column"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-make_column}{}}}
-\subsection{Method \code{make_column()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$make_column(table, column, type = "varchar")}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-read_table"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-read_table}{}}}
-\subsection{Method \code{read_table()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$read_table(table, lazy = FALSE)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-append_data"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-append_data}{}}}
-\subsection{Method \code{append_data()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$append_data(table, data)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-delete_rows_where"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-delete_rows_where}{}}}
-\subsection{Method \code{delete_rows_where()}}{
-Delete rows from a table given a single logical condition
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$delete_rows_where(table, col_compare, val_compare)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{table}}{Table name}
-
-\item{\code{col_compare}}{Column where to make logical comparison}
-
-\item{\code{val_compare}}{Values in \code{col_compare} where rows will be deleted}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-Do not use inside shiny apps or otherwise, only as a tool to clean up tables.
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-table_columns"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-table_columns}{}}}
-\subsection{Method \code{table_columns()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$table_columns(table)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-query"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-query}{}}}
-\subsection{Method \code{query()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$query(txt, glue = TRUE, quiet = FALSE)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-execute_query"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-execute_query}{}}}
-\subsection{Method \code{execute_query()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$execute_query(txt, ...)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-has_value"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-has_value}{}}}
-\subsection{Method \code{has_value()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$has_value(table, column, value)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-replace_value_where_multi"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-replace_value_where_multi}{}}}
 \subsection{Method \code{replace_value_where_multi()}}{
@@ -284,23 +186,6 @@ Do not use inside shiny apps or otherwise, only as a tool to clean up tables.
   query_only = FALSE,
   quiet = FALSE,
   username = ""
-)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-replace_value_where"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-replace_value_where}{}}}
-\subsection{Method \code{replace_value_where()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$replace_value_where(
-  table,
-  col_replace,
-  val_replace,
-  col_compare,
-  val_compare,
-  query_only = FALSE,
-  quiet = FALSE
 )}\if{html}{\out{</div>}}
 }
 
