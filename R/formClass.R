@@ -168,14 +168,18 @@ formClass <- R6::R6Class(
         
         update_str <- paste(set_values[set_values != ""],  collapse = ", ")
         
-        if(!is.null(self$schema)){
+        if(!is.null(self$schema)){ #? geen else?
           query <- glue("update {self$schema_str}{table} set {update_str}, {self$data_columns$user} = '{username}', {self$data_columns$time_modified} = NOW()::timestamp where ",
                         "{col_compare} = ?val_compare") %>% as.character() 
           
           if(self$audit){
-            audit_query <- glue("insert into {self$schema_str}{self$audit_table} select * from ",
-                                "{self$schema_str}{table} where {col_compare}=?val_compare;") %>% as.character() 
-            audit_query <- sqlInterpolate(DBI::ANSI(), audit_query,  val_compare = val_compare) 
+            
+            data_row_query_1 <- glue("select * from {self$schema_str}{table} where {col_compare}=?val_compare;")
+            data_row_query <- sqlInterpolate(DBI::ANSI(), data_row_query_1,  val_compare = val_compare) 
+            data_row <- self$get_query(data_row_query)
+            
+            self$append_data(self$audit_table, data_row)
+            
           }
         }
         
@@ -186,14 +190,7 @@ formClass <- R6::R6Class(
         if(query_only)return(query)
         
         if(!quiet){
-          self$log(query)  
-          if(self$audit){ 
-            self$log(audit_query)  
-          }
-        }
-        
-        if(self$audit){ 
-          self$execute_query(audit_query)
+          self$log(query)
         }
         
         self$execute_query(query)   
@@ -863,20 +860,22 @@ formClass <- R6::R6Class(
       }
       method <- match.arg(method)
       
-      if(self$audit) {
+      if(self$audit){
         
-        qu_audit <- glue::glue("insert into {self$schema_str}{self$audit_table} select * from ",
-                               "{self$schema_str}{self$data_table} WHERE {self$data_columns$id} =?val_compare;")  
- 
-        audit_query <- sqlInterpolate(DBI::ANSI(), qu_audit,  val_compare = registration_id) 
+        data_row_query_1 <- glue("select * from {self$schema_str}{self$data_table} WHERE {self$data_columns$id} =?val_compare;")
+        data_row_query <- sqlInterpolate(DBI::ANSI(), data_row_query_1,  val_compare = val_compare) 
+        data_row <- self$get_query(data_row_query)
         
-        self$execute_query(audit_query)
+        self$append_data(self$audit_table, data_row)
+        
       }
-      
+
+
       # time_modified
       tabl <- ifelse(is.null(self$schema),self$data_table,glue("{self$schema}.{self$data_table}"))
       mod_query <- glue("update {tabl} set {self$data_columns$time_modified} = NOW()::timestamp where ",
                     "{self$data_columns$id} = '{registration_id}'") %>% as.character() 
+      
       if(!is.null(mod_query)){
         self$execute_query(mod_query)
       }
@@ -1369,10 +1368,12 @@ formClass <- R6::R6Class(
     if(length(ids) > 0){
       
       if(self$audit) {
-        qu_audit <- glue::glue("insert into {self$schema_str}{self$relation_audit_table} select * from ",
-                                 "{self$schema_str}{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');") %>% as.character() 
-
-        self$execute_query(qu_audit)
+        
+        data_row_query_1 <- glue("select * from {self$schema_str}{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');")
+        data_row_query <- sqlInterpolate(DBI::ANSI(), data_row_query_1,  val_compare = val_compare) 
+        data_row <- self$get_query(data_row_query)
+        
+        self$append_data(self$audit_table, data_row)
       }
       
       # delete all relations that are ALTERED or DELETED
