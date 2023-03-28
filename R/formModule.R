@@ -102,9 +102,11 @@ formModule <- function(input, output, session, .reg = NULL,
     
     req(trigger())
     
-    if(write_method() == "new"){
+    if(write_method() == "new"){ 
+      shinyjs::disable("btn_delete_registratie")
       return(uuid::UUIDgenerate())
-    } else {
+    } else { 
+      shinyjs::enable("btn_delete_registratie")
       return(data()[[.reg$data_columns$id]])
     } 
   })
