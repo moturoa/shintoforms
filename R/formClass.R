@@ -863,7 +863,7 @@ formClass <- R6::R6Class(
       if(self$audit){
         
         data_row_query_1 <- glue("select * from {self$schema_str}{self$data_table} WHERE {self$data_columns$id} =?val_compare;")
-        data_row_query <- sqlInterpolate(DBI::ANSI(), data_row_query_1,  val_compare = val_compare) 
+        data_row_query <- sqlInterpolate(DBI::ANSI(), data_row_query_1,  val_compare = registration_id) 
         data_row <- self$get_query(data_row_query)
         
         self$append_data(self$audit_table, data_row)
