@@ -40,10 +40,13 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
                         
                         shiny::column(3,
                           if(deletable){
-                            softui::action_button(ns("btn_delete_registratie"), 
-                                                  "Verwijderen ...", 
-                                                  icon = bsicon("trash"), 
-                                                  status = "danger")
+                            shinyjs::disabled(
+                              softui::action_button(ns("btn_delete_registratie"), 
+                                                    "Verwijderen ...", 
+                                                    icon = bsicon("trash"), 
+                                                    status = "danger")
+                            )
+                            
                           }
                         ),
                         shiny::column(5),
@@ -98,15 +101,23 @@ formModule <- function(input, output, session, .reg = NULL,
   
   ns <- session$ns
   
+  
+  observe({
+    if(write_method() == "new"){
+      shinyjs::disable("btn_delete_registratie")
+    } else {
+      shinyjs::enable("btn_delete_registratie")
+    }
+    
+  })
+  
   current_reg_id <- reactive({ 
     
     req(trigger())
     
     if(write_method() == "new"){ 
-      shinyjs::disable("btn_delete_registratie")
       return(uuid::UUIDgenerate())
     } else { 
-      shinyjs::enable("btn_delete_registratie")
       return(data()[[.reg$data_columns$id]])
     } 
   })
