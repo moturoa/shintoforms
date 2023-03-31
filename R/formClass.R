@@ -1074,22 +1074,22 @@ formClass <- R6::R6Class(
     # VOORBEELD 2: hergebruik van reeds ingeladen data object 
     #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
     
-    create_timeseries = function(columns=NULL, table=NULL){
+  create_timeseries = function(columns = NULL, table = NULL, date_range = NULL){
  
-      selected_columns <- unique( c(columns,
-                                    self$data_columns$id,  
-                                    self$data_columns$name, 
-                                    self$data_columns$user, 
-                                    self$data_columns$time_modified))
-      
-      if(is.null(table)){
-        if(!is.null(columns)) {
-          huidige_data <-  self$read_table(self$data_table, lazy=TRUE) %>%
-            select(selected_columns) %>%
-              collect
-        } else {
-          huidige_data <-  self$read_table(self$data_table)
-        }
+    selected_columns <- unique(c(columns,
+                                 self$data_columns$id,  
+                                 self$data_columns$name, 
+                                 self$data_columns$user, 
+                                 self$data_columns$time_modified))
+    
+    if(is.null(table)){
+      if(!is.null(columns)) {
+        huidige_data <-  self$read_table(self$data_table, lazy=TRUE) %>%
+          select(selected_columns) %>%
+            collect
+      } else {
+        huidige_data <-  self$read_table(self$data_table)
+      }
        
     } else if(!is.null(columns)){
       huidige_data <-  table %>%
@@ -1107,7 +1107,7 @@ formClass <- R6::R6Class(
       historische_data <- self$read_table(self$audit_table)
     }
     
-        return(rbind(huidige_data, historische_data))
+  return(rbind(huidige_data, historische_data))
   },
 
   # functie om een audit table om te zetten in een event log

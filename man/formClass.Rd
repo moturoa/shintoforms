@@ -707,7 +707,7 @@ Get a registration with a uuid
 \if{latex}{\out{\hypertarget{method-NA-create_timeseries}{}}}
 \subsection{Method \code{create_timeseries()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$create_timeseries(columns = NULL, table = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$create_timeseries(columns = NULL, table = NULL, date_range = NULL)}\if{html}{\out{</div>}}
 }
 
 }
