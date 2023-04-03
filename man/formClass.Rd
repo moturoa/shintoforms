@@ -85,9 +85,11 @@ R6 Class voor Registratie formulier
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="connect_to_database"><a href='../../shintodb/html/NA.html#method-NA-connect_to_database'><code>shintodb::NA$connect_to_database()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="delete_rows_where"><a href='../../shintodb/html/NA.html#method-NA-delete_rows_where'><code>shintodb::NA$delete_rows_where()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="execute_query"><a href='../../shintodb/html/NA.html#method-NA-execute_query'><code>shintodb::NA$execute_query()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="filter"><a href='../../shintodb/html/NA.html#method-NA-filter'><code>shintodb::NA$filter()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="get_query"><a href='../../shintodb/html/NA.html#method-NA-get_query'><code>shintodb::NA$get_query()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="has_value"><a href='../../shintodb/html/NA.html#method-NA-has_value'><code>shintodb::NA$has_value()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="have_column"><a href='../../shintodb/html/NA.html#method-NA-have_column'><code>shintodb::NA$have_column()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="list_indexes"><a href='../../shintodb/html/NA.html#method-NA-list_indexes'><code>shintodb::NA$list_indexes()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="list_tables"><a href='../../shintodb/html/NA.html#method-NA-list_tables'><code>shintodb::NA$list_tables()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="make_column"><a href='../../shintodb/html/NA.html#method-NA-make_column'><code>shintodb::NA$make_column()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="query"><a href='../../shintodb/html/NA.html#method-NA-query'><code>shintodb::NA$query()</code></a></span></li>

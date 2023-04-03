@@ -295,11 +295,13 @@ formClass <- R6::R6Class(
       )
       
       if(!all(names(data) %in% key$old)){
-        stop("Not all definition table names configured : check def_columns argument)")
+        message("Not all definition table names configured : check def_columns argument)")
       }
       
       dplyr::rename_with(data, .fn = function(x){
-        key$new[match(x, key$old)]
+        nw <- key$new[match(x, key$old)]
+        nw[is.na(nw)] <- x[is.na(nw)]
+        nw
       })
       
     },
