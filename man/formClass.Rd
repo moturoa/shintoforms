@@ -92,6 +92,7 @@ R6 Class voor Registratie formulier
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="list_indexes"><a href='../../shintodb/html/NA.html#method-NA-list_indexes'><code>shintodb::NA$list_indexes()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="list_tables"><a href='../../shintodb/html/NA.html#method-NA-list_tables'><code>shintodb::NA$list_tables()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="make_column"><a href='../../shintodb/html/NA.html#method-NA-make_column'><code>shintodb::NA$make_column()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="postgres_now_in_local_time"><a href='../../shintodb/html/NA.html#method-NA-postgres_now_in_local_time'><code>shintodb::NA$postgres_now_in_local_time()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="query"><a href='../../shintodb/html/NA.html#method-NA-query'><code>shintodb::NA$query()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="read_table"><a href='../../shintodb/html/NA.html#method-NA-read_table'><code>shintodb::NA$read_table()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="replace_value_where"><a href='../../shintodb/html/NA.html#method-NA-replace_value_where'><code>shintodb::NA$replace_value_where()</code></a></span></li>

@@ -96,6 +96,7 @@ subChoiceEditor <- function(input, output, session, data = reactive(NULL), json 
   observeEvent(data_input(), {
     
     data <- data_input()
+    req(data)
     
     removeUI(selector = paste0("#",session$ns("div_placeholder"), " > div"), multiple = TRUE, immediate = TRUE)
     
