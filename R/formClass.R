@@ -1076,7 +1076,7 @@ formClass <- R6::R6Class(
     # VOORBEELD 2: hergebruik van reeds ingeladen data object 
     #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
     
-  create_timeseries = function(columns = NULL, table = NULL, date_range = NULL){
+  create_timeseries = function(columns = NULL, date_range = NULL){
  
     selected_columns <- unique(c(columns,
                                  self$data_columns$id,  
@@ -1084,141 +1084,44 @@ formClass <- R6::R6Class(
                                  self$data_columns$user, 
                                  self$data_columns$time_modified))
     
-    if(is.null(table)){
-      if(!is.null(columns)) {
-        huidige_data <-  self$read_table(self$data_table, lazy=TRUE) %>%
-          select(selected_columns) %>%
-            collect
-      } else {
-        huidige_data <-  self$read_table(self$data_table)
-      }
-       
-    } else if(!is.null(columns)){
-      huidige_data <-  table %>%
-        select(selected_columns)  
-    } else { 
-      huidige_data <- table
-    }
     
-    if(!is.null(columns)){
+    data_current <- self$read_table(self$data_table, lazy=TRUE) %>%
+      select(any_of(selected_columns))
+    
+    data_history <- self$read_table(self$audit_table, lazy=TRUE) %>%
+      select(any_of(selected_columns))
+    
+    if(!is.null(date_range)){
       
-      historische_data <- self$read_table(self$audit_table, lazy=TRUE) %>%
-        select(selected_columns) %>%
-        collect
-    } else {  
-      historische_data <- self$read_table(self$audit_table)
+      if(length(date_range) != 2 || sum(is.na(date_range)) > 0){
+        message("Malformed date_range passed to $create_timeseries (shintoforms), ignoring!")
+      } else {
+        data_current <- dplyr::filter(data_current, between(time_modified, !!date_range[1], !!date_range[2]))
+        data_history <- dplyr::filter(data_history, between(time_modified, !!date_range[1], !!date_range[2]))
+      }
+      
     }
     
-  return(rbind(huidige_data, historische_data))
+    data_current <- collect(data_current)
+    data_history <- collect(data_history)
+    
+  return(dplyr::bind_rows(data_current, data_history))
   },
 
   # functie om een audit table om te zetten in een event log
   # creation only filterd alleen de aanmaak events en dus geen updates
-  create_events = function(timeseries, creation_only=FALSE){
+  create_events = function(timeseries, date_range = NULL, creation_only=NULL){
        
- 
-    timeseries$auditstamp <- timeseries[[self$data_columns$time_modified]]
-    timeseries$auditstamp <- as.POSIXct( timeseries$auditstamp, tz = "UTC" ) 
-    # outer loop over all unique ID's
-    all_mutations <- lapply(unique(timeseries[[self$data_columns$id]]), function(i){
-      
-        # i is nu een uniek ID voor een registratie 
-        timeseries_for_id <- timeseries %>% 
-                              filter(!!as.symbol(self$data_columns$id)==i) %>% 
-                              arrange(auditstamp)
-         
-        
-        
-        # alle creates voor ID 
-        aanmaak_regel <- timeseries_for_id[1,] %>% 
-          mutate( type='C', 
-                  variable=NA,
-                  old_val=NA, 
-                  new_val=NA) %>% 
-          select(self$data_columns$id,  
-                 self$data_columns$name, 
-                 self$data_columns$user, 
-                 self$data_columns$time_modified,
-                 type,  
-                 variable,
-                 old_val,
-                 new_val)
-        
-        # er is maar 1 rij en dat is dan de aanmaak regel ...
-        if(nrow(timeseries_for_id) ==1 | creation_only){
-          return(aanmaak_regel) 
-        }  
-        
-        
-        # alle Updates voor IDb
-        # inner loop over all mutations for an ID 
-        mutations_for_id <- lapply(1:(nrow(timeseries_for_id)-1), function(time_index){
-          # time_index is nu de index waarop de old row is gemuteerd naar de new_row
-          
-          # get (old)row at time_index and (new)row at time_index+1
-          old_row <- timeseries_for_id[time_index,] 
-          new_row <- timeseries_for_id[time_index+1,] 
-          
-          
-          # calculate changes
-          # note -> we dont care if only time_modified or user changes.
-          suppressWarnings({ 
-            differences <- diffdf::diffdf(new_row %>% select(-self$data_columns$user, 
-                                                             -self$data_columns$time_modified,
-                                                             -auditstamp),
-                                          old_row %>% select(-self$data_columns$user, 
-                                                             -self$data_columns$time_modified,
-                                                             -auditstamp)) 
-          })
-          # loop over changes (minus NumDiff want die is niet relevant)
-          point_mutations <- lapply(attr(differences, "names")[attr(differences, "names") != 'NumDiff'] , function(changed_attri){ 
-            return(differences[[changed_attri]]) 
-          })
-          
-          # samenvoegen en checken of de data nog klopt.
-          df <- as.data.frame(do.call(rbind, point_mutations) )
-          if(nrow(df) <= 0){
-            return(NA)
-          }  
-          # formatteren
-          # let op voor een wijziging gebruiken we expres het label van de oude rij, 
-          # maar user+time_modified van de nieuwe rij. 
-          df_formatted <- df %>% mutate(old_val = as.character(COMPARE),
-                                        new_val=as.character(BASE),
-                                        !!self$data_columns$id := old_row[[self$data_columns$id]],
-                                        #type=case_when(VARIABLE == 'verwijderd' ~ 'D', DOORONTWIKKELING? 
-                                        #                TRUE ~ 'U'),                   DOORONTWIKKELING? 
-                                        type='U',
-                                        variable=VARIABLE,
-                                        !!self$data_columns$name := old_row[[self$data_columns$name]],
-                                        !!self$data_columns$user := new_row[[self$data_columns$user]],
-                                        !!self$data_columns$time_modified := new_row[[self$data_columns$time_modified]]) %>% 
-            
-            select(self$data_columns$id,  
-                   self$data_columns$name, 
-                   self$data_columns$user, 
-                   self$data_columns$time_modified,
-                   type,  
-                   variable,
-                   old_val,
-                   new_val) 
-          
-          return(df_formatted)
-          
-          
-        })    
-        # return one dataframe with all mutations for id
-        
-        wijzigingen <- mutations_for_id[!is.na(mutations_for_id)]
-        wijziging_regels <- as.data.frame(do.call(rbind, wijzigingen))
-        
-        return(rbind(wijziging_regels, aanmaak_regel)) 
-     
-            
-      })  
-      # return one dataframe with all mutations for all p_ids
-      return(as.data.frame(do.call(rbind, all_mutations)))
-      
+    if(!is.null(creation_only))message("argument creation_only to $create_events is ignored")
+    
+    create_partial_mutations_new(timeseries, 
+                                 lowerdate = date_range[1],
+                                 upperdate = date_range[2],
+                                 auditstamp_column = self$data_columns$time_modified,
+                                 id_column = self$data_columns$id,
+                                 name_column = self$data_columns$name,
+                                 username_column = self$data_columns$user)
+    
   }, 
   
   ## Relations
