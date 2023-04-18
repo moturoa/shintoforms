@@ -1278,7 +1278,10 @@ formClass <- R6::R6Class(
                                        relation_type=NA,
                                        relation_id=NA,
                                        filter_verwijderd=T){
-    collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
+    
+    # Removed this statement so we are not limited to only one collector_type. 
+    # This collector_type has been added as arguments to function-calls which were already made in apollo_ondermijning.
+    #collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
 
     # Build query parts
     V <- ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
