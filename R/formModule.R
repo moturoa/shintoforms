@@ -392,6 +392,7 @@ formModule <- function(input, output, session, .reg = NULL,
       resp2 <- .reg$write_new_relations(data = edits_relations(),
                                         registration_id = current_reg_id())
     } else { 
+      
       resp <- .reg$edit_registration(old_data = data(), 
                                      new_data = edits(), 
                                      user_id = current_user, 

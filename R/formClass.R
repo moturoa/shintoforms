@@ -1277,11 +1277,8 @@ formClass <- R6::R6Class(
       
       if(self$audit) {
         
-        data_row_query_1 <- glue("select * from {self$schema_str}{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');")
-        data_row_query <- sqlInterpolate(DBI::ANSI(), data_row_query_1,  val_compare = val_compare) 
-        data_row <- self$get_query(data_row_query)
-        
-        self$append_data(self$audit_table, data_row)
+        data_row <- self$filter(self$relation_table, !!sym(self$relation_columns$id) %in% ids)
+        self$append_data(self$relation_audit_table, data_row)
       }
       
       # delete all relations that are ALTERED or DELETED
@@ -1313,9 +1310,7 @@ formClass <- R6::R6Class(
   #' @param new_relations The current state that should end up in the relations table 
   update_relations = function(new_relations, registration_id){ 
  
-    qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$collector_id} = '{registration_id}';")
-
-    old_relations <- dbGetQuery(self$con, qu)
+    old_relations <- self$filter(self$relation_table, !!sym(self$relation_columns$collector_id) == !!registration_id)
      
     if(nrow(new_relations) == 0 & nrow(old_relations) == 0) return(TRUE)
     
@@ -1350,7 +1345,7 @@ formClass <- R6::R6Class(
  
     new_data <- dplyr::bind_rows(new, altered_or_deleted)
     if(nrow(new_data) > 0){
-      self$write_new_relations(new_data, registration_id=registration_id)
+      self$write_new_relations(new_data, registration_id = registration_id)
     }
      
     return(TRUE)
