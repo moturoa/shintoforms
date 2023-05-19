@@ -78,16 +78,31 @@ create_partial_mutations_id <- function(data,
 
 
 create_partial_mutations_new <- function(data, 
-                                         lowerdate = as.Date("1970-1-1"), 
-                                         upperdate = Sys.Date(),
+                                         lowerdate = NULL, 
+                                         upperdate = NULL,
                                          auditstamp_column = "time_modified",
                                          id_column = "registration_id",
                                          name_column = "registration_name",
                                          username_column = "user_id"
 ){
   
-  lowerdate <- as.Date(lowerdate)
-  upperdate <- as.Date(upperdate)
+  # Does not work?
+  # lowerdate <- ifelse(is.null(lowerdate), as.Date("1970-1-1"), as.Date(lowerdate))
+  # upperdate <- ifelse(is.null(upperdate), Sys.Date(), as.Date(upperdate))
+  
+  if(is.null(lowerdate)){
+    lowerdate <- as.Date("1970-1-1")
+  } else {
+    lowerdate <- as.Date(lowerdate)
+  }
+  
+  if(is.null(upperdate)){
+    upperdate <- Sys.Date()
+  } else {
+    upperdate <- as.Date(upperdate)
+  }
+  
+  
   
   # truc om zo weinig mogelijk te veranderen in de functies hierboven, de komen uit WBM
   data <- data %>% 

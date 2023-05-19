@@ -1077,7 +1077,7 @@ formClass <- R6::R6Class(
     #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
     
   create_timeseries = function(columns = NULL, date_range = NULL){
- 
+    
     selected_columns <- unique(c(columns,
                                  self$data_columns$id,  
                                  self$data_columns$name, 
@@ -1111,7 +1111,7 @@ formClass <- R6::R6Class(
   # functie om een audit table om te zetten in een event log
   # creation only filterd alleen de aanmaak events en dus geen updates
   create_events = function(timeseries, date_range = NULL, creation_only=NULL){
-       
+    
     if(!is.null(creation_only))message("argument creation_only to $create_events is ignored")
     
     create_partial_mutations_new(timeseries, 
