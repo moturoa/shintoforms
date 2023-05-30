@@ -193,21 +193,61 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   
   output$dt_form_invoervelden <- DT::renderDataTable({
     
+    data <- form_invul_data()
+    
+    data$options <- apply(data, 1, function(row){
+      
+      x <- .reg$from_json(row[["options"]])
+      o <- .reg$from_json(row[["order_options"]])
+      x <- x[o]
+      
+      len <- length(x)
+      if(len > 5){
+        x <- c(x[1:5], list(paste("+", len-5, "opties")))
+      }
+      
+      l <- lapply(x, function(el){
+        tags$span(style = "margin: 2px; border-radius:6px; padding: 8px; background-color: #0d6efd; color: white;", el)
+      })
+      do.call(paste,l)  
+    })
+    
+    data$colors <- apply(data, 1, function(row){
+      
+      x <- .reg$from_json(row[["colors"]])
+      o <- .reg$from_json(row[["order_options"]])
+      x <- x[o]
+      
+      len <- length(x)
+      if(len > 5){
+        x <- x[1:5]
+      }
+      
+      l <- lapply(x, function(el){
+        tags$div(style = glue("margin: 2px; height: 24px; width: 24px;",
+                              "display: inline-block;",
+                              "background-color: {el}; border: 1px solid black;"))
+      })
+      
+      do.call(paste,l)  
+      
+    })
+    
     sel_cols <- c(
       "Kolomnaam" = "column_field", 
       "Label" = "label_field", 
       "Type" = "type_field", 
       "Kolom" = "form_section",
-      "Volgorde" = "order_field",
+      #"Volgorde" = "order_field",
       "Opties" = "options", 
-      "Volgorde opties" = "order_options", 
+      #"Volgorde opties" = "order_options", 
       "Kleuren" = "colors", 
-      "Verwijderbaar" = "removable",
-      "Filter" = "make_filter",
-      "Tooltip" = "tooltip"
+      "Verwijderbaar" = "removable"
+      #"Filter" = "make_filter",
+      #"Tooltip" = "tooltip"
     )
     
-    form_invul_data() %>%
+    data %>%
       select(any_of(sel_cols)) %>% 
       softui::datatafel(selection = "single", dom = "tp", 
                         pageLength = 30, scrollX = TRUE, 
