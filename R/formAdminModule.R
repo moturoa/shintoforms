@@ -9,6 +9,12 @@
 formAdminUI <- function(id, 
                         title = "Formulieropstelling",
                         title_deleted = "Verwijderde invoervelden",
+                        tab_deleted_input_fields = TRUE,
+                        
+                        option_layout = TRUE,
+                        option_add_field = TRUE,
+                        option_delete_field = TRUE,
+                        
                         header_ui = NULL){
   
   ns <- NS(id)
@@ -23,15 +29,20 @@ formAdminUI <- function(id,
       
       softui::fluid_row(
         column(12,
-               softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
-                                     status = "light", icon = bsicon("plus")),
                
-               tags$span(id = ns("span_edit_formorder"),
-                         jsonFormSetupUI(ns("edit_formorder"), 
-                                         icon = bsicon("columns"),
-                                         label = "Layout",
-                                         status = "secondary")
-               ),
+               if(option_add_field){
+                 softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
+                                       status = "light", icon = bsicon("plus"))  
+               },
+               
+               if(option_layout){
+                 tags$span(id = ns("span_edit_formorder"),
+                           jsonFormSetupUI(ns("edit_formorder"), 
+                                           icon = bsicon("columns"),
+                                           label = "Layout",
+                                           status = "secondary")
+                 )  
+               },
                
                shinyjs::hidden(
                  tags$span(id = ns("span_edit_formfield"),
@@ -40,26 +51,7 @@ formAdminUI <- function(id,
                                                  icon = bsicon("pencil-square"))
                  )
                ),
-               
-               # shinyjs::hidden(
-               #   tags$span(id = ns("span_set_nested_key_column"),
-               #             softui::modal_action_button(ns("btn_set_nested_key_column"),
-               #                                         ns("modal_set_nested_key_column"),
-               #                                         "Gekoppelde kolom", 
-               #                                         status = "secondary",
-               #                                         icon = bsicon("pencil-square")),
-               #             softui::ui_modal(
-               #               id = ns("modal_set_nested_key_column"),
-               #               title = "Kies gekoppelde kolom",
-               #               id_confirm = ns("btn_confirm_set_nested_key_column"),
-               #               
-               #               selectInput(ns("sel_nested_column"), "Maak keuze",
-               #                           choices = NULL)
-               #               
-               #             )
-               #   )
-               # ),
-               
+
                shinyjs::hidden(
                  tags$span(id = ns("span_edit_nested_options"),
                            
@@ -77,9 +69,7 @@ formAdminUI <- function(id,
                              id_confirm = ns("btn_confirm_nested_options"),
                              
                              subChoiceEditorUI(ns("mod_edit_nested_options"))
-                           
-                             #jsonMultiEditUI(ns("mod_edit_nested_options"))
-                           )
+                          )
                            
                  )
                ),
@@ -97,7 +87,7 @@ formAdminUI <- function(id,
                                             title = "Keuzelijst",
                                             id_confirm = "btn_confirm_edit_options",
                                             tags$p("Pas de keuzelijst aan voor dit formulierveld."),
-                                            jsonEditModuleUI(ns("modal_json_edit_options")))
+                                            shintocatman::jsonEditModuleUI(ns("modal_json_edit_options")))
                              
                              
                            )
@@ -124,13 +114,16 @@ formAdminUI <- function(id,
                  )
                ),
                
-               shinyjs::hidden(
-                 tags$span(id = ns("span_delete_formfield"),
-                           softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
-                                                 status = "danger",
-                                                 icon = bsicon("trash3"))
-                 )
-               )
+               if(option_delete_field){
+                 shinyjs::hidden(
+                   tags$span(id = ns("span_delete_formfield"),
+                             softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
+                                                   status = "danger",
+                                                   icon = bsicon("trash3"))
+                   )
+                 )  
+               }
+               
                
         )
       ),
@@ -141,33 +134,36 @@ formAdminUI <- function(id,
       )
       
     ),
-    softui::tab_panel(
-      title = title_deleted, icon = bsicon("recycle"),
-      shinyjs::hidden(
-        tags$span(id = ns("span_restore_formfield"),
-                  softui::fluid_row(
-                    column(12,
-                           softui::action_button(ns("btn_restore_formfield"), 
-                                                 "Invoerveld terugzetten", 
-                                                 status = "secondary", 
-                                                 icon = bsicon("arrow-return-left")),
-                           softui::action_button(ns("btn_reallydelete_formfield"), 
-                                                 "Permanent verwijderen", 
-                                                 status = "danger", 
-                                                 icon = bsicon("x-square-fill"))
+    
+    if(tab_deleted_input_fields){
+      softui::tab_panel(
+        title = title_deleted, icon = bsicon("recycle"),
+        shinyjs::hidden(
+          tags$span(id = ns("span_restore_formfield"),
+                    softui::fluid_row(
+                      column(12,
+                             softui::action_button(ns("btn_restore_formfield"), 
+                                                   "Invoerveld terugzetten", 
+                                                   status = "secondary", 
+                                                   icon = bsicon("arrow-return-left")),
+                             softui::action_button(ns("btn_reallydelete_formfield"), 
+                                                   "Permanent verwijderen", 
+                                                   status = "danger", 
+                                                   icon = bsicon("x-square-fill"))
+                      )
                     )
-                  )
+          )
+        ),
+        softui::fluid_row(
+          column(12,
+                 DT::dataTableOutput(ns("dt_deleted_invoervelden"))
+          )
         )
-      ),
-      softui::fluid_row(
-        column(12,
-               DT::dataTableOutput(ns("dt_deleted_invoervelden"))
-        )
+        
+        
+        
       )
-      
-      
-      
-    )
+    }
   )
   
 }
@@ -175,7 +171,8 @@ formAdminUI <- function(id,
 
 #' @export
 #' @rdname formAdminModule
-formAdminModule <- function(input, output, session, .reg = NULL){
+formAdminModule <- function(input, output, session, .reg = NULL,
+                            allow_delete_option = FALSE){
   
   
   db_ping <- reactiveVal()
@@ -184,7 +181,9 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   
   form_invul_data <- reactive({
     db_ping()
-    .reg$get_input_fields(TRUE)
+    
+    .reg$get_input_fields(TRUE) %>%
+      arrange(column_field)
   })
   
   observeEvent(form_invul_data(), {
@@ -246,16 +245,16 @@ formAdminModule <- function(input, output, session, .reg = NULL){
         
         radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
                      choices = c("Links" = 1,
-                                 "Rechts" = 2)),
-        if(.reg$filterable){
-          radioButtons(session$ns("rad_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
-                       choices = c("Ja" = TRUE,
-                                   "Nee" = FALSE))
-        },
-        if(.reg$filterable){
-          textInput(session$ns("txt_tooltip"), "Tooltip")
-        }
-        ,
+                                 "Rechts" = 2))
+        # if(.reg$filterable){
+        #   radioButtons(session$ns("rad_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
+        #                choices = c("Ja" = TRUE,
+        #                            "Nee" = FALSE))
+        # },
+        # if(.reg$filterable){
+        #   textInput(session$ns("txt_tooltip"), "Tooltip")
+        # }
+        # ,
         
       )
     )
@@ -329,13 +328,13 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     shinyjs::toggleElement("span_edit_options", condition = (!is.null(sel) && show_edit_options && type != "nestedselect"))
     shinyjs::toggleElement("span_edit_colors", condition = (!is.null(sel) && show_edit_options && type != "nestedselect"))
     shinyjs::toggleElement("span_edit_order_options", condition = (!is.null(sel) && show_edit_options && type != "nestedselect"))
-    shinyjs::toggleElement("span_delete_formfield", condition = (!is.null(sel) && sel$removable))
+    shinyjs::toggleElement("span_delete_formfield", condition = (!is.null(sel) && isTRUE(sel[["removable"]])))
     
     shinyjs::toggleElement("span_set_nested_key_column", condition = (!is.null(sel) && type == "nestedselect"))
     shinyjs::toggleElement("span_edit_nested_options", condition = (!is.null(sel) && type == "nestedselect"))
   })
   
-  
+
   cur_column_2_label <- reactive({
     row <- selected_row()
     if(row$type_field == "nestedselect"){
@@ -343,45 +342,32 @@ formAdminModule <- function(input, output, session, .reg = NULL){
       opts$label
     }
   })
-  
-  
+
+
   observeEvent(input$btn_edit_formfield, {
-    
+
     row <- selected_row()
     req(row)
-    
+
     showModal(
       softui::modal(
         title = glue("Kolom label: {selected_row()$column_field}"),
         remove_modal_on_confirm = FALSE,
-        
-        textInput(session$ns("txt_edit_formfield_label"), "Label", 
+
+        textInput(session$ns("txt_edit_formfield_label"), "Label",
                   value = row$label_field),
-        
+
         if(row$type_field == "nestedselect"){
-          textInput(session$ns("txt_edit_column_2_label"), "Gekoppelde keuze label", 
+          textInput(session$ns("txt_edit_column_2_label"), "Gekoppelde keuze label",
                     value = cur_column_2_label())
         },
-        
+
         if(row$type_field %in% c("freetext","html")){
           selectInput(session$ns("sel_new_formfield_type"), "Selecteer nieuw input veld type",
-                      choices = c("freetext","html","singleselect","multiselect"), 
+                      choices = c("freetext","html","singleselect","multiselect"),
                       selected = row$type_field)
         },
-        
-        
-        if(.reg$filterable){
-          
-          tagList(
-            radioButtons(session$ns("rad_edit_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
-                         choices = c("Ja" = TRUE,
-                                     "Nee" = FALSE),
-                         selected = row$make_filter),
-            textInput(session$ns("txt_edit_tooltip"), "Tooltip", value = row$tooltip)  
-          )
-          
-        },
-        
+
         id_confirm = "btn_confirm_edit_label"
       )
     )
@@ -389,163 +375,127 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   
   
   observeEvent(input$btn_confirm_edit_label, {
-    
+
     row <- selected_row()
     req(row)
-    
+
     if(stringr::str_trim(input$txt_edit_formfield_label, side = "both") != ""){
-      
+
       .reg$edit_label_field(selected_id(), input$txt_edit_formfield_label)
-      
+
       if(row$type_field == "nestedselect"){
         .reg$edit_nested_column_label(selected_id(), row$options, input$txt_edit_column_2_label)
       }
-      
-      if(.reg$filterable){
-        .reg$edit_filterable_column(selected_id(), input$rad_edit_make_filter, input$txt_edit_tooltip)
-      }
-      
+
+      # if(.reg$filterable){
+      #   .reg$edit_filterable_column(selected_id(), input$rad_edit_make_filter, input$txt_edit_tooltip)
+      # }
+
       sel_new <- input$sel_new_formfield_type
       if(!is.null(sel_new) && sel_new != ""){
         allowed_new <- c("html","freetext","singleselect","multiselect")
         if(sel_new %in% allowed_new){
-          .reg$edit_field_type(selected_id(), sel_new)  
+          .reg$edit_field_type(selected_id(), sel_new)
         } else {
           toastr_error("Ongeldig nieuw veld type")
         }
-        
+
       }
-      
+
       db_ping(runif(1))
       removeModal()
     } else {
       toastr_error("Vul een label in")
     }
-    
-    
-    
-    
+
   })
   
+
   # Reactive maken die de add/delete argument reactively doorgeeft gebaseerd op het type
   edit_options <- reactive({
     req(selected_row())
     type <- selected_row()$type_field
-    
+
     if(type %in% c("singleselect","multiselect","nestedselect")){
-      "add"
+      if(allow_delete_option) c("add","delete") else "add"
     } else {
       NULL
     }
-    
+
   })
-  
-  edited_options <- callModule(jsonEditModule, "modal_json_edit_options",
+
+  edited_options <- callModule(shintocatman::jsonEditModule, "modal_json_edit_options",
                                options = edit_options,
                                edit = reactive("value"),
                                widths = c(2,10),
                                value = reactive(selected_row()$options)
                                )
-  
+
   observeEvent(input$btn_confirm_edit_options, {
-    
+
     .reg$edit_options_field(selected_id(), edited_options())
     #.reg$amend_nested_options_key(selected_id(), edited_options())
     .reg$amend_options_order(selected_id(), edited_options())
     .reg$amend_options_colors(selected_id(), edited_options())
     db_ping(runif(1))
-    
+
   })
-  
-  
+
+
   #----- Nested select choices
-  
+
   # setting the main column  (level 1 choices)
   observeEvent(input$btn_confirm_set_nested_key_column, {
-    
+
     col_sel <- input$sel_nested_column
-    .reg$prepare_nested_choice_column(selected_id(), 
-                                      name = col_sel, 
+    .reg$prepare_nested_choice_column(selected_id(),
+                                      name = col_sel,
                                       options = .reg$get_field_choices(col_sel))
-    
+
     db_ping(runif(1))
   })
-  
-  
-  # setting level 2 choices 
+
+
+  # setting level 2 choices
   nested_options <- reactive({
     if(is.null(selected_row()) || nrow(selected_row()) == 0){
       return(NULL)
     }
     .reg$from_json(selected_row()$options)
   })
-  
-  # nested_key <- reactive({
-  #   opt <- nested_options()
-  # 
-  #   if(is.null(opt) || is.null(opt$key)){
-  #     return(list())
-  #   } else {
-  #     return(opt$key[[1]])
-  #   }
-  #   
-  # })
-  # 
-  # nested_value <- reactive({
-  #   opt <- nested_options()
-  #   if(is.null(opt) || is.null(opt$value)){
-  #     return(list())
-  #   } else {
-  #     return(opt$value)
-  #   }
-  # })
-  
+
   nested_choices_out <- callModule(subChoiceEditor, "mod_edit_nested_options", data = nested_options, json = FALSE)
-  
-  
-  # nested_choices_out <- callModule(jsonMultiEdit, "mod_edit_nested_options",
-  #                                  edit_names = FALSE, 
-  #                                  key = nested_key,
-  #                                  value = nested_value,
-  #                                  json = FALSE)
-  
-  # ehm dit is nodig om de module een schop te geven anders rendert het niet. ..
-  # observeEvent(nested_choices_out(), {
-  #   
-  #   invisible()
-  # })
-  
+
+
   observeEvent(input$btn_confirm_nested_options, {
-    
+
     .reg$edit_options_field(selected_id(), nested_choices_out())
-    
+
     db_ping(runif(1))
   })
-  
 
-  
   current_colors <- reactive({
-    from_json(selected_row()$colors)
+    .reg$from_json(selected_row()$colors)
   })
-  
+
   colors <- softui::modalize(trigger_open = reactive(input$btn_edit_colors),
                              ui_module = shintocatman::colorVectorPickModuleUI,
                              server_module = shintocatman::colorVectorPickModule,
                              title = "Kies kleuren",
                              server_pars = list(
-                               n_colors = reactive(length(current_colors())), 
+                               n_colors = reactive(length(current_colors())),
                                current_colors = current_colors,
-                               labels = reactive(from_json(selected_row()$options)),
-                               show_order = reactive(from_json(selected_row()$order_options))
+                               labels = reactive(.reg$from_json(selected_row()$options)),
+                               show_order = reactive(.reg$from_json(selected_row()$order_options))
                              ))
-  
-  
+
+
   observeEvent(colors(), {
     .reg$edit_options_colors(selected_id(), colors())
     db_ping(runif(1))
   })
-  
-  
+
+
   ordering_opties <- softui::modalize(trigger_open = reactive(input$btn_edit_order_options),
                                       header_ui = tags$p("Pas hier de volgorde van de keuzelijst aan voor dit formulierveld"),
                                       ui_module = shintocatman::jsonOrderModuleUI,
@@ -556,60 +506,62 @@ formAdminModule <- function(input, output, session, .reg = NULL){
                                         label_column = reactive("options"),
                                         order_column = reactive("order_options")
                                       ))
-  
+
   observeEvent(ordering_opties(), {
-    
+
     .reg$set_options_order(selected_id(), ordering_opties())
     db_ping(runif(1))
   })
-  
+
   observeEvent(input$btn_delete_formfield, {
-    
+
     showModal(
       softui::modal(
         title = glue("'{selected_row()$label_field}' verwijderen?"),
-        
+
         tags$p("Verwijderde invoervelden kunnen worden teruggezet in het formulier via de herstelknop op het tabblad 'Verwijderde invoervelden'."),
-        
+
         id_confirm = "btn_confirm_delete_field",
         close_txt = "Annuleren"
       )
     )
   })
-  
+
   observeEvent(input$btn_confirm_delete_field, {
-    
+
     .reg$edit_zichtbaarheid_invoerveld(selected_id(), FALSE)
     .reg$edit_verwijder_datum(selected_id(), today())
     .reg$amend_formfield_order(selected_row()$form_section, selected_row()$order_field)
     db_ping(runif(1))
-    
+
   })
-  
+
   form_deleted_data <- reactive({
     db_ping()
     .reg$get_input_fields(FALSE)
   })
-  
+
   output$dt_deleted_invoervelden <- DT::renderDataTable({
-    
+
+    sel_cols <- c(
+      "Kolomnaam" = "column_field",
+      "Label" = "label_field",
+      "Type" = "type_field",
+      "Kolom" = "form_section",
+      "Verwijderd op" = "date_deleted",
+      "Volgorde" = "order_field",
+      "Opties" = "options",
+      "Volgorde opties" = "order_options",
+      "Kleuren" = "colors",
+      "Verwijderbaar" = "removable")
+
     form_deleted_data() %>%
-      select(#"ID" = id_formulierveld, 
-        "Kolomnaam" = column_field, 
-        "Label" = label_field, 
-        "Type" = type_field, 
-        "Kolom" = form_section,
-        "Verwijderd op" = date_deleted,
-        "Volgorde" = order_field,
-        "Opties" = options, 
-        "Volgorde opties" = order_options, 
-        "Kleuren" = colors, 
-        "Verwijderbaar" = removable) %>%
-      softui::datatafel(selection = "single", dom = "tp", 
+      select(any_of(sel_cols)) %>%
+      softui::datatafel(selection = "single", dom = "tp",
                         pageLength = 30, scrollX = TRUE, extensions = list())
-    
+
   })
-  
+
   selected_row_deleted <- reactive({
     ii <- input$dt_deleted_invoervelden_rows_selected
     if(is.null(ii)){
@@ -617,35 +569,35 @@ formAdminModule <- function(input, output, session, .reg = NULL){
     }
     form_deleted_data() %>% slice(ii)
   })
-  
+
   selected_id_deleted <- reactive({
     selected_row_deleted()$id_form
   })
-  
+
   observe({
     sel <- selected_row_deleted()
     shinyjs::toggleElement("span_restore_formfield", condition = !is.null(sel))
   })
-  
+
   observeEvent(input$btn_restore_formfield, {
-    
+
     req(selected_row_deleted())
-    
+
     volg_veld_reset <- .reg$get_next_formorder_number(selected_row_deleted()$form_section)
     .reg$reset_volgorde_invoerveld(selected_id_deleted(), volg_veld_reset)
     .reg$edit_zichtbaarheid_invoerveld(selected_id_deleted(), TRUE)
     db_ping(runif(1))
   })
-  
-  
+
+
   observeEvent(input$btn_reallydelete_formfield, {
     id <- selected_id_deleted()
     req(id)
     .reg$really_delete_formfield(id)
     db_ping(runif(1))
-    
+
   })
-  
+
   
   
   return(db_ping)  

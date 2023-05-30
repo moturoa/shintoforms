@@ -44,7 +44,7 @@ formClass <- R6::R6Class(
                             make_filter = "make_filter",
                             tooltip = "tooltip"
                           ),
-                          data_table = "registrations",
+                          data_table = NULL,
                           data_columns = list(
                             id = "id_registratie",
                             name = "naam_registratie",
@@ -54,7 +54,7 @@ formClass <- R6::R6Class(
                             status = "status",
                             priority = "priority" 
                           ),  
-                          relation_table = "object_relations", 
+                          relation_table = NULL,
                           relation_columns = list(
                             id = "id",
                             collector_id = "collector_id",
@@ -69,7 +69,7 @@ formClass <- R6::R6Class(
                             timestamp = "timestamp",
                             verwijderd = "verwijderd"
                           ), 
-                          relation_audit_table = "object_relations_audit",
+                          relation_audit_table = NULL, #"object_relations_audit",
                           inject = NULL,
                           pool = TRUE,
                           sqlite = NULL,
@@ -108,11 +108,14 @@ formClass <- R6::R6Class(
       self$data_table <- data_table
       self$data_columns <- data_columns
       
-      # check new 'deleted' field
-      datacols <- self$table_columns(self$data_table)
-      if(!"deleted" %in% datacols){
-        stop("Must have 'deleted' column in registrations data (`alter table <<table>> add column deleted integer default 0.")
+      if(!is.null(self$data_table)){
+        # check new 'deleted' field
+        datacols <- self$table_columns(self$data_table)
+        if(!"deleted" %in% datacols){
+          stop("Must have 'deleted' column in registrations data (`alter table <<table>> add column deleted integer default 0.")
+        }  
       }
+      
       
       self$filterable <- filterable
       
@@ -215,8 +218,8 @@ formClass <- R6::R6Class(
     get_fields_by_type = function(field_type){
       
       self$read_table(self$def_table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["type_field"]]) %in% !!field_type,
-                      !!sym(self$def[["visible"]])) %>%
+        dplyr::filter(!!sym(self$def[["type_field"]]) %in% !!field_type) %>%
+        self$filter_by_visibility() %>% 
         collect
       
     },
@@ -306,12 +309,25 @@ formClass <- R6::R6Class(
       
     },
     
+    filter_by_visibility = function(data, visibility = TRUE){
+      
+      vis <- self$def[["visible"]]
+      
+      if(is.null(vis)){
+        return(data)
+      } else {
+        dplyr::filter(data, !!sym(vis) == !!visibility)
+      }
+      
+    },
+    
+    
     
     #' @description Get all non-deleted form input fields
     get_input_fields = function(zichtbaarheid = TRUE){
       
       out <- self$read_table(self$def_table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid) %>% 
+        self$filter_by_visibility(zichtbaarheid) %>% 
         collect
       
       self$rename_definition_table(out)
@@ -539,9 +555,15 @@ formClass <- R6::R6Class(
         nc <- length(cur_color)
         n <- length(options) - nc
         
-        new_cols <- as.list(rep(self$default_color,n))
-        
-        self$edit_options_colors(id_form, c(cur_color, new_cols))
+        if(n > 0){ # new colors
+          new_cols <- as.list(rep(self$default_color,n))
+          
+          self$edit_options_colors(id_form, c(cur_color, new_cols))  
+        } else { # remove colors
+          
+          new_cols <- cur_color[1:(length(cur_color) + n)]
+          self$edit_options_colors(id_form, new_cols)
+        }
         
       }
       
@@ -952,8 +974,8 @@ formClass <- R6::R6Class(
       
       # Single select, can use a direct `dplyr::recode`
       def <- self$read_definition(lazy = TRUE) %>% 
+        self$filter_by_visibility() %>%
         filter(!!sym(self$def[["type_field"]]) %in% c("singleselect","nestedselect"),
-               !!sym(self$def[["visible"]]),
                !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
         collect
       
