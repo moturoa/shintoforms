@@ -577,7 +577,7 @@ formClass <- R6::R6Class(
         names(new_order) <- NULL
       }
       
-      if(length(new_order) > 0){
+      if(!is.character(new_order) && length(new_order) > 0){
         new_order <- self$to_json(new_order)
       }
       
