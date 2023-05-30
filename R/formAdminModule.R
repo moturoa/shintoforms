@@ -193,34 +193,23 @@ formAdminModule <- function(input, output, session, .reg = NULL){
   })
   
   output$dt_form_invoervelden <- DT::renderDataTable({
-    if(.reg$filterable){
-      admin_table <- form_invul_data() %>%
-        select(#"ID" = id_formulierveld, 
-          "Kolomnaam" = column_field, 
-          "Label" = label_field, 
-          "Type" = type_field, 
-          "Kolom" = form_section,
-          "Volgorde" = order_field,
-          "Opties" = options, 
-          "Volgorde opties" = order_options, 
-          "Kleuren" = colors, 
-          "Verwijderbaar" = removable,
-          "Filter" = make_filter,
-          "Tooltip" = tooltip)
-    } else {
-      admin_table <- form_invul_data() %>%
-        select(#"ID" = id_formulierveld, 
-          "Kolomnaam" = column_field, 
-          "Label" = label_field, 
-          "Type" = type_field, 
-          "Kolom" = form_section,
-          "Volgorde" = order_field,
-          "Opties" = options, 
-          "Volgorde opties" = order_options, 
-          "Kleuren" = colors, 
-          "Verwijderbaar" = removable)
-    }
-    admin_table %>%
+    
+    sel_cols <- c(
+      "Kolomnaam" = "column_field", 
+      "Label" = "label_field", 
+      "Type" = "type_field", 
+      "Kolom" = "form_section",
+      "Volgorde" = "order_field",
+      "Opties" = "options", 
+      "Volgorde opties" = "order_options", 
+      "Kleuren" = "colors", 
+      "Verwijderbaar" = "removable",
+      "Filter" = "make_filter",
+      "Tooltip" = "tooltip"
+    )
+    
+    form_invul_data() %>%
+      select(any_of(sel_cols)) %>% 
       softui::datatafel(selection = "single", dom = "tp", 
                         pageLength = 30, scrollX = TRUE, 
                         extensions = list())
