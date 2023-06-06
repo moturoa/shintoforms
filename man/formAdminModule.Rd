@@ -9,10 +9,20 @@ formAdminUI(
   id,
   title = "Formulieropstelling",
   title_deleted = "Verwijderde invoervelden",
+  tab_deleted_input_fields = TRUE,
+  option_layout = TRUE,
+  option_add_field = TRUE,
+  option_delete_field = TRUE,
   header_ui = NULL
 )
 
-formAdminModule(input, output, session, .reg = NULL)
+formAdminModule(
+  input,
+  output,
+  session,
+  .reg = NULL,
+  allow_delete_option = FALSE
+)
 }
 \arguments{
 \item{id}{Shiny input id}
