@@ -58,7 +58,7 @@ formAdminUI <- function(id,
       header_ui,
       
       softui::fluid_row(
-        column(12, style = "height: 28px;",
+        column(12, style = "height: 40px;",
                
                if(option_add_field){
                  softui::action_button(ns("btn_add_formfield"), btn_add_text, 
