@@ -2,6 +2,7 @@
 #' @importFrom R6 R6Class
 #' @importFrom shintodb connect
 #' @importFrom shintodb databaseClass
+#' @importFrom DBI dbGetQuery
 #' @export
 formClass <- R6::R6Class(
   inherit = shintodb::databaseClass,
@@ -339,7 +340,7 @@ formClass <- R6::R6Class(
       
       qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       
-      out <- dbGetQuery(self$con, qu)
+      out <- DBI::dbGetQuery(self$con, qu)
       out <- out[order(out[[self$def$order_field]]),]
       
       self$rename_definition_table(out)
@@ -351,7 +352,7 @@ formClass <- R6::R6Class(
       
       qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema_str}{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       
-      count <- dbGetQuery(self$con, qu)
+      count <- DBI::dbGetQuery(self$con, qu)
       return(count[[1]]+1)
       
     },
@@ -360,15 +361,28 @@ formClass <- R6::R6Class(
     #' @param label_field Label for the field
     #' @param type_field Type of field (options : TODO)
     #' @param form_section Left or right
-    add_input_field_to_form = function(label_field, type_field, form_section, filterable = NULL, 
-                                       tooltip = NULL, column_name = NULL, column_2_name = NULL
+    add_input_field_to_form = function(label_field, 
+                                       type_field, 
+                                       form_section = NULL, 
+                                       filterable = NULL, 
+                                       tooltip = NULL, 
+                                       column_name = NULL, 
+                                       column_2_name = NULL
                                        ){
       
       
-      #assert_input_field_type(type_field)
-      
-      id <- uuid::UUIDgenerate()
-      
+      # Make an ID for the field. Integer or UUID depending on column type.
+      id_column <- self$def$id_form
+      idcoltype <- self$table_info(self$def_table) %>%
+        filter(column_name == !!id_column) %>% pull(data_type)
+      if(idcoltype == "integer"){
+        # do nothing; assume id is a serial
+        add_id <- FALSE
+      } else {
+        add_id <- TRUE
+        id <- uuid::UUIDgenerate()  
+      }
+
       # Sanitize column name
       if(is.null(column_name)){
         column_name <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
@@ -377,7 +391,13 @@ formClass <- R6::R6Class(
       if(!self$check_uniqueness_column_name(column_name))return(-1)
       if(!is.null(column_2_name) && !self$check_uniqueness_column_name(column_2_name))return(-1)
         
-      field_order_nr <- self$get_next_formorder_number(form_section)
+      if(!is.null(form_section) && length(form_section) > 0){
+        field_order_nr <- self$get_next_formorder_number(form_section)
+      } else {
+        field_order_nr <- 0
+        form_section <- 0
+      }
+      
       
       if(type_field == "boolean"){
         choice_values <- '{"1":"Ja","2":"Nee"}'
@@ -396,7 +416,6 @@ formClass <- R6::R6Class(
       }
       
       data <- data.frame(
-        id_form = id,
         column_field = column_name,
         label_field = label_field,
         type_field = type_field,
@@ -409,18 +428,22 @@ formClass <- R6::R6Class(
         removable = TRUE
       )
       
+      if(add_id){
+        data$id_form <- id
+      }
+      
       if(self$filterable){
         data <- data %>%
           mutate(make_filter = filterable,
                  tooltip = tooltip)
       }
       
+      m_i <- match(names(data), names(unlist(self$def)))
+      data <- data[,!is.na(m_i)]
+      m_i <- m_i[!is.na(m_i)]
+      names(data) <- unname(unlist(self$def))[m_i]
       
-      data <- dplyr::rename_with(data, 
-                                 .fn = function(x){
-                                   unname(unlist(self$def[x]))
-                                 })
-      
+
       self$append_data(self$def_table, data)
       
       if(type_field == "boolean"){
@@ -437,7 +460,7 @@ formClass <- R6::R6Class(
       
       qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$column_field} = '{column}'")
       
-      res <- dbGetQuery(self$con, qu)
+      res <- DBI::dbGetQuery(self$con, qu)
       return(nrow(res)==0)
       
     },
@@ -1070,7 +1093,7 @@ formClass <- R6::R6Class(
       
       qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column} = '{record}'")  
 
-      res <- dbGetQuery(self$con, qu)
+      res <- DBI::dbGetQuery(self$con, qu)
       
       return(res)
       
@@ -1080,7 +1103,7 @@ formClass <- R6::R6Class(
 
       qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column}::jsonb ? '{record}'")
 
-      res <- dbGetQuery(self$con, qu)
+      res <- DBI::dbGetQuery(self$con, qu)
       
       return(res)
       

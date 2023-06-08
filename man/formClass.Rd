@@ -324,7 +324,7 @@ Adds an input field to a form
 \if{html}{\out{<div class="r">}}\preformatted{formClass$add_input_field_to_form(
   label_field,
   type_field,
-  form_section,
+  form_section = NULL,
   filterable = NULL,
   tooltip = NULL,
   column_name = NULL,

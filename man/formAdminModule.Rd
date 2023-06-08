@@ -37,6 +37,7 @@ formAdminModule(
   output,
   session,
   .reg = NULL,
+  option_layout = TRUE,
   show_fields = c(Kolomnaam = "column_field", Label = "label_field", Type = "type_field",
     Kolom = "form_section", Volgorde = "order_field", Opties = "options",
     `Volgorde opties` = "order_options", Kleuren = "colors", Verwijderbaar = "removable"),
