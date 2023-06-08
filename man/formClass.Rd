@@ -25,6 +25,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-choices_from_json}{\code{formClass$choices_from_json()}}
 \item \href{#method-NA-distinct_registration_field}{\code{formClass$distinct_registration_field()}}
 \item \href{#method-NA-rename_definition_table}{\code{formClass$rename_definition_table()}}
+\item \href{#method-NA-filter_by_visibility}{\code{formClass$filter_by_visibility()}}
 \item \href{#method-NA-get_input_fields}{\code{formClass$get_input_fields()}}
 \item \href{#method-NA-get_form_fields}{\code{formClass$get_form_fields()}}
 \item \href{#method-NA-get_next_formorder_number}{\code{formClass$get_next_formorder_number()}}
@@ -126,16 +127,16 @@ Make new form object
     "datum_uitgeschakeld", options = "opties", order_options = "volgorde_opties", colors
     = "kleuren", removable = "kan_worden_verwijderd", make_filter = "make_filter",
     tooltip = "tooltip"),
-  data_table = "registrations",
+  data_table = NULL,
   data_columns = list(id = "id_registratie", name = "naam_registratie", time_created =
     "invoerdatum", time_modified = "wijzigdatum", user = "user_id", status = "status",
     priority = "priority"),
-  relation_table = "object_relations",
+  relation_table = NULL,
   relation_columns = list(id = "id", collector_id = "collector_id", collector_type =
     "collector_type", object_id = "object_id", object_type = "object_type", relation_id =
     "relation_id", relation_type = "relation_type", comment = "comment", status =
     "status", username = "username", timestamp = "timestamp", verwijderd = "verwijderd"),
-  relation_audit_table = "object_relations_audit",
+  relation_audit_table = NULL,
   inject = NULL,
   pool = TRUE,
   sqlite = NULL,
@@ -273,6 +274,15 @@ Get distinct values of a column in the registrations table
 Rename database table to correct internal column names
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$rename_definition_table(data)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-filter_by_visibility"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-filter_by_visibility}{}}}
+\subsection{Method \code{filter_by_visibility()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$filter_by_visibility(data, visibility = TRUE)}\if{html}{\out{</div>}}
 }
 
 }

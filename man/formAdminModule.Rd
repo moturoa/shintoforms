@@ -9,10 +9,43 @@ formAdminUI(
   id,
   title = "Formulieropstelling",
   title_deleted = "Verwijderde invoervelden",
+  tab_deleted_input_fields = TRUE,
+  option_layout = TRUE,
+  option_add_field = TRUE,
+  option_delete_field = TRUE,
+  btn_add_text = "Toevoegen",
+  btn_add_status = "light",
+  btn_layout_text = "Layout",
+  btn_layout_status = "secondary",
+  btn_edit_text = "Wijzig veld",
+  btn_edit_status = "secondary",
+  btn_nested_text = "Gekoppelde keuzelijst",
+  btn_nested_status = "secondary",
+  btn_select_text = "Keuzelijst",
+  btn_select_status = "secondary",
+  btn_optionsorder_text = "Volgorde keuzelijst",
+  btn_optionsorder_status = "secondary",
+  btn_colors_text = "Kleuren",
+  btn_colors_status = "primary",
+  btn_delete_text = "Verwijderen",
+  btn_delete_status = "danger",
   header_ui = NULL
 )
 
-formAdminModule(input, output, session, .reg = NULL)
+formAdminModule(
+  input,
+  output,
+  session,
+  .reg = NULL,
+  show_fields = c(Kolomnaam = "column_field", Label = "label_field", Type = "type_field",
+    Kolom = "form_section", Volgorde = "order_field", Opties = "options",
+    `Volgorde opties` = "order_options", Kleuren = "colors", Verwijderbaar = "removable"),
+  show_fields_deleted = c(Kolomnaam = "column_field", Label = "label_field", Type =
+    "type_field", Kolom = "form_section", `Verwijderd op` = "date_deleted", Volgorde =
+    "order_field", Opties = "options", `Volgorde opties` = "order_options", Kleuren =
+    "colors", Verwijderbaar = "removable"),
+  allow_delete_option = FALSE
+)
 }
 \arguments{
 \item{id}{Shiny input id}
@@ -21,7 +54,18 @@ formAdminModule(input, output, session, .reg = NULL)
 
 \item{title_deleted}{Title for the tab panel with deleted fields}
 
+\item{option_layout}{Show button for form layout? (default TRUE)}
+
+\item{option_add_field}{Show button to add a field (default TRUE)}
+
+\item{option_delete_field}{Show button to delete a field? (default TRUE)}
+
 \item{header_ui}{UI to add at the top of the panel with settings}
+
+\item{show_fields}{Named vector selecting column names from the renamed definition table, to
+display columns in admin table}
+
+\item{show_fields_deleted}{Same, for page with deleted form fields}
 }
 \description{
 Shiny module for form configuration
