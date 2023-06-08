@@ -3,6 +3,12 @@
 #' @param id Shiny input id
 #' @param title Title for the tab panel with settings
 #' @param title_deleted Title for the tab panel with deleted fields
+#' @param option_layout Show button for form layout? (default TRUE)
+#' @param option_add_field Show button to add a field (default TRUE)
+#' @param option_delete_field Show button to delete a field? (default TRUE)
+#' @param show_fields Named vector selecting column names from the renamed definition table, to
+#' display columns in admin table
+#' @param show_fields_deleted Same, for page with deleted form fields
 #' @param header_ui UI to add at the top of the panel with settings
 #' @export
 #' @rdname formAdminModule
@@ -14,6 +20,30 @@ formAdminUI <- function(id,
                         option_layout = TRUE,
                         option_add_field = TRUE,
                         option_delete_field = TRUE,
+                        
+                        btn_add_text = "Toevoegen",
+                        btn_add_status = "light",
+                        
+                        btn_layout_text = "Layout",
+                        btn_layout_status = "secondary",
+                        
+                        btn_edit_text = "Wijzig veld",
+                        btn_edit_status = "secondary",
+                        
+                        btn_nested_text = "Gekoppelde keuzelijst",
+                        btn_nested_status = "secondary",
+                        
+                        btn_select_text = "Keuzelijst",
+                        btn_select_status = "secondary",
+                        
+                        btn_optionsorder_text = "Volgorde keuzelijst",
+                        btn_optionsorder_status = "secondary",
+                        
+                        btn_colors_text = "Kleuren",
+                        btn_colors_status = "primary",
+                        
+                        btn_delete_text = "Verwijderen",
+                        btn_delete_status = "danger",
                         
                         header_ui = NULL){
   
@@ -28,26 +58,27 @@ formAdminUI <- function(id,
       header_ui,
       
       softui::fluid_row(
-        column(12,
+        column(12, style = "height: 28px;",
                
                if(option_add_field){
-                 softui::action_button(ns("btn_add_formfield"), "Toevoegen", 
-                                       status = "light", icon = bsicon("plus"))  
+                 softui::action_button(ns("btn_add_formfield"), btn_add_text, 
+                                       status = btn_add_status, icon = bsicon("plus"))  
                },
                
                if(option_layout){
                  tags$span(id = ns("span_edit_formorder"),
                            jsonFormSetupUI(ns("edit_formorder"), 
                                            icon = bsicon("columns"),
-                                           label = "Layout",
-                                           status = "secondary")
+                                           label = btn_layout_text,
+                                           status = btn_layout_status)
                  )  
                },
                
                shinyjs::hidden(
                  tags$span(id = ns("span_edit_formfield"),
-                           softui::action_button(ns("btn_edit_formfield"), "Wijzig veld", 
-                                                 status = "secondary",
+                           softui::action_button(ns("btn_edit_formfield"), 
+                                                 btn_edit_text, 
+                                                 status = btn_edit_status,
                                                  icon = bsicon("pencil-square"))
                  )
                ),
@@ -57,9 +88,9 @@ formAdminUI <- function(id,
                            
                            softui::modal_action_button(ns("btn_edit_nested_options"),
                                                        ns("modal_nested_options"),
-                                                       label = "Gekoppelde keuzelijst", 
+                                                       label = btn_nested_text, 
                                                        icon = bsicon("pencil-square"), 
-                                                       status = "secondary"),
+                                                       status = btn_nested_status),
                            
                            softui::ui_modal(
                              title = "Gekoppelde keuzelijst",
@@ -79,9 +110,9 @@ formAdminUI <- function(id,
                            
                            softui::modal_action_button(ns("btn_edit_options"),
                                                        ns("modal_edit_options"),
-                                                 label = "Keuzelijst", 
+                                                 label = btn_select_text, 
                                                  icon = bsicon("pencil-square"), 
-                                                 status = "secondary"),
+                                                 status = btn_select_status),
                            
                            softui::ui_modal(id = ns("modal_edit_options"), ns = ns,
                                             title = "Keuzelijst",
@@ -98,9 +129,9 @@ formAdminUI <- function(id,
                  tags$span(id = ns("span_edit_order_options"),
                            
                            softui::action_button(ns("btn_edit_order_options"),
-                                                 label = "Volgorde keuzelijst", 
+                                                 label = btn_optionsorder_text, 
                                                  icon = bsicon("pencil-square"), 
-                                                 status = "secondary")
+                                                 status = btn_optionsorder_status)
                            
                  )
                ),
@@ -108,17 +139,17 @@ formAdminUI <- function(id,
                  tags$span(id = ns("span_edit_colors"),
                            
                            softui::action_button(ns("btn_edit_colors"),
-                                                 label = "Kleuren", 
+                                                 label = btn_colors_text, 
                                                  icon = bsicon("palette-fill"), 
-                                                 status = "primary")
+                                                 status = btn_colors_status)
                  )
                ),
                
                if(option_delete_field){
                  shinyjs::hidden(
                    tags$span(id = ns("span_delete_formfield"),
-                             softui::action_button(ns("btn_delete_formfield"), "Verwijder", 
-                                                   status = "danger",
+                             softui::action_button(ns("btn_delete_formfield"), btn_delete_text, 
+                                                   status = btn_delete_status,
                                                    icon = bsicon("trash3"))
                    )
                  )  
@@ -172,6 +203,30 @@ formAdminUI <- function(id,
 #' @export
 #' @rdname formAdminModule
 formAdminModule <- function(input, output, session, .reg = NULL,
+                            show_fields = c(
+                              "Kolomnaam" = "column_field", 
+                              "Label" = "label_field", 
+                              "Type" = "type_field", 
+                              "Kolom" = "form_section",
+                              "Volgorde" = "order_field",
+                              "Opties" = "options", 
+                              "Volgorde opties" = "order_options", 
+                              "Kleuren" = "colors", 
+                              "Verwijderbaar" = "removable"
+                            ),
+                            
+                            show_fields_deleted = c(
+                              "Kolomnaam" = "column_field",
+                              "Label" = "label_field",
+                              "Type" = "type_field",
+                              "Kolom" = "form_section",
+                              "Verwijderd op" = "date_deleted",
+                              "Volgorde" = "order_field",
+                              "Opties" = "options",
+                              "Volgorde opties" = "order_options",
+                              "Kleuren" = "colors",
+                              "Verwijderbaar" = "removable"),
+                            
                             allow_delete_option = FALSE){
   
   
@@ -195,60 +250,65 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     
     data <- form_invul_data()
     
+    # Format options field in HTML
     data$options <- apply(data, 1, function(row){
       
       x <- .reg$from_json(row[["options"]])
-      o <- .reg$from_json(row[["order_options"]])
-      x <- x[o]
       
-      len <- length(x)
-      if(len > 5){
-        x <- c(x[1:5], list(paste("+", len-5, "opties")))
+      if(length(x) == 0){
+        
+        ""
+        
+      } else {
+        o <- .reg$from_json(row[["order_options"]])
+        x <- x[o]
+        
+        len <- length(x)
+        if(len > 5){
+          x <- c(x[1:5], list(paste("+", len-5, "opties")))
+        }
+        
+        l <- lapply(x, function(el){
+          tags$span(style = "margin: 2px; border-radius:6px; padding: 8px; background-color: #0d6efd; color: white;", el)
+        })
+        do.call(paste,l)  
+        
       }
       
-      l <- lapply(x, function(el){
-        tags$span(style = "margin: 2px; border-radius:6px; padding: 8px; background-color: #0d6efd; color: white;", el)
-      })
-      do.call(paste,l)  
     })
     
     data$colors <- apply(data, 1, function(row){
       
       x <- .reg$from_json(row[["colors"]])
-      o <- .reg$from_json(row[["order_options"]])
-      x <- x[o]
       
-      len <- length(x)
-      if(len > 5){
-        x <- x[1:5]
+      if(length(x) == 0){
+        
+        ""
+        
+      } else {
+      
+        o <- .reg$from_json(row[["order_options"]])
+        x <- x[o]
+        
+        len <- length(x)
+        if(len > 5){
+          x <- x[1:5]
+        }
+        
+        l <- lapply(x, function(el){
+          tags$div(style = glue("margin: 2px; height: 24px; width: 24px;",
+                                "display: inline-block;",
+                                "background-color: {el}; border: 1px solid black;"))
+        })
+        
+        do.call(paste,l)  
       }
-      
-      l <- lapply(x, function(el){
-        tags$div(style = glue("margin: 2px; height: 24px; width: 24px;",
-                              "display: inline-block;",
-                              "background-color: {el}; border: 1px solid black;"))
-      })
-      
-      do.call(paste,l)  
       
     })
     
-    sel_cols <- c(
-      "Kolomnaam" = "column_field", 
-      "Label" = "label_field", 
-      "Type" = "type_field", 
-      "Kolom" = "form_section",
-      #"Volgorde" = "order_field",
-      "Opties" = "options", 
-      #"Volgorde opties" = "order_options", 
-      "Kleuren" = "colors", 
-      "Verwijderbaar" = "removable"
-      #"Filter" = "make_filter",
-      #"Tooltip" = "tooltip"
-    )
-    
+
     data %>%
-      select(any_of(sel_cols)) %>% 
+      select(any_of(show_fields)) %>% 
       softui::datatafel(selection = "single", dom = "tp", 
                         pageLength = 30, scrollX = TRUE, 
                         extensions = list())
@@ -583,20 +643,8 @@ formAdminModule <- function(input, output, session, .reg = NULL,
 
   output$dt_deleted_invoervelden <- DT::renderDataTable({
 
-    sel_cols <- c(
-      "Kolomnaam" = "column_field",
-      "Label" = "label_field",
-      "Type" = "type_field",
-      "Kolom" = "form_section",
-      "Verwijderd op" = "date_deleted",
-      "Volgorde" = "order_field",
-      "Opties" = "options",
-      "Volgorde opties" = "order_options",
-      "Kleuren" = "colors",
-      "Verwijderbaar" = "removable")
-
     form_deleted_data() %>%
-      select(any_of(sel_cols)) %>%
+      select(any_of(show_fields_deleted)) %>%
       softui::datatafel(selection = "single", dom = "tp",
                         pageLength = 30, scrollX = TRUE, extensions = list())
 
