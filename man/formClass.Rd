@@ -62,8 +62,6 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-get_registration_by_id}{\code{formClass$get_registration_by_id()}}
 \item \href{#method-NA-filter_period}{\code{formClass$filter_period()}}
 \item \href{#method-NA-read_definition}{\code{formClass$read_definition()}}
-\item \href{#method-NA-get_occurences}{\code{formClass$get_occurences()}}
-\item \href{#method-NA-get_registration_by_json}{\code{formClass$get_registration_by_json()}}
 \item \href{#method-NA-create_timeseries}{\code{formClass$create_timeseries()}}
 \item \href{#method-NA-create_events}{\code{formClass$create_events()}}
 \item \href{#method-NA-get_all_relations}{\code{formClass$get_all_relations()}}
@@ -88,6 +86,7 @@ R6 Class voor Registratie formulier
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="execute_query"><a href='../../shintodb/html/NA.html#method-NA-execute_query'><code>shintodb::NA$execute_query()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="filter"><a href='../../shintodb/html/NA.html#method-NA-filter'><code>shintodb::NA$filter()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="get_query"><a href='../../shintodb/html/NA.html#method-NA-get_query'><code>shintodb::NA$get_query()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="has_connection"><a href='../../shintodb/html/NA.html#method-NA-has_connection'><code>shintodb::NA$has_connection()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="has_value"><a href='../../shintodb/html/NA.html#method-NA-has_value'><code>shintodb::NA$has_value()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="have_column"><a href='../../shintodb/html/NA.html#method-NA-have_column'><code>shintodb::NA$have_column()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="shintodb" data-topic="NA" data-id="list_indexes"><a href='../../shintodb/html/NA.html#method-NA-list_indexes'><code>shintodb::NA$list_indexes()</code></a></span></li>
@@ -140,6 +139,7 @@ Make new form object
   inject = NULL,
   pool = TRUE,
   sqlite = NULL,
+  connect_on_init = TRUE,
   default_color = "#3333cc"
 )}\if{html}{\out{</div>}}
 }
@@ -149,21 +149,43 @@ Make new form object
 \describe{
 \item{\code{config_file}}{Path to DB config}
 
+\item{\code{what}}{Entry in config for DB connection}
+
 \item{\code{schema}}{DB schema}
+
+\item{\code{class_type}}{Name for the class of the objects to be managed with shintoforms}
+
+\item{\code{db_connection}}{Optional, an existing DB connection}
 
 \item{\code{filterable}}{Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.}
 
 \item{\code{audit}}{If TRUE, writes edits to audit log}
 
+\item{\code{audit_table}}{Name of the table for the audit logs}
+
+\item{\code{def_table}}{Table in DB (in schema) that holds form config}
+
+\item{\code{def_columns}}{List with internal names of the config fields, and names of the corresponding columns in the table}
+
+\item{\code{data_table}}{Name of the table to hold the data saved by shintoforms}
+
+\item{\code{data_columns}}{List with internal names of required data columns, and corresponding names in the data table}
+
+\item{\code{relation_table}}{Name of the 'relations' table}
+
+\item{\code{relation_columns}}{List with internal names of the relations table and corresponding names in the actual postgres table}
+
+\item{\code{relation_audit_table}}{If TRUE, audits the relation table}
+
+\item{\code{inject}}{Custom fields to be injected; see Apollo for examples}
+
 \item{\code{pool}}{If TRUE, connects with dbPool}
 
 \item{\code{sqlite}}{If path to an SQLite file, uses SQLite.}
 
+\item{\code{connect_on_init}}{If TRUE (default), connects to DB on initialization. Otherwise, call \verb{$connect_to_database} at a later stage.}
+
 \item{\code{default_color}}{Default color}
-
-\item{\code{wat}}{Entry in config for DB connection}
-
-\item{\code{table}}{Table in DB (in schema) that holds form config}
 }
 \if{html}{\out{</div>}}
 }
@@ -172,6 +194,7 @@ Make new form object
 \if{html}{\out{<a id="method-NA-log"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-log}{}}}
 \subsection{Method \code{log()}}{
+Log something
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$log(...)}\if{html}{\out{</div>}}
 }
@@ -181,6 +204,7 @@ Make new form object
 \if{html}{\out{<a id="method-NA-replace_value_where_multi"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-replace_value_where_multi}{}}}
 \subsection{Method \code{replace_value_where_multi()}}{
+Multi-replace value where
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$replace_value_where_multi(
   table,
@@ -208,6 +232,7 @@ Get a row from the form definition by the form id.
 \if{html}{\out{<a id="method-NA-column_name_from_id"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-column_name_from_id}{}}}
 \subsection{Method \code{column_name_from_id()}}{
+Get column name for a form field by ID
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$column_name_from_id(id_form)}\if{html}{\out{</div>}}
 }
@@ -217,6 +242,7 @@ Get a row from the form definition by the form id.
 \if{html}{\out{<a id="method-NA-get_fields_by_type"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-get_fields_by_type}{}}}
 \subsection{Method \code{get_fields_by_type()}}{
+Get all fields of a certain type
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_fields_by_type(field_type)}\if{html}{\out{</div>}}
 }
@@ -281,10 +307,18 @@ Rename database table to correct internal column names
 \if{html}{\out{<a id="method-NA-filter_by_visibility"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-filter_by_visibility}{}}}
 \subsection{Method \code{filter_by_visibility()}}{
+Filter fields by visibility (or not)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$filter_by_visibility(data, visibility = TRUE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{visibility}}{TRUE or FALSE. When NULL, returns all data.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_input_fields"></a>}}
@@ -310,10 +344,18 @@ Get form fields for left or right column of the form
 \if{html}{\out{<a id="method-NA-get_next_formorder_number"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-get_next_formorder_number}{}}}
 \subsection{Method \code{get_next_formorder_number()}}{
+Get next available form order number
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_next_formorder_number(form_section)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{form_section}}{Either 1 or 2}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-add_input_field_to_form"></a>}}
@@ -324,7 +366,7 @@ Adds an input field to a form
 \if{html}{\out{<div class="r">}}\preformatted{formClass$add_input_field_to_form(
   label_field,
   type_field,
-  form_section,
+  form_section = NULL,
   filterable = NULL,
   tooltip = NULL,
   column_name = NULL,
@@ -348,10 +390,18 @@ Adds an input field to a form
 \if{html}{\out{<a id="method-NA-check_uniqueness_column_name"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-check_uniqueness_column_name}{}}}
 \subsection{Method \code{check_uniqueness_column_name()}}{
+Check if a column name can be used (returns TRUE if the column does not exist in the definition table)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$check_uniqueness_column_name(column)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{column}}{Name of the column}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-edit_label_field"></a>}}
@@ -367,6 +417,7 @@ Edit the label for an input field
 \if{html}{\out{<a id="method-NA-edit_field_type"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_field_type}{}}}
 \subsection{Method \code{edit_field_type()}}{
+Change the field type for a form field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_field_type(id_form, new_type)}\if{html}{\out{</div>}}
 }
@@ -376,6 +427,7 @@ Edit the label for an input field
 \if{html}{\out{<a id="method-NA-edit_filterable_column"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_filterable_column}{}}}
 \subsection{Method \code{edit_filterable_column()}}{
+Edit a filterable field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_filterable_column(id_form, new_filter_boolean, new_tooltip)}\if{html}{\out{</div>}}
 }
@@ -385,6 +437,7 @@ Edit the label for an input field
 \if{html}{\out{<a id="method-NA-from_json"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-from_json}{}}}
 \subsection{Method \code{from_json()}}{
+from_json wrapper
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$from_json(x, ...)}\if{html}{\out{</div>}}
 }
@@ -394,6 +447,7 @@ Edit the label for an input field
 \if{html}{\out{<a id="method-NA-to_json"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-to_json}{}}}
 \subsection{Method \code{to_json()}}{
+to_json wrapper
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$to_json(x, ...)}\if{html}{\out{</div>}}
 }
@@ -403,6 +457,7 @@ Edit the label for an input field
 \if{html}{\out{<a id="method-NA-edit_options_field"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_options_field}{}}}
 \subsection{Method \code{edit_options_field()}}{
+Edit options (choices) for a form field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_options_field(id_form, new_options)}\if{html}{\out{</div>}}
 }
@@ -432,6 +487,7 @@ Is the provided color(s) valid?
 \if{html}{\out{<a id="method-NA-edit_options_colors"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_options_colors}{}}}
 \subsection{Method \code{edit_options_colors()}}{
+Edit colors for a form field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_options_colors(id_form, new_colors)}\if{html}{\out{</div>}}
 }
@@ -451,6 +507,7 @@ If new options added, make sure the color vector is amended
 \if{html}{\out{<a id="method-NA-set_options_order"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-set_options_order}{}}}
 \subsection{Method \code{set_options_order()}}{
+Set the order for a single/multi select field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$set_options_order(id_form, new_order)}\if{html}{\out{</div>}}
 }
@@ -460,6 +517,7 @@ If new options added, make sure the color vector is amended
 \if{html}{\out{<a id="method-NA-prepare_nested_choice_column"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-prepare_nested_choice_column}{}}}
 \subsection{Method \code{prepare_nested_choice_column()}}{
+Prepare a nested choice column
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$prepare_nested_choice_column(id_form, name, options)}\if{html}{\out{</div>}}
 }
@@ -479,6 +537,7 @@ If new categories added, make sure the order vector is amended
 \if{html}{\out{<a id="method-NA-edit_formulier_setup"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_formulier_setup}{}}}
 \subsection{Method \code{edit_formulier_setup()}}{
+Edit the form layout
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_formulier_setup(new_setup)}\if{html}{\out{</div>}}
 }
@@ -488,6 +547,7 @@ If new categories added, make sure the order vector is amended
 \if{html}{\out{<a id="method-NA-edit_zichtbaarheid_invoerveld"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_zichtbaarheid_invoerveld}{}}}
 \subsection{Method \code{edit_zichtbaarheid_invoerveld()}}{
+Change the visibility
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_zichtbaarheid_invoerveld(id_formfield, new_zichtbaarheid)}\if{html}{\out{</div>}}
 }
@@ -497,6 +557,7 @@ If new categories added, make sure the order vector is amended
 \if{html}{\out{<a id="method-NA-edit_verwijder_datum"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_verwijder_datum}{}}}
 \subsection{Method \code{edit_verwijder_datum()}}{
+Change the removal date
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_verwijder_datum(id_formfield, new_date)}\if{html}{\out{</div>}}
 }
@@ -506,6 +567,7 @@ If new categories added, make sure the order vector is amended
 \if{html}{\out{<a id="method-NA-amend_formfield_order"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-amend_formfield_order}{}}}
 \subsection{Method \code{amend_formfield_order()}}{
+Change the formfield order
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$amend_formfield_order(formside, deleted_number)}\if{html}{\out{</div>}}
 }
@@ -515,6 +577,7 @@ If new categories added, make sure the order vector is amended
 \if{html}{\out{<a id="method-NA-reset_volgorde_invoerveld"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-reset_volgorde_invoerveld}{}}}
 \subsection{Method \code{reset_volgorde_invoerveld()}}{
+Reset the form field order
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$reset_volgorde_invoerveld(id_formfield, new_volgorde_nummer)}\if{html}{\out{</div>}}
 }
@@ -524,6 +587,7 @@ If new categories added, make sure the order vector is amended
 \if{html}{\out{<a id="method-NA-really_delete_formfield"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-really_delete_formfield}{}}}
 \subsection{Method \code{really_delete_formfield()}}{
+Actually really delete a field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$really_delete_formfield(id)}\if{html}{\out{</div>}}
 }
@@ -564,15 +628,28 @@ internal column names as defined in \code{data_columns} argument
 \if{html}{\out{<a id="method-NA-write_new_registration"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-write_new_registration}{}}}
 \subsection{Method \code{write_new_registration()}}{
+Writes a registration to the data table
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$write_new_registration(data, user_id, current_reg_id)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{data}
+
+\item{\code{user_id}}{User ID}
+
+\item{\code{current_reg_id}}{ID for the registration}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-edit_registration"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_registration}{}}}
 \subsection{Method \code{edit_registration()}}{
+Edits an existing registration
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_registration(old_data, new_data, user_id, current_reg_id)}\if{html}{\out{</div>}}
 }
@@ -679,6 +756,7 @@ Get a registration with a uuid
 \if{html}{\out{<a id="method-NA-filter_period"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-filter_period}{}}}
 \subsection{Method \code{filter_period()}}{
+Filter data by time_created
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$filter_period(
   data,
@@ -687,31 +765,25 @@ Get a registration with a uuid
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Read with \code{read_registrations}}
+
+\item{\code{date_start}}{Date start}
+
+\item{\code{date_end}}{Date end}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-read_definition"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-read_definition}{}}}
 \subsection{Method \code{read_definition()}}{
+Reads the definition table
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$read_definition(...)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-get_occurences"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-get_occurences}{}}}
-\subsection{Method \code{get_occurences()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$get_occurences(table, column, record)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-get_registration_by_json"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-get_registration_by_json}{}}}
-\subsection{Method \code{get_registration_by_json()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$get_registration_by_json(table, column, record)}\if{html}{\out{</div>}}
 }
 
 }
@@ -719,6 +791,7 @@ Get a registration with a uuid
 \if{html}{\out{<a id="method-NA-create_timeseries"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-create_timeseries}{}}}
 \subsection{Method \code{create_timeseries()}}{
+Creates a timeseries for the audit
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$create_timeseries(columns = NULL, date_range = NULL)}\if{html}{\out{</div>}}
 }
@@ -728,6 +801,7 @@ Get a registration with a uuid
 \if{html}{\out{<a id="method-NA-create_events"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-create_events}{}}}
 \subsection{Method \code{create_events()}}{
+Creates 'events' based on the timeseries
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$create_events(timeseries, date_range = NULL, creation_only = NULL)}\if{html}{\out{</div>}}
 }
@@ -737,6 +811,7 @@ Get a registration with a uuid
 \if{html}{\out{<a id="method-NA-get_all_relations"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-get_all_relations}{}}}
 \subsection{Method \code{get_all_relations()}}{
+Reads the relation table
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_all_relations()}\if{html}{\out{</div>}}
 }
@@ -810,6 +885,7 @@ get_collector_for_object
 \if{html}{\out{<a id="method-NA-add_relation"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-add_relation}{}}}
 \subsection{Method \code{add_relation()}}{
+Adds a relation to the relation table
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$add_relation(
   id = uuid::UUIDgenerate(),
@@ -847,6 +923,13 @@ Select rows in registration audit table since some timestamp
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_rows_since_auditstamp(time_since)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{time_since}}{POSIXct timestamp}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-soft_delete_relations"></a>}}
@@ -878,6 +961,8 @@ Append relations
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{data}}{Data to append}
+
+\item{\code{registration_id}}{ID for the registration}
 }
 \if{html}{\out{</div>}}
 }
@@ -895,6 +980,8 @@ update current relation table for registration ID
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{new_relations}}{The current state that should end up in the relations table}
+
+\item{\code{registration_id}}{ID for the registration}
 }
 \if{html}{\out{</div>}}
 }

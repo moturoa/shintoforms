@@ -11,6 +11,7 @@
 #' @param show_fields_deleted Same, for page with deleted form fields
 #' @param header_ui UI to add at the top of the panel with settings
 #' @export
+#' @importFrom shinytoastr toastr_error toastr_success
 #' @rdname formAdminModule
 formAdminUI <- function(id, 
                         title = "Formulieropstelling",
@@ -203,6 +204,7 @@ formAdminUI <- function(id,
 #' @export
 #' @rdname formAdminModule
 formAdminModule <- function(input, output, session, .reg = NULL,
+                            option_layout = TRUE,
                             show_fields = c(
                               "Kolomnaam" = "column_field", 
                               "Label" = "label_field", 
@@ -227,7 +229,8 @@ formAdminModule <- function(input, output, session, .reg = NULL,
                               "Kleuren" = "colors",
                               "Verwijderbaar" = "removable"),
                             
-                            allow_delete_option = FALSE){
+                            allow_delete_option = FALSE,
+                            reload_ping = reactive(NULL)){
   
   
   db_ping <- reactiveVal()
@@ -236,6 +239,8 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   
   form_invul_data <- reactive({
     db_ping()
+    reload_ping()
+    req(.reg$has_connection())
     
     .reg$get_input_fields(TRUE) %>%
       arrange(column_field)
@@ -247,6 +252,8 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   })
   
   output$dt_form_invoervelden <- DT::renderDataTable({
+    
+    reload_ping()
     
     data <- form_invul_data()
     
@@ -277,6 +284,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
       
     })
     
+    # Format color blocks
     data$colors <- apply(data, 1, function(row){
       
       x <- .reg$from_json(row[["colors"]])
@@ -343,9 +351,12 @@ formAdminModule <- function(input, output, session, .reg = NULL,
         
         uiOutput(session$ns("ui_nested_select_options")),
         
-        radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
-                     choices = c("Links" = 1,
-                                 "Rechts" = 2))
+        if(option_layout){
+          radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
+                       choices = c("Links" = 1,
+                                   "Rechts" = 2))  
+        }
+        
         # if(.reg$filterable){
         #   radioButtons(session$ns("rad_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
         #                choices = c("Ja" = TRUE,
@@ -384,18 +395,21 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     colname <- stringr::str_trim(input$txt_column_name, side = "both")
     
     if(colname == ""){
-      toastr_error("Vul een label in")
+      shinytoastr::toastr_error("Vul een label in")
     }
     req(colname)
     
-    resp <- .reg$add_input_field_to_form(input$txt_column_name, 
-                                         input$rad_type_formfield, 
-                                         as.integer(input$rad_side_formfield),
-                                         make_filter, tooltip,
+    req(.reg$has_connection())
+    
+    resp <- .reg$add_input_field_to_form(label_field = input$txt_column_name, 
+                                         type_field = input$rad_type_formfield, 
+                                         form_section = as.integer(input$rad_side_formfield),
+                                         filterable = make_filter, 
+                                         tooltip = tooltip,
                                          column_2_name = input$txt_secondary_column_name)
     
     if(resp < 0){
-      toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
+      shinytoastr::toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
     } else {
       db_ping(runif(1))
       removeModal()  
@@ -497,7 +511,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
         if(sel_new %in% allowed_new){
           .reg$edit_field_type(selected_id(), sel_new)
         } else {
-          toastr_error("Ongeldig nieuw veld type")
+          shinytoastr::toastr_error("Ongeldig nieuw veld type")
         }
 
       }
@@ -505,7 +519,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
       db_ping(runif(1))
       removeModal()
     } else {
-      toastr_error("Vul een label in")
+      shinytoastr::toastr_error("Vul een label in")
     }
 
   })
@@ -638,6 +652,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
 
   form_deleted_data <- reactive({
     db_ping()
+    req(.reg$has_connection())
     .reg$get_input_fields(FALSE)
   })
 

@@ -37,6 +37,7 @@ formAdminModule(
   output,
   session,
   .reg = NULL,
+  option_layout = TRUE,
   show_fields = c(Kolomnaam = "column_field", Label = "label_field", Type = "type_field",
     Kolom = "form_section", Volgorde = "order_field", Opties = "options",
     `Volgorde opties` = "order_options", Kleuren = "colors", Verwijderbaar = "removable"),
@@ -44,7 +45,8 @@ formAdminModule(
     "type_field", Kolom = "form_section", `Verwijderd op` = "date_deleted", Volgorde =
     "order_field", Opties = "options", `Volgorde opties` = "order_options", Kleuren =
     "colors", Verwijderbaar = "removable"),
-  allow_delete_option = FALSE
+  allow_delete_option = FALSE,
+  reload_ping = reactive(NULL)
 )
 }
 \arguments{
