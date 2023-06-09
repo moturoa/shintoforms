@@ -229,7 +229,8 @@ formAdminModule <- function(input, output, session, .reg = NULL,
                               "Kleuren" = "colors",
                               "Verwijderbaar" = "removable"),
                             
-                            allow_delete_option = FALSE){
+                            allow_delete_option = FALSE,
+                            reload_ping = reactive(NULL)){
   
   
   db_ping <- reactiveVal()
@@ -238,6 +239,8 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   
   form_invul_data <- reactive({
     db_ping()
+    reload_ping()
+    req(.reg$has_connection())
     
     .reg$get_input_fields(TRUE) %>%
       arrange(column_field)
@@ -249,6 +252,8 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   })
   
   output$dt_form_invoervelden <- DT::renderDataTable({
+    
+    reload_ping()
     
     data <- form_invul_data()
     
@@ -279,6 +284,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
       
     })
     
+    # Format color blocks
     data$colors <- apply(data, 1, function(row){
       
       x <- .reg$from_json(row[["colors"]])
@@ -392,6 +398,8 @@ formAdminModule <- function(input, output, session, .reg = NULL,
       shinytoastr::toastr_error("Vul een label in")
     }
     req(colname)
+    
+    req(.reg$has_connection())
     
     resp <- .reg$add_input_field_to_form(label_field = input$txt_column_name, 
                                          type_field = input$rad_type_formfield, 
@@ -644,6 +652,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
 
   form_deleted_data <- reactive({
     db_ping()
+    req(.reg$has_connection())
     .reg$get_input_fields(FALSE)
   })
 
