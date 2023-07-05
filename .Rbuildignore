@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 
 run_test_app.R
+test/
