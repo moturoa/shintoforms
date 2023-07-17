@@ -405,9 +405,9 @@ formModule <- function(input, output, session, .reg = NULL,
     
 
     if(resp & resp2){
-      toastr_success(message_success)
+      shinytoastr::toastr_success(message_success)
     } else {
-      toastr_error(message_error)
+      shinytoastr::toastr_error(message_error)
     }
 
     out_ping(list(ping = runif(1), action = "save"))
@@ -445,7 +445,7 @@ formModule <- function(input, output, session, .reg = NULL,
     # current_relations = .reg$get_objects_for_collector(collector_id = current_reg_id())
     # .reg$soft_delete_relations(current_relations$id) 
     
-    toastr_success(message_deleted)
+    shinytoastr::toastr_success(message_deleted)
     
     out_ping(list(ping = runif(1), action = "delete"))
     callback_confirm()
