@@ -88,6 +88,8 @@ formModule <- function(input, output, session, .reg = NULL,
                        callback_confirm = function(){},
                        callback_cancel = function(){},
                        
+                       datetime_format = "%m/%d/%Y %H:%M",
+                       
                        message_success = "Registratie opgeslagen",
                        message_error = "Er is een fout opgetreden",
                        message_deleted = "Registratie verwijderd"
@@ -363,7 +365,7 @@ formModule <- function(input, output, session, .reg = NULL,
         
         tags$p("Je gaat deze registratie opslaan. Weet je het zeker?"),
         tags$p("Gebruiker: ", current_user),
-        tags$p(format(Sys.time(), "%m/%d/%Y %H:%M"))
+        tags$p(format(Sys.time(), datetime_format))
       )
     )
     
@@ -425,7 +427,7 @@ formModule <- function(input, output, session, .reg = NULL,
         tags$p(glue("U staat op het punt om registratie {data()[[.reg$data_columns$name]]} (id: {data()[[.reg$data_columns$id]]}) te verwijderen. 
         Als u dit zeker weet kunt u dit hier bevestigen, anders kunt u de keuze annuleren.")),
         tags$p("Gebruiker: ", current_user),
-        tags$p(format(Sys.time(), "%m/%d/%Y %H:%M"))
+        tags$p(format(Sys.time(), datetime_format))
       )
     )
   })

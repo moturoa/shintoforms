@@ -26,6 +26,7 @@ formModule(
  },
   callback_cancel = function() {
  },
+  datetime_format = "\%m/\%d/\%Y \%H:\%M",
   message_success = "Registratie opgeslagen",
   message_error = "Er is een fout opgetreden",
   message_deleted = "Registratie verwijderd"
