@@ -96,7 +96,9 @@ formClass <- R6::R6Class(
       self$filterable <- filterable
       self$inject <- inject
       
+      
       self$relation_table <- relation_table
+      
       self$relation_columns <- relation_columns
       self$relation_audit_table <- relation_audit_table
       
@@ -1224,6 +1226,10 @@ formClass <- R6::R6Class(
   #' @description Reads the relation table
   get_all_relations = function(){
 
+    if(is.null(self$relation_table)){
+      stop("Set 'relation_table' in shintoforms formcall (has no default value anymore)")
+    }
+    
     qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
 
     self$query(qu)
