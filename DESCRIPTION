@@ -6,7 +6,7 @@ Author: Wesley Brants, Remko Duursma
 Maintainer: Remko Duursma <remko@shintolabs.nl>
 Description: Forms for shinto shiny applications
 Depends: shiny, softui, dplyr
-Imports: sortable, R6, shintodb
+Imports: sortable, R6, shintodb, shinytoastr, DBI
 License: CC0
 Encoding: UTF-8
 LazyData: true
