@@ -64,7 +64,8 @@ formClass <- R6::R6Class(
                             time_modified = "wijzigdatum",
                             user = "user_id",
                             status = "status",
-                            priority = "priority" 
+                            priority = "priority",
+                            deleted = "deleted"
                           ),  
                           relation_table = NULL,
                           relation_columns = list(
@@ -134,10 +135,19 @@ formClass <- R6::R6Class(
         }
         
         if(!is.null(self$data_table)){
+          
+          # Name of deleted column may be missing ...
+          if(is.null(self$data_columns$deleted)){
+            self$data_columns$deleted <- "deleted"
+          }
+          
           # check new 'deleted' field
           datacols <- self$table_columns(self$data_table)
-          if(!"deleted" %in% datacols){
-            stop("Must have 'deleted' column in registrations data (`alter table <<table>> add column deleted integer default 0.")
+          
+          
+          if(!self$data_columns$deleted %in% datacols){
+            stop(paste("Must have 'deleted' column in registrations data (`alter table <<table>> add column deleted integer default 0`),",
+                 " or set data_columns$deleted to the name of the boolean 'deleted' flag column"))
           }  
         }
         # Check
@@ -260,6 +270,14 @@ formClass <- R6::R6Class(
       
     },
     
+    #' @description Get the label for a field
+    get_label_field = function(column_field){
+      self$read_definition(lazy = TRUE) %>%
+        filter(!!sym(self$def$column_field) == !!column_field) %>%
+        select(!!sym(self$def$label_field)) %>%
+        pull(!!sym(self$def$label_field))
+      
+    },
     
     #' @description Make choices (for selectInput) based on values and names
     make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
@@ -403,6 +421,7 @@ formClass <- R6::R6Class(
       id_column <- self$def$id_form
       idcoltype <- self$table_info(self$def_table) %>%
         filter(column_name == !!id_column) %>% pull(data_type)
+      
       if(idcoltype == "integer"){
         # do nothing; assume id is a serial
         add_id <- FALSE
@@ -849,7 +868,9 @@ formClass <- R6::R6Class(
     #' @param data data
     #' @param user_id User ID
     #' @param current_reg_id ID for the registration
-    write_new_registration = function(data, user_id, current_reg_id){ 
+    #' @param data_only Return only the dataset before appending to an actual table (for testing)
+    write_new_registration = function(data, user_id, current_reg_id, data_only = FALSE){ 
+      
       # add missing columns to output etc.
       self$prepare_data_table()
       
@@ -889,6 +910,9 @@ formClass <- R6::R6Class(
       
       data_all <- cbind(data_pre, data)
       
+      if(data_only)return(data_all)
+      
+      # Append to db table
       res <- self$append_data(self$data_table, data_all)
       
       # TRUE if success (append_data has a try()) 
@@ -975,7 +999,8 @@ formClass <- R6::R6Class(
       
       if(method %in% c("soft","undelete")){
         flag <- ifelse(method == "soft", 1, 0)
-        self$replace_value_where(self$data_table, col_replace = "deleted", val_replace = flag,
+        self$replace_value_where(self$data_table, col_replace = self$data_columns$deleted, 
+                                 val_replace = flag,
                                  col_compare = self$data_columns$id, val_compare = registration_id)  
         
       } else if(method == "hard"){
@@ -1000,9 +1025,9 @@ formClass <- R6::R6Class(
       data <- self$read_table(self$data_table, lazy = TRUE)
       
       if(deleted_only){
-        data <- filter(data, deleted == 1)
+        data <- filter(data, !!sym(self$data_columns$deleted) == 1)
       } else if(!include_deleted){
-        data <- filter(data, deleted == 0)
+        data <- filter(data, !!sym(self$data_columns$deleted) == 0)
       }
       
       if(!lazy){
