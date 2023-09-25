@@ -266,9 +266,20 @@ formAdminModule <- function(input, output, session, .reg = NULL,
         
         ""
         
-      } else {
+      } else if(row[["type_field"]] == "nestedselect"){
+        
+        as.character(tags$span(style = "margin: 2px; border-radius:6px; padding: 8px; background-color: #f29102; color: white;", 
+                  "Gekoppelde keuzelijst"))
+        
+      } else{
+        
+        # rearrange order. if filled in.
         o <- .reg$from_json(row[["order_options"]])
-        x <- x[o]
+        
+        if(!is.list(o) && length(o) == length(x)){
+          x <- x[o]  
+        }
+        
         
         len <- length(x)
         if(len > 5){
@@ -278,7 +289,9 @@ formAdminModule <- function(input, output, session, .reg = NULL,
         l <- lapply(x, function(el){
           tags$span(style = "margin: 2px; border-radius:6px; padding: 8px; background-color: #0d6efd; color: white;", el)
         })
-        do.call(paste,l)  
+        
+        
+        do.call(paste,l)
         
       }
       

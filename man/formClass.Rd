@@ -21,6 +21,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-column_name_from_id}{\code{formClass$column_name_from_id()}}
 \item \href{#method-NA-get_fields_by_type}{\code{formClass$get_fields_by_type()}}
 \item \href{#method-NA-get_field_choices}{\code{formClass$get_field_choices()}}
+\item \href{#method-NA-get_label_field}{\code{formClass$get_label_field()}}
 \item \href{#method-NA-make_choices}{\code{formClass$make_choices()}}
 \item \href{#method-NA-choices_from_json}{\code{formClass$choices_from_json()}}
 \item \href{#method-NA-distinct_registration_field}{\code{formClass$distinct_registration_field()}}
@@ -129,7 +130,7 @@ Make new form object
   data_table = NULL,
   data_columns = list(id = "id_registratie", name = "naam_registratie", time_created =
     "invoerdatum", time_modified = "wijzigdatum", user = "user_id", status = "status",
-    priority = "priority"),
+    priority = "priority", deleted = "deleted"),
   relation_table = NULL,
   relation_columns = list(id = "id", collector_id = "collector_id", collector_type =
     "collector_type", object_id = "object_id", object_type = "object_type", relation_id =
@@ -255,6 +256,16 @@ Get all fields of a certain type
 Get (recoded) choices for a select field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_field_choices(column_field)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_label_field"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_label_field}{}}}
+\subsection{Method \code{get_label_field()}}{
+Get the label for a field
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_label_field(column_field)}\if{html}{\out{</div>}}
 }
 
 }
@@ -630,7 +641,12 @@ internal column names as defined in \code{data_columns} argument
 \subsection{Method \code{write_new_registration()}}{
 Writes a registration to the data table
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$write_new_registration(data, user_id, current_reg_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$write_new_registration(
+  data,
+  user_id,
+  current_reg_id,
+  data_only = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -641,6 +657,8 @@ Writes a registration to the data table
 \item{\code{user_id}}{User ID}
 
 \item{\code{current_reg_id}}{ID for the registration}
+
+\item{\code{data_only}}{Return only the dataset before appending to an actual table (for testing)}
 }
 \if{html}{\out{</div>}}
 }
