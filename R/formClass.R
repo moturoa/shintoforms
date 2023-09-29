@@ -2,7 +2,6 @@
 #' @importFrom R6 R6Class
 #' @importFrom shintodb connect
 #' @importFrom shintodb databaseClass
-#' @importFrom DBI dbGetQuery
 #' @export
 formClass <- R6::R6Class(
   inherit = shintodb::databaseClass,
@@ -12,23 +11,12 @@ formClass <- R6::R6Class(
     
     #' @description Make new form object
     #' @param config_file Path to DB config
-    #' @param what Entry in config for DB connection
+    #' @param wat Entry in config for DB connection
     #' @param schema DB schema
-    #' @param class_type Name for the class of the objects to be managed with shintoforms
-    #' @param db_connection Optional, an existing DB connection
     #' @param filterable Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.
-    #' @param audit If TRUE, writes edits to audit log
-    #' @param audit_table Name of the table for the audit logs
-    #' @param def_table Table in DB (in schema) that holds form config
-    #' @param def_columns List with internal names of the config fields, and names of the corresponding columns in the table
-    #' @param data_table Name of the table to hold the data saved by shintoforms
-    #' @param data_columns List with internal names of required data columns, and corresponding names in the data table
-    #' @param relation_table Name of the 'relations' table
-    #' @param relation_columns List with internal names of the relations table and corresponding names in the actual postgres table
-    #' @param relation_audit_table If TRUE, audits the relation table
-    #' @param inject Custom fields to be injected; see Apollo for examples
+    #' @param table Table in DB (in schema) that holds form config
     #' @param pool If TRUE, connects with dbPool
-    #' @param connect_on_init If TRUE (default), connects to DB on initialization. Otherwise, call `$connect_to_database` at a later stage.
+    #' @param audit If TRUE, writes edits to audit log
     #' @param sqlite If path to an SQLite file, uses SQLite.
     #' @param default_color Default color
     initialize = function(config_file = "conf/config.yml", 
@@ -56,7 +44,7 @@ formClass <- R6::R6Class(
                             make_filter = "make_filter",
                             tooltip = "tooltip"
                           ),
-                          data_table = NULL,
+                          data_table = "registrations",
                           data_columns = list(
                             id = "id_registratie",
                             name = "naam_registratie",
@@ -64,10 +52,9 @@ formClass <- R6::R6Class(
                             time_modified = "wijzigdatum",
                             user = "user_id",
                             status = "status",
-                            priority = "priority",
-                            deleted = "deleted"
+                            priority = "priority" 
                           ),  
-                          relation_table = NULL,
+                          relation_table = "object_relations", 
                           relation_columns = list(
                             id = "id",
                             collector_id = "collector_id",
@@ -82,24 +69,20 @@ formClass <- R6::R6Class(
                             timestamp = "timestamp",
                             verwijderd = "verwijderd"
                           ), 
-                          relation_audit_table = NULL, #"object_relations_audit",
+                          relation_audit_table = "object_relations_audit",
                           inject = NULL,
                           pool = TRUE,
                           sqlite = NULL,
-                          connect_on_init = TRUE,
+                          mode='default',
                           default_color = "#3333cc"){
       
+ 
       self$class_type <- class_type
       
       self$audit <- audit
       self$audit_table <- audit_table
       
-      self$filterable <- filterable
-      self$inject <- inject
-      
-      
       self$relation_table <- relation_table
-      
       self$relation_columns <- relation_columns
       self$relation_audit_table <- relation_audit_table
       
@@ -108,63 +91,44 @@ formClass <- R6::R6Class(
       self$relation_table <- relation_table
       self$relation_columns <- relation_columns
       self$relation_audit_table <- relation_audit_table
-      
-      
+ 
       super$initialize(what = what, config_file = config_file, schema = schema,
-                       pool = pool, sqlite = sqlite, 
-                       db_connection = db_connection,
-                       connect_on_init = connect_on_init)
-      
-
+                       pool = pool, sqlite = sqlite, db_connection = db_connection)
+ 
+      # check if audit table is present 
+      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
+        stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
+      }
       
       # 'schema' string for query building
       self$schema_str <- ifelse(is.null(self$schema), "", paste0(self$schema,"."))
-      
-      
+       
       self$def_table <- def_table
       self$def <- def_columns
       self$data_table <- data_table
       self$data_columns <- data_columns
+   
+      # check new 'deleted' field 
+      datacols <- self$table_columns(self$data_table)
+      if(!"deleted" %in% datacols){
+        stop("Must have 'deleted' column in registrations data (`alter table <<table>> add column deleted integer default 0.")
+      }
+ 
+      self$filterable <- filterable
       
-      # Integrity checks if connected to DB
-      if(connect_on_init){
-        
-        # check if audit table is present 
-        if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
-          stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
-        }
-        
-        if(!is.null(self$data_table)){
-          
-          # Name of deleted column may be missing ...
-          if(is.null(self$data_columns$deleted)){
-            self$data_columns$deleted <- "deleted"
-          }
-          
-          # check new 'deleted' field
-          datacols <- self$table_columns(self$data_table)
-          
-          
-          if(!self$data_columns$deleted %in% datacols){
-            stop(paste("Must have 'deleted' column in registrations data (`alter table <<table>> add column deleted integer default 0`),",
-                 " or set data_columns$deleted to the name of the boolean 'deleted' flag column"))
-          }  
-        }
-        # Check
-        defcols <- self$table_columns(self$def_table)
-        di1 <- unlist(self$def) %in% defcols
-        if(any(!di1)){
-          stop(paste("Columns in def_columns not found:", paste(defcols[!di1], collapse=",")))
-        }
-        
+      # Check
+      defcols <- self$table_columns(self$def_table)
+      di1 <- unlist(self$def) %in% defcols
+      if(any(!di1)){
+        stop(paste("Columns in def_columns not found:", paste(defcols[!di1], collapse=",")))
       }
       
-
+      # Extra custom fields (modules, can be anything even static HTML)
+      self$inject <- inject
     },
     
     
     #--- logger
-    #' @description Log something
     log =  function(...){
       futile.logger::flog.info(...)
     },
@@ -172,7 +136,7 @@ formClass <- R6::R6Class(
     
     #----- Generic database methods
     
-    #' @description Multi-replace value where
+    # meerdere tegelijk
     replace_value_where_multi = function(table, replace_list, col_compare, val_compare,
                                          query_only = FALSE, quiet = FALSE,  username=""){
       
@@ -243,18 +207,16 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Get column name for a form field by ID
     column_name_from_id = function(id_form){
       row <- self$get_by_id(id_form)
       row[[self$def[["column_field"]]]]
     },
     
-    #' @description Get all fields of a certain type
     get_fields_by_type = function(field_type){
       
       self$read_table(self$def_table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["type_field"]]) %in% !!field_type) %>%
-        self$filter_by_visibility() %>% 
+        dplyr::filter(!!sym(self$def[["type_field"]]) %in% !!field_type,
+                      !!sym(self$def[["visible"]])) %>%
         collect
       
     },
@@ -270,14 +232,6 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Get the label for a field
-    get_label_field = function(column_field){
-      self$read_definition(lazy = TRUE) %>%
-        filter(!!sym(self$def$column_field) == !!column_field) %>%
-        select(!!sym(self$def$label_field)) %>%
-        pull(!!sym(self$def$label_field))
-      
-    },
     
     #' @description Make choices (for selectInput) based on values and names
     make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
@@ -342,8 +296,7 @@ formClass <- R6::R6Class(
       
       if(!all(names(data) %in% key$old)){
         message("Not all definition table names configured : check def_columns argument)")
-      }
-      
+      } 
       dplyr::rename_with(data, .fn = function(x){
         nw <- key$new[match(x, key$old)]
         nw[is.na(nw)] <- x[is.na(nw)]
@@ -352,27 +305,12 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Filter fields by visibility (or not)
-    #' @param visibility TRUE or FALSE. When NULL, returns all data.
-    filter_by_visibility = function(data, visibility = TRUE){
-      
-      vis <- self$def[["visible"]]
-      
-      if(is.null(vis)){
-        return(data)
-      } else {
-        dplyr::filter(data, !!sym(vis) == !!visibility)
-      }
-      
-    },
-    
-    
     
     #' @description Get all non-deleted form input fields
     get_input_fields = function(zichtbaarheid = TRUE){
       
       out <- self$read_table(self$def_table, lazy = TRUE) %>%
-        self$filter_by_visibility(zichtbaarheid) %>% 
+        dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid) %>% 
         collect
       
       self$rename_definition_table(out)
@@ -384,7 +322,7 @@ formClass <- R6::R6Class(
       
       qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       
-      out <- DBI::dbGetQuery(self$con, qu)
+      out <- dbGetQuery(self$con, qu)
       out <- out[order(out[[self$def$order_field]]),]
       
       self$rename_definition_table(out)
@@ -392,13 +330,11 @@ formClass <- R6::R6Class(
     },
     
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
-    #' @description Get next available form order number
-    #' @param form_section Either 1 or 2
     get_next_formorder_number = function(form_section){
       
       qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema_str}{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
       
-      count <- DBI::dbGetQuery(self$con, qu)
+      count <- dbGetQuery(self$con, qu)
       return(count[[1]]+1)
       
     },
@@ -407,29 +343,14 @@ formClass <- R6::R6Class(
     #' @param label_field Label for the field
     #' @param type_field Type of field (options : TODO)
     #' @param form_section Left or right
-    add_input_field_to_form = function(label_field, 
-                                       type_field, 
-                                       form_section = NULL, 
-                                       filterable = NULL, 
-                                       tooltip = NULL, 
-                                       column_name = NULL, 
-                                       column_2_name = NULL
+    add_input_field_to_form = function(label_field, type_field, form_section, filterable = NULL, 
+                                       tooltip = NULL, column_name = NULL, column_2_name = NULL
                                        ){
       
       
-      # Make an ID for the field. Integer or UUID depending on column type.
-      id_column <- self$def$id_form
-      idcoltype <- self$table_info(self$def_table) %>%
-        filter(column_name == !!id_column) %>% pull(data_type)
+      #assert_input_field_type(type_field) 
+      id <- uuid::UUIDgenerate()
       
-      if(idcoltype == "integer"){
-        # do nothing; assume id is a serial
-        add_id <- FALSE
-      } else {
-        add_id <- TRUE
-        id <- uuid::UUIDgenerate()  
-      }
-
       # Sanitize column name
       if(is.null(column_name)){
         column_name <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
@@ -438,13 +359,7 @@ formClass <- R6::R6Class(
       if(!self$check_uniqueness_column_name(column_name))return(-1)
       if(!is.null(column_2_name) && !self$check_uniqueness_column_name(column_2_name))return(-1)
         
-      if(!is.null(form_section) && length(form_section) > 0){
-        field_order_nr <- self$get_next_formorder_number(form_section)
-      } else {
-        field_order_nr <- 0
-        form_section <- 0
-      }
-      
+      field_order_nr <- self$get_next_formorder_number(form_section)
       
       if(type_field == "boolean"){
         choice_values <- '{"1":"Ja","2":"Nee"}'
@@ -463,6 +378,7 @@ formClass <- R6::R6Class(
       }
       
       data <- data.frame(
+        id_form = id,
         column_field = column_name,
         label_field = label_field,
         type_field = type_field,
@@ -475,22 +391,18 @@ formClass <- R6::R6Class(
         removable = TRUE
       )
       
-      if(add_id){
-        data$id_form <- id
-      }
-      
       if(self$filterable){
         data <- data %>%
           mutate(make_filter = filterable,
                  tooltip = tooltip)
       }
       
-      m_i <- match(names(data), names(unlist(self$def)))
-      data <- data[,!is.na(m_i)]
-      m_i <- m_i[!is.na(m_i)]
-      names(data) <- unname(unlist(self$def))[m_i]
       
-
+      data <- dplyr::rename_with(data, 
+                                 .fn = function(x){
+                                   unname(unlist(self$def[x]))
+                                 })
+      
       self$append_data(self$def_table, data)
       
       if(type_field == "boolean"){
@@ -503,13 +415,11 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Check if a column name can be used (returns TRUE if the column does not exist in the definition table)
-    #' @param column Name of the column
     check_uniqueness_column_name =  function(column){
       
       qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$column_field} = '{column}'")
       
-      res <- DBI::dbGetQuery(self$con, qu)
+      res <- dbGetQuery(self$con, qu)
       return(nrow(res)==0)
       
     },
@@ -523,7 +433,6 @@ formClass <- R6::R6Class(
                                val_replace = new_label)
     },
     
-    #' @description Change the field type for a form field
     edit_field_type = function(id_form, new_type){
       
       self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
@@ -532,7 +441,6 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Edit a filterable field
     edit_filterable_column = function(id_form, new_filter_boolean, new_tooltip){
       self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
                                col_replace = self$def$make_filter, 
@@ -543,21 +451,18 @@ formClass <- R6::R6Class(
                                val_replace = new_tooltip)
     },
     
-    #' @description from_json wrapper
     from_json = function(x, ...){
       
       shintocatman::from_json(x, ...)
       
     },
     
-    #' @description to_json wrapper
     to_json = function(x, ...){
       
       shintocatman::to_json(x, ...)
       
     },
     
-    #' @description Edit options (choices) for a form field
     edit_options_field = function(id_form, new_options){
       
       if(!is.character(new_options)){
@@ -602,7 +507,6 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Edit colors for a form field
     edit_options_colors = function(id_form, new_colors){
       
       if(any(!self$is_color(new_colors))){
@@ -633,22 +537,15 @@ formClass <- R6::R6Class(
         nc <- length(cur_color)
         n <- length(options) - nc
         
-        if(n > 0){ # new colors
-          new_cols <- as.list(rep(self$default_color,n))
-          
-          self$edit_options_colors(id_form, c(cur_color, new_cols))  
-        } else { # remove colors
-          
-          new_cols <- cur_color[1:(length(cur_color) + n)]
-          self$edit_options_colors(id_form, new_cols)
-        }
+        new_cols <- as.list(rep(self$default_color,n))
+        
+        self$edit_options_colors(id_form, c(cur_color, new_cols))
         
       }
       
       
     },
     
-    #' @description Set the order for a single/multi select field
     set_options_order = function(id_form, new_order){
       
       if(!is.null(names(new_order))){
@@ -656,7 +553,7 @@ formClass <- R6::R6Class(
         names(new_order) <- NULL
       }
       
-      if(!is.character(new_order) && length(new_order) > 0){
+      if(length(new_order) > 0){
         new_order <- self$to_json(new_order)
       }
       
@@ -669,7 +566,6 @@ formClass <- R6::R6Class(
     },
     
     
-    #' @description Prepare a nested choice column
     prepare_nested_choice_column = function(id_form, name, options){
       
       key <- setNames(list(options),name)
@@ -704,7 +600,6 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Edit the form layout
     edit_formulier_setup = function(new_setup){
       
       lapply(1:nrow(new_setup), function(x){
@@ -721,7 +616,6 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Change the visibility
     edit_zichtbaarheid_invoerveld = function(id_formfield, new_zichtbaarheid){
       
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
@@ -730,7 +624,6 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Change the removal date
     edit_verwijder_datum = function(id_formfield, new_date){
       
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
@@ -740,7 +633,6 @@ formClass <- R6::R6Class(
     },
     
     # hoeft alleen voor zichtbare velden
-    #' @description Change the formfield order
     amend_formfield_order = function(formside, deleted_number){
       
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET \"{self$def$order_field}\" = \"{self$def$order_field}\" - 1 WHERE {self$def$form_section} = '{formside}' AND \"{self$def$order_field}\" > {deleted_number} AND {self$def$visible} = TRUE")
@@ -749,7 +641,6 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Reset the form field order
     reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
 
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
@@ -758,7 +649,7 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Actually really delete a field
+    
     really_delete_formfield = function(id){
       
       tab <- glue::glue("{self$schema_str}{self$def_table}")
@@ -864,14 +755,10 @@ formClass <- R6::R6Class(
     },
     
     
-    #' @description Writes a registration to the data table
-    #' @param data data
-    #' @param user_id User ID
-    #' @param current_reg_id ID for the registration
-    #' @param data_only Return only the dataset before appending to an actual table (for testing)
-    write_new_registration = function(data, user_id, current_reg_id, data_only = FALSE){ 
-      
+    
+    write_new_registration = function(data, user_id, current_reg_id){ 
       # add missing columns to output etc.
+    
       self$prepare_data_table()
       
       data_pre <- data.frame( 
@@ -910,16 +797,13 @@ formClass <- R6::R6Class(
       
       data_all <- cbind(data_pre, data)
       
-      if(data_only)return(data_all)
-      
-      # Append to db table
       res <- self$append_data(self$data_table, data_all)
       
       # TRUE if success (append_data has a try()) 
       return(!inherits(res, "try-error"))
     },
     
-    #' @description Edits an existing registration
+     
     edit_registration = function(old_data, new_data, user_id, current_reg_id){
       
       # id of the registration
@@ -999,8 +883,7 @@ formClass <- R6::R6Class(
       
       if(method %in% c("soft","undelete")){
         flag <- ifelse(method == "soft", 1, 0)
-        self$replace_value_where(self$data_table, col_replace = self$data_columns$deleted, 
-                                 val_replace = flag,
+        self$replace_value_where(self$data_table, col_replace = "deleted", val_replace = flag,
                                  col_compare = self$data_columns$id, val_compare = registration_id)  
         
       } else if(method == "hard"){
@@ -1023,11 +906,11 @@ formClass <- R6::R6Class(
                                   ){
       
       data <- self$read_table(self$data_table, lazy = TRUE)
-      
+ 
       if(deleted_only){
-        data <- filter(data, !!sym(self$data_columns$deleted) == 1)
+        data <- filter(data, deleted == 1)
       } else if(!include_deleted){
-        data <- filter(data, !!sym(self$data_columns$deleted) == 0)
+        data <- filter(data, deleted == 0)
       }
       
       if(!lazy){
@@ -1068,8 +951,8 @@ formClass <- R6::R6Class(
       
       # Single select, can use a direct `dplyr::recode`
       def <- self$read_definition(lazy = TRUE) %>% 
-        self$filter_by_visibility() %>%
         filter(!!sym(self$def[["type_field"]]) %in% c("singleselect","nestedselect"),
+               !!sym(self$def[["visible"]]),
                !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
         collect
       
@@ -1140,10 +1023,7 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Filter data by time_created
-    #' @param data Read with `read_registrations`
-    #' @param date_start Date start
-    #' @param date_end Date end
+    
     filter_period = function(data, 
                              date_start = Sys.Date()-7, 
                              date_end = Sys.Date()){
@@ -1157,33 +1037,31 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Reads the definition table
     read_definition = function(...){
       
       self$read_table(self$def_table, ...)
       
     },
     
-    # 
-    # get_occurences = function(table, column, record){
-    #   
-    #   qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column} = '{record}'")  
-    # 
-    #   res <- DBI::dbGetQuery(self$con, qu)
-    #   
-    #   return(res)
-    #   
-    # },
+    get_occurences = function(table, column, record){
+      
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column} = '{record}'")  
+
+      res <- dbGetQuery(self$con, qu)
+      
+      return(res)
+      
+    },
     
-    # get_registration_by_json = function(table, column, record){
-    # 
-    #   qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column}::jsonb ? '{record}'")
-    # 
-    #   res <- DBI::dbGetQuery(self$con, qu)
-    #   
-    #   return(res)
-    #   
-    # },
+    get_registration_by_json = function(table, column, record){
+
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column}::jsonb ? '{record}'")
+
+      res <- dbGetQuery(self$con, qu)
+      
+      return(res)
+      
+    },
     
     
     
@@ -1197,9 +1075,8 @@ formClass <- R6::R6Class(
     # VOORBEELD 2: hergebruik van reeds ingeladen data object 
     #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
     
-    #' @description Creates a timeseries for the audit
   create_timeseries = function(columns = NULL, date_range = NULL){
-    
+ 
     selected_columns <- unique(c(columns,
                                  self$data_columns$id,  
                                  self$data_columns$name, 
@@ -1232,9 +1109,8 @@ formClass <- R6::R6Class(
 
   # functie om een audit table om te zetten in een event log
   # creation only filterd alleen de aanmaak events en dus geen updates
-  #' @description Creates 'events' based on the timeseries
   create_events = function(timeseries, date_range = NULL, creation_only=NULL){
-    
+       
     if(!is.null(creation_only))message("argument creation_only to $create_events is ignored")
     
     create_partial_mutations_new(timeseries, 
@@ -1248,13 +1124,8 @@ formClass <- R6::R6Class(
   }, 
   
   ## Relations
-  #' @description Reads the relation table
   get_all_relations = function(){
 
-    if(is.null(self$relation_table)){
-      stop("Set 'relation_table' in shintoforms formcall (has no default value anymore)")
-    }
-    
     qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
 
     self$query(qu)
@@ -1327,7 +1198,6 @@ formClass <- R6::R6Class(
     
   },
   
-  #' @description Adds a relation to the relation table
   add_relation = function(id = uuid::UUIDgenerate(),
                           collector_id,
                           collector_type, 
@@ -1362,9 +1232,6 @@ formClass <- R6::R6Class(
   #' @description timestamp in postgres timezone 
   postgres_now = function(){
     
-    # overwrites shintodb::databaseClass / postgres_now because it fails on sqlite,
-    # so we need a fallback here
-    
     tm <- try({
       self$query("select now()", quiet = TRUE)$now  
     }, silent = TRUE)
@@ -1378,7 +1245,6 @@ formClass <- R6::R6Class(
   },
 
   #' @description Select rows in registration audit table since some timestamp
-  #' @param time_since POSIXct timestamp
   get_rows_since_auditstamp = function(time_since){  
     
     time_since <- format(time_since)  
@@ -1423,7 +1289,6 @@ formClass <- R6::R6Class(
 
   #' @description Append relations
   #' @param data Data to append 
-  #' @param registration_id ID for the registration
   write_new_relations = function(data, registration_id){ 
     
     postgres_time <- self$postgres_now()
@@ -1442,7 +1307,6 @@ formClass <- R6::R6Class(
   
   #' @description update current relation table for registration ID
   #' @param new_relations The current state that should end up in the relations table 
-  #' @param registration_id ID for the registration
   update_relations = function(new_relations, registration_id){ 
  
     old_relations <- self$filter(self$relation_table, !!sym(self$relation_columns$collector_id) == !!registration_id)

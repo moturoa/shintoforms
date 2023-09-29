@@ -399,8 +399,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     }
     req(colname)
     
-    req(.reg$has_connection())
-    
+    req(.reg$has_connection()) 
     resp <- .reg$add_input_field_to_form(label_field = input$txt_column_name, 
                                          type_field = input$rad_type_formfield, 
                                          form_section = as.integer(input$rad_side_formfield),

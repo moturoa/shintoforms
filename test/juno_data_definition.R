@@ -6,8 +6,8 @@
 
 devtools::load_all()
 
-options(shintodb_config_file = "c:/repos/wbm3.0/conf/config.yml")
-con <- shintodb::connect("DEMO")
+options(shintodb_config_file = "../conf/config.yml")
+con <- shintodb::connect("ZAAN")
 
 .juno <- shintoforms::formClass$new(db_connection = con,
                                     class_type = 'juno',

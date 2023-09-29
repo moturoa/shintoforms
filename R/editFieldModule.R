@@ -183,7 +183,7 @@ editFieldModule <- function(input, output, session, .reg, type, cfg = NULL,
     
     if(type == "nestedselect"){
       out <- callModule(nestedSelectModule, "value", cfg = cfg, data = data, trigger = trigger)
-    } else {
+    } else { 
       out <- input$value  
     }
     

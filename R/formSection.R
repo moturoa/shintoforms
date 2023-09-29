@@ -93,7 +93,7 @@ formSectionModule <- function(input, output, session, cfg = reactive(NULL),
       return(NULL)
     }
     
-    lapply(split(cfg, 1:nrow(cfg)), function(el){
+    lapply(split(cfg, 1:nrow(cfg)), function(el){ 
       col <- el$column_field
       id <- el$id_form
       callModule(editFieldModule, id, .reg = .reg, type = el$type_field, cfg = el, 

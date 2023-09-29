@@ -75,8 +75,12 @@ formModule <- function(input, output, session, .reg = NULL,
                        current_user, 
                        trigger = reactive(NULL),
                        data = reactive(NULL),
+                       
                        bucket_data = reactive(NULL),
                        write_method = reactive("new"),
+                       
+                       use_relations=TRUE,
+                       use_confirmation_modal=TRUE,
                        
                        registration_description_function = function(data)NULL,
                        
@@ -195,7 +199,7 @@ formModule <- function(input, output, session, .reg = NULL,
   output$ui_input_left <- renderUI({
     
     ui_ping(runif(1))
-    trigger()
+    trigger() 
     formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg,
                         data = data(), disabled = disabled(),
                         inject = inject_left())
@@ -234,7 +238,7 @@ formModule <- function(input, output, session, .reg = NULL,
   edits_configured <- reactive({
     
     req(edit_left())
-    
+     
     out <- c(lapply(edit_left(), function(x)x()),
              lapply(edit_right(), function(x)x()))
     
@@ -278,7 +282,7 @@ formModule <- function(input, output, session, .reg = NULL,
      
     extra <- inject_prep()
     req(extra)
-    req(ui_ping())
+    req(ui_ping()) 
     
     withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
                        sapply(sapply(extra, "[[", "relation"), is.null))
@@ -328,11 +332,11 @@ formModule <- function(input, output, session, .reg = NULL,
   })
   
   edits <- reactive({
+    
     ext <- edits_extra() 
     
     # configured are all 
-    out <- edits_configured()
-    
+    out <- edits_configured() 
     if(length(ext)){
       for(i in seq_along(ext)){
         out[names(ext[[i]])] <- ext[[i]]
@@ -357,18 +361,20 @@ formModule <- function(input, output, session, .reg = NULL,
   })
   
   observeEvent(input$btn_register_new_signal, {
-    
-    showModal(
-      softui::modal(
-        title = "Opslaan",
-        id_confirm = "btn_confirm_new_registration",
-        
-        tags$p("Je gaat deze registratie opslaan. Weet je het zeker?"),
-        tags$p("Gebruiker: ", current_user),
-        tags$p(format(Sys.time(), datetime_format))
+    if(use_confirmation_modal){
+      showModal(
+        softui::modal(
+          title = "Opslaan",
+          id_confirm = "btn_confirm_new_registration",
+          
+          tags$p("Je gaat deze registratie opslaan. Weet je het zeker?"),
+          tags$p("Gebruiker: ", current_user),
+          tags$p(format(Sys.time(), datetime_format))
+        )
       )
-    )
-    
+    } else {
+      confirm_new_reg(runif(1))
+    }    
   })
   
   
@@ -385,24 +391,32 @@ formModule <- function(input, output, session, .reg = NULL,
   observeEvent(input$btn_confirm_new_registration, confirm_new_reg(runif(1)))
   
   
-  observeEvent(confirm_new_reg(), {
- 
+  observeEvent(confirm_new_reg(), { 
     if(write_method() == "new"){ 
       resp <- .reg$write_new_registration(edits(), 
                                           user_id = current_user, 
                                           current_reg_id=current_reg_id())
-      resp2 <- .reg$write_new_relations(data = edits_relations(),
-                                        registration_id = current_reg_id())
+      if(use_relations){
+        
+        resp2 <- .reg$write_new_relations(data = edits_relations(),
+                                          registration_id = current_reg_id())
+      }
+       
     } else { 
       
       resp <- .reg$edit_registration(old_data = data(), 
                                      new_data = edits(), 
                                      user_id = current_user, 
                                      current_reg_id=current_reg_id()) 
-      resp2 <- .reg$update_relations(edits_relations(),
+      if(use_relations){
+        resp2 <- .reg$update_relations(edits_relations(),
                                      registration_id = current_reg_id())
+      }
     }
     
+    if(!use_relations){
+      resp2 <- TRUE
+    }
 
     if(resp & resp2){
       shinytoastr::toastr_success(message_success)
