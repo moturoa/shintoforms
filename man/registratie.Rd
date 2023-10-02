@@ -18,6 +18,8 @@ formModule(
   data = reactive(NULL),
   bucket_data = reactive(NULL),
   write_method = reactive("new"),
+  use_relations = TRUE,
+  use_confirmation_modal = TRUE,
   registration_description_function = function(data) NULL,
   confirm = reactive(NULL),
   cancel = reactive(NULL),

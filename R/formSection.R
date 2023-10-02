@@ -2,9 +2,6 @@
 
 
 
-old <- c(1:3,5,7)
-
-
 #--- formSection: 
 # a vertical column with input fields (and nothing else)
 # typically right or left side of a formUI
@@ -94,8 +91,14 @@ formSectionModule <- function(input, output, session, cfg = reactive(NULL),
     }
     
     lapply(split(cfg, 1:nrow(cfg)), function(el){ 
+      
       col <- el$column_field
       id <- el$id_form
+      
+      if(is.null(id) || is.na(id) || id == ""){
+        message(paste("SHINTOFORMS WARNING: missing id in form definition table for column",col))
+      }
+      
       callModule(editFieldModule, id, .reg = .reg, type = el$type_field, cfg = el, 
                  data = data, trigger = trigger)
     }) %>% setNames(cfg$column_field)
@@ -113,51 +116,54 @@ formSectionModule <- function(input, output, session, cfg = reactive(NULL),
 
 
 
-test_formSection <- function(){
-  
-  library(withr)
-  with_dir("test", source("global.R"))
-  data <- .reg$get_form_fields(1)
-  
-  
-  testmoduleui <- function(id){
-    ns <- NS(id)
-    
-    radioButtons(ns("value"), "Keuze", choices = LETTERS[1:4])
-  }
-  testmodule <- function(input,output,session){
-    reactive(input$value)
-  }
-  
-  ui <- softui::simple_page(
-    
-    softui::box(
-      formSectionModuleUI("form", cfg = data, .reg = .reg,
-                          inject = list(
-                            list(position = 2, html = tags$h2("Dit is een tekst")),
-                            list(position = 5, html = testmoduleui("testmod"))
-                          ))
-    ),
-    
-    verbatimTextOutput("txt_out")
-  )
-  
-  server <- function(input, output, session) {
-    
-    basic <- callModule(formSectionModule, "form", 
-                        cfg = reactive(data), .reg = .reg)
-    
-    extra <- callModule(testmodule, "testmod")
-    
-    out <- reactiveVal()
 
-    
-    output$txt_out <- renderPrint({
-      lapply(out(), function(x)x())
-    })
-  }
-  
-  shinyApp(ui, server)
-  
-  
-}
+
+# --- old - werkt niet
+# test_formSection <- function(){
+#   
+#   library(withr)
+#   with_dir("test", source("global.R"))
+#   data <- .reg$get_form_fields(1)
+#   
+#   
+#   testmoduleui <- function(id){
+#     ns <- NS(id)
+#     
+#     radioButtons(ns("value"), "Keuze", choices = LETTERS[1:4])
+#   }
+#   testmodule <- function(input,output,session){
+#     reactive(input$value)
+#   }
+#   
+#   ui <- softui::simple_page(
+#     
+#     softui::box(
+#       formSectionModuleUI("form", cfg = data, .reg = .reg,
+#                           inject = list(
+#                             list(position = 2, html = tags$h2("Dit is een tekst")),
+#                             list(position = 5, html = testmoduleui("testmod"))
+#                           ))
+#     ),
+#     
+#     verbatimTextOutput("txt_out")
+#   )
+#   
+#   server <- function(input, output, session) {
+#     
+#     basic <- callModule(formSectionModule, "form", 
+#                         cfg = reactive(data), .reg = .reg)
+#     
+#     extra <- callModule(testmodule, "testmod")
+#     
+#     out <- reactiveVal()
+# 
+#     
+#     output$txt_out <- renderPrint({
+#       lapply(out(), function(x)x())
+#     })
+#   }
+#   
+#   shinyApp(ui, server)
+#   
+#   
+# }

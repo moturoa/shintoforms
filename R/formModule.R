@@ -205,26 +205,26 @@ formModule <- function(input, output, session, .reg = NULL,
                         inject = inject_left())
     
   })
-  
+
   output$ui_input_right <- renderUI({
-    
+
     ui_ping(runif(1))
     trigger()
     formSectionModuleUI(session$ns("form_right"), cfg = cfg_right(), .reg = .reg,
                         data = data(), disabled = disabled(),
                         inject = inject_right())
-    
+
   })
-  
-  
+
+
   output$ui_input_bottom <- renderUI({
-    
+
     ui_ping(runif(1))
     trigger()
     formSectionModuleUI(session$ns("form_bottom"), cfg = cfg_bottom(), .reg = .reg,
                         data = data(), disabled = disabled(),
                         inject = inject_bottom())
-    
+
   })
   
   
@@ -238,7 +238,7 @@ formModule <- function(input, output, session, .reg = NULL,
   edits_configured <- reactive({
     
     req(edit_left())
-     
+    
     out <- c(lapply(edit_left(), function(x)x()),
              lapply(edit_right(), function(x)x()))
     
@@ -278,6 +278,7 @@ formModule <- function(input, output, session, .reg = NULL,
     }
     
   })
+  
   observe({
      
     extra <- inject_prep()
@@ -392,6 +393,7 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   observeEvent(confirm_new_reg(), { 
+    
     if(write_method() == "new"){ 
       resp <- .reg$write_new_registration(edits(), 
                                           user_id = current_user, 

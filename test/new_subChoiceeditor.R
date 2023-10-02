@@ -52,8 +52,8 @@ subChoiceEditorUI <- function(id){
   
   tagList(
     tags$div(id = ns("div_placeholder")),
-    softui::action_button(ns("btn_add_row"), "Toevoegen", icon = bsicon("plus-lg"), status = "info"),
-    actionButton(ns("btnbrowse"),"browser()")
+    softui::action_button(ns("btn_add_row"), "Toevoegen", icon = bsicon("plus-lg"), status = "info")
+    #actionButton(ns("btnbrowse"),"browser()")
   )
   
   
@@ -75,7 +75,7 @@ subChoiceEditor <- function(input, output, session, data = reactive(NULL), json 
     x
   } 
   
-  observeEvent(input$btnbrowse, browser())
+  #observeEvent(input$btnbrowse, browser())
   
   data_input <- reactive({
     out <- data()

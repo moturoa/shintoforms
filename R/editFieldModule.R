@@ -205,7 +205,6 @@ editFieldModule <- function(input, output, session, .reg, type, cfg = NULL,
   })
   
   observeEvent(value(), {
-
     invisible()
   })
   
