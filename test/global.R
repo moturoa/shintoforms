@@ -156,7 +156,7 @@ relationSelectModule <- function(input, output, session ,reg_id, relation_type='
   })
   
   observeEvent(input$delete_row,{   
-    data_signal(filter(data_signal(), id !=  input$delete_row$id) )
+    data_signal(dplyr::filter(data_signal(), id !=  input$delete_row$id) )
   }) 
   return(data_signal)
 }

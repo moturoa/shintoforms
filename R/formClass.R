@@ -2,6 +2,8 @@
 #' @importFrom R6 R6Class
 #' @importFrom shintodb connect
 #' @importFrom shintodb databaseClass
+#' @importFrom dplyr filter select rename rename_with pull distinct slice bind_rows ends_with starts_with
+#' @importFrom rlang sym
 #' @export
 formClass <- R6::R6Class(
   inherit = shintodb::databaseClass,
@@ -129,6 +131,7 @@ formClass <- R6::R6Class(
     
     
     #--- logger
+    #' @description Log info
     log =  function(...){
       futile.logger::flog.info(...)
     },
@@ -137,6 +140,14 @@ formClass <- R6::R6Class(
     #----- Generic database methods
     
     # meerdere tegelijk
+    #' @description Replace values
+    #' @param table table name
+    #' @param replace_list named list
+    #' @param col_compare name of column to compare
+    #' @param val_compare value to compare with
+    #' @param query_only if TRUE, return just the query
+    #' @param quiet if TRUE, be quiet
+    #' @param username username
     replace_value_where_multi = function(table, replace_list, col_compare, val_compare,
                                          query_only = FALSE, quiet = FALSE,  username=""){
       
@@ -202,8 +213,8 @@ formClass <- R6::R6Class(
     get_by_id = function(id_form){
       
       self$read_table(self$def_table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["id_form"]]) == !!id_form) %>%
-        collect
+        dplyr::filter(!!rlang::sym(self$def[["id_form"]]) == !!id_form) %>%
+        dplyr::collect
       
     },
     
@@ -215,8 +226,8 @@ formClass <- R6::R6Class(
     get_fields_by_type = function(field_type){
       
       self$read_table(self$def_table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["type_field"]]) %in% !!field_type,
-                      !!sym(self$def[["visible"]])) %>%
+        dplyr::filter(!!rlang::sym(self$def[["type_field"]]) %in% !!field_type,
+                      !!rlang::sym(self$def[["visible"]])) %>%
         collect
       
     },
@@ -226,8 +237,8 @@ formClass <- R6::R6Class(
     get_field_choices = function(column_field){
       
       self$read_definition(lazy = TRUE) %>%
-        filter(!!sym(self$def$column_field) == !!column_field) %>%
-        pull(!!sym(self$def$options)) %>%
+        dplyr::filter(!!rlang::sym(self$def$column_field) == !!column_field) %>%
+        dplyr::pull(!!rlang::sym(self$def$options)) %>%
         self$from_json()
       
     },
@@ -237,10 +248,10 @@ formClass <- R6::R6Class(
     make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
       
       data <- data %>%
-        distinct(!!sym(values_from), !!sym(names_from))
+        dplyr::distinct(!!sym(values_from), !!sym(names_from))
       
       out <- data[[values_from]] %>% 
-        setNames(data[[names_from]])
+        stats::setNames(data[[names_from]])
       
       # Sorteer op labels, niet op waardes
       if(sort){
@@ -277,9 +288,9 @@ formClass <- R6::R6Class(
     distinct_registration_field = function(column_name){
       
       self$read_table(self$data_table, lazy = TRUE) %>%
-        distinct(!!sym(column_name)) %>%
-        collect %>%
-        pull(!!sym(column_name))
+        dplyr::distinct(!!sym(column_name)) %>%
+        dplyr::collect %>%
+        dplyr::pull(!!sym(column_name))
       
     },
     
@@ -787,7 +798,7 @@ formClass <- R6::R6Class(
           }
           
           # needed for empty json strings; not sure why
-          if(class(x) == "json"){
+          if(inherits(x, "json")){
             x <- as.character(x)
           }
           
@@ -908,9 +919,9 @@ formClass <- R6::R6Class(
       data <- self$read_table(self$data_table, lazy = TRUE)
  
       if(deleted_only){
-        data <- filter(data, deleted == 1)
+        data <- dplyr::filter(data, deleted == 1)
       } else if(!include_deleted){
-        data <- filter(data, deleted == 0)
+        data <- dplyr::filter(data, deleted == 0)
       }
       
       if(!lazy){
@@ -951,10 +962,10 @@ formClass <- R6::R6Class(
       
       # Single select, can use a direct `dplyr::recode`
       def <- self$read_definition(lazy = TRUE) %>% 
-        filter(!!sym(self$def[["type_field"]]) %in% c("singleselect","nestedselect"),
-               !!sym(self$def[["visible"]]),
-               !!sym(self$def[["column_field"]]) %in% !!names(data)) %>%
-        collect
+        dplyr::filter(!!sym(self$def[["type_field"]]) %in% c("singleselect","nestedselect"),
+               !!dplyr::sym(self$def[["visible"]]),
+               !!dplyr::sym(self$def[["column_field"]]) %in% !!names(data)) %>%
+        dplyr::collect
       
       
       
@@ -1085,10 +1096,10 @@ formClass <- R6::R6Class(
     
     
     data_current <- self$read_table(self$data_table, lazy=TRUE) %>%
-      select(any_of(selected_columns))
+      dplyr::select(dplyr::any_of(selected_columns))
     
     data_history <- self$read_table(self$audit_table, lazy=TRUE) %>%
-      select(any_of(selected_columns))
+      dplyr::select(dplyr::any_of(selected_columns))
     
     if(!is.null(date_range)){
       
@@ -1255,9 +1266,9 @@ formClass <- R6::R6Class(
     collect_cols <- c(self$data_columns$id, modcol)#, creacol)
     
     modif <- self$read_table(self$data_table, lazy = TRUE) %>%
-      filter(!!sym(modcol) > !!time_since) %>%
-      select(all_of(collect_cols)) %>%
-      collect
+      dplyr::filter(!!rlang::sym(modcol) > !!time_since) %>%
+      dplyr::select(all_of(collect_cols)) %>%
+      dplyr::collect
     
     #creat <- self$read_table(self$data_table, lazy = TRUE) %>%
     #  filter(!!sym(creacol) > !!time_since) %>%
@@ -1328,10 +1339,10 @@ formClass <- R6::R6Class(
     
     # get all (old) relations that are ALTERED or DELETED
     altered_or_deleted <- old_relations %>% 
-      left_join(new_relations, by='id', suffix=c("", "_new"))  %>% 
-      filter((comment_new != comment & status_new != status) | is.na(collector_id_new)) %>%
-      mutate(verwijderd = ifelse(is.na(collector_id_new), TRUE, verwijderd)) %>%
-      select(!ends_with('_new'))
+      dplyr::left_join(new_relations, by='id', suffix=c("", "_new"))  %>% 
+      dplyr::filter((comment_new != comment & status_new != status) | is.na(collector_id_new)) %>%
+      dplyr::mutate(verwijderd = ifelse(is.na(collector_id_new), TRUE, verwijderd)) %>%
+      dplyr::select(!dplyr::ends_with('_new'))
  
     # archive all relations that are ALTERED or DELETED   
     self$soft_delete_relations(altered_or_deleted$id) 
@@ -1339,8 +1350,8 @@ formClass <- R6::R6Class(
     # append all relations that are NEW or ALTERED
     new  <- new_relations %>% 
       left_join(old_relations, by='id', suffix=c("", "_old"))%>% 
-      filter(is.na(status_old)) %>%
-      select(!ends_with('_old'))
+      dplyr::filter(is.na(status_old)) %>%
+      dplyr::select(!dplyr::ends_with('_old'))
  
     new_data <- dplyr::bind_rows(new, altered_or_deleted)
     if(nrow(new_data) > 0){

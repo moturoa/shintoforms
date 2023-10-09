@@ -173,6 +173,7 @@ Make new form object
 \if{html}{\out{<a id="method-NA-log"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-log}{}}}
 \subsection{Method \code{log()}}{
+Log info
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$log(...)}\if{html}{\out{</div>}}
 }
@@ -182,6 +183,7 @@ Make new form object
 \if{html}{\out{<a id="method-NA-replace_value_where_multi"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-replace_value_where_multi}{}}}
 \subsection{Method \code{replace_value_where_multi()}}{
+Replace values
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$replace_value_where_multi(
   table,
@@ -194,6 +196,25 @@ Make new form object
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{table}}{table name}
+
+\item{\code{replace_list}}{named list}
+
+\item{\code{col_compare}}{name of column to compare}
+
+\item{\code{val_compare}}{value to compare with}
+
+\item{\code{query_only}}{if TRUE, return just the query}
+
+\item{\code{quiet}}{if TRUE, be quiet}
+
+\item{\code{username}}{username}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_by_id"></a>}}

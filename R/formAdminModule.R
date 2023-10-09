@@ -316,7 +316,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     
 
     data %>%
-      select(any_of(show_fields)) %>% 
+      dplyr::select(dplyr::any_of(show_fields)) %>% 
       softui::datatafel(selection = "single", dom = "tp", 
                         pageLength = 30, scrollX = TRUE, 
                         extensions = list())

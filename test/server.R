@@ -38,7 +38,7 @@ function(input, output, session){
     
     signal_data() %>% 
       mutate(registration_id=id_registratie) %>% 
-      filter(deleted == 0) %>%
+      dplyr::filter(deleted == 0) %>%
       reactable(
         highlight = TRUE, defaultPageSize = 5,
         onClick = reactable_click_handler("row_signal_select") ) 
