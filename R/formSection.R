@@ -1,10 +1,6 @@
 
 
 
-
-old <- c(1:3,5,7)
-
-
 #--- formSection: 
 # a vertical column with input fields (and nothing else)
 # typically right or left side of a formUI
@@ -17,8 +13,9 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
   
   # Configured UI from definition table
   els <- split(cfg, 1:nrow(cfg))
+  
+  # reorder elements based on form order
   els <- els[order(cfg$order_field)]
-  #els <- dropNulls(els)
   
   ui <- lapply(els, function(el){
     
@@ -29,6 +26,19 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
       if(inherits(chc, "try-error")){
         chc <- NA
       }
+    }
+    
+    # reorder the choices based on the 'order' field
+    c_ord <- .reg$from_json(el[["order_options"]])
+    
+    if(length(chc) > 1){
+      len_check <- length(c_ord) == length(chc)
+      if(!len_check){
+        cli::cli_alert_danger("Wrong order variable for column {el$column_field}, not using ordering of input field")
+      } else {
+        chc <- chc[c_ord]  
+      }
+      
     }
     
     editFieldModuleUI(ns(el$id_form), 
