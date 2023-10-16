@@ -922,6 +922,9 @@ formClass <- R6::R6Class(
     #' @description Edits an existing registration
     edit_registration = function(old_data, new_data, user_id, current_reg_id){
       
+      # prepare output columns
+      self$prepare_data_table()
+      
       # id of the registration
       id <- current_reg_id 
       
