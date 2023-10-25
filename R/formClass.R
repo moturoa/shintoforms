@@ -273,20 +273,21 @@ formClass <- R6::R6Class(
     #' @description Get order of the choices for a field
     #' @details Safe implementation; if the order length does not match the options,
     #' or it is otherwise corrupted, a simple vector of length(n choices) is returned.
-    get_field_choices_order = function(column_field){
+    get_field_choices_in_order = function(column_field){
       
-      ord <- self$read_definition(lazy = TRUE) %>%
+      data <- self$read_definition(lazy = TRUE) %>%
         filter(!!sym(self$def$column_field) == !!column_field) %>%
-        pull(!!sym(self$def$order_options)) %>%
-        self$from_json()
+        select(all_of(c(self$def$order_options, self$def$options))) %>%
+        collect
       
-      chc <- self$get_field_choices(column_field)
+      chc <- unname(unlist(self$from_json(data[[self$def$options]])))
+      ord <- self$from_json(data[[self$def$order_options]]) 
       
       if(length(ord) == length(chc)){
-        return(ord)
+        return(chc[ord])
       } else {
         cli::cli_alert_danger("Order options for field {column_field} are corrupted; check!")
-        return(seq_along(chc))
+        return(chc)
       }
       
       
