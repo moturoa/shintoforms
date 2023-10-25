@@ -635,7 +635,6 @@ formAdminModule <- function(input, output, session, .reg = NULL,
                                       ))
 
   observeEvent(ordering_opties(), {
-
     .reg$set_options_order(selected_id(), ordering_opties())
     db_ping(runif(1))
   })

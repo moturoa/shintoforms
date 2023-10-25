@@ -270,6 +270,28 @@ formClass <- R6::R6Class(
       
     },
     
+    #' @description Get order of the choices for a field
+    #' @details Safe implementation; if the order length does not match the options,
+    #' or it is otherwise corrupted, a simple vector of length(n choices) is returned.
+    get_field_choices_order = function(column_field){
+      
+      ord <- self$read_definition(lazy = TRUE) %>%
+        filter(!!sym(self$def$column_field) == !!column_field) %>%
+        pull(!!sym(self$def$order_options)) %>%
+        self$from_json()
+      
+      chc <- self$get_field_choices(column_field)
+      
+      if(length(ord) == length(chc)){
+        return(ord)
+      } else {
+        cli::cli_alert_danger("Order options for field {column_field} are corrupted; check!")
+        return(seq_along(chc))
+      }
+      
+      
+    },
+    
     #' @description Get the label for a field
     get_label_field = function(column_field){
       self$read_definition(lazy = TRUE) %>%

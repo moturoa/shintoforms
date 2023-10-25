@@ -21,6 +21,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-column_name_from_id}{\code{formClass$column_name_from_id()}}
 \item \href{#method-NA-get_fields_by_type}{\code{formClass$get_fields_by_type()}}
 \item \href{#method-NA-get_field_choices}{\code{formClass$get_field_choices()}}
+\item \href{#method-NA-get_field_choices_order}{\code{formClass$get_field_choices_order()}}
 \item \href{#method-NA-get_label_field}{\code{formClass$get_label_field()}}
 \item \href{#method-NA-make_choices}{\code{formClass$make_choices()}}
 \item \href{#method-NA-choices_from_json}{\code{formClass$choices_from_json()}}
@@ -256,6 +257,21 @@ Get all fields of a certain type
 Get (recoded) choices for a select field
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_field_choices(column_field)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_field_choices_order"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_field_choices_order}{}}}
+\subsection{Method \code{get_field_choices_order()}}{
+Get order of the choices for a field
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_field_choices_order(column_field)}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+Safe implementation; if the order length does not match the options,
+or it is otherwise corrupted, a simple vector of length(n choices) is returned.
 }
 
 }
