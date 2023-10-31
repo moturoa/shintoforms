@@ -115,7 +115,10 @@ formClass <- R6::R6Class(
                        db_connection = db_connection,
                        connect_on_init = connect_on_init)
       
-
+      # check if audit table is present 
+      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
+        stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
+      }
       
       # 'schema' string for query building
       self$schema_str <- ifelse(is.null(self$schema), "", paste0(self$schema,"."))
@@ -253,8 +256,8 @@ formClass <- R6::R6Class(
     get_fields_by_type = function(field_type){
       
       self$read_table(self$def_table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["type_field"]]) %in% !!field_type) %>%
-        self$filter_by_visibility() %>% 
+        dplyr::filter(!!sym(self$def[["type_field"]]) %in% !!field_type, 
+                      !!sym(self$def[["visible"]])) %>% 
         collect
       
     },
@@ -395,7 +398,7 @@ formClass <- R6::R6Class(
     get_input_fields = function(zichtbaarheid = TRUE){
       
       out <- self$read_table(self$def_table, lazy = TRUE) %>%
-        self$filter_by_visibility(zichtbaarheid) %>% 
+        dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid) %>%
         collect
       
       self$rename_definition_table(out)
@@ -508,10 +511,10 @@ formClass <- R6::R6Class(
                  tooltip = tooltip)
       }
       
-      m_i <- match(names(data), names(unlist(self$def)))
-      data <- data[,!is.na(m_i)]
-      m_i <- m_i[!is.na(m_i)]
-      names(data) <- unname(unlist(self$def))[m_i]
+      data <- dplyr::rename_with(data, 
+                                 .fn = function(x){
+                                   unname(unlist(self$def[x]))
+                                 })
       
 
       self$append_data(self$def_table, data)
@@ -1190,26 +1193,26 @@ formClass <- R6::R6Class(
       
     },
     
-    # 
-    # get_occurences = function(table, column, record){
-    #   
-    #   qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column} = '{record}'")  
-    # 
-    #   res <- DBI::dbGetQuery(self$con, qu)
-    #   
-    #   return(res)
-    #   
-    # },
+
+    get_occurences = function(table, column, record){
+
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column} = '{record}'")
+
+      res <- DBI::dbGetQuery(self$con, qu)
+
+      return(res)
+
+    },
     
-    # get_registration_by_json = function(table, column, record){
-    # 
-    #   qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column}::jsonb ? '{record}'")
-    # 
-    #   res <- DBI::dbGetQuery(self$con, qu)
-    #   
-    #   return(res)
-    #   
-    # },
+    get_registration_by_json = function(table, column, record){
+
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column}::jsonb ? '{record}'")
+
+      res <- DBI::dbGetQuery(self$con, qu)
+
+      return(res)
+
+    },
     
     
     

@@ -78,6 +78,9 @@ formModule <- function(input, output, session, .reg = NULL,
                        bucket_data = reactive(NULL),
                        write_method = reactive("new"),
                        
+                       use_relations = TRUE,
+                       use_confirmation_modal = TRUE,
+                       
                        registration_description_function = function(data)NULL,
                        
                        confirm = reactive(NULL),
@@ -85,10 +88,10 @@ formModule <- function(input, output, session, .reg = NULL,
                        
                        disabled = reactive(FALSE),
                        
+                       datetime_format = "%d/%m/%Y %H:%M",
+                       
                        callback_confirm = function(){},
                        callback_cancel = function(){},
-                       
-                       datetime_format = "%m/%d/%Y %H:%M",
                        
                        message_success = "Registratie opgeslagen",
                        message_error = "Er is een fout opgetreden",
@@ -358,16 +361,20 @@ formModule <- function(input, output, session, .reg = NULL,
   
   observeEvent(input$btn_register_new_signal, {
     
-    showModal(
-      softui::modal(
-        title = "Opslaan",
-        id_confirm = "btn_confirm_new_registration",
-        
-        tags$p("Je gaat deze registratie opslaan. Weet je het zeker?"),
-        tags$p("Gebruiker: ", current_user),
-        tags$p(format(Sys.time(), datetime_format))
+    if(use_confirmation_modal){
+      showModal(
+        softui::modal(
+          title = "Opslaan",
+          id_confirm = "btn_confirm_new_registration",
+          
+          tags$p("Je gaat deze registratie opslaan. Weet je het zeker?"),
+          tags$p("Gebruiker: ", current_user),
+          tags$p(format(Sys.time(), datetime_format))
+        )
       )
-    )
+    } else {
+      confirm_new_reg(runif(1))
+    }    
     
   })
   
@@ -391,18 +398,28 @@ formModule <- function(input, output, session, .reg = NULL,
       resp <- .reg$write_new_registration(edits(), 
                                           user_id = current_user, 
                                           current_reg_id=current_reg_id())
-      resp2 <- .reg$write_new_relations(data = edits_relations(),
+      
+      if(use_relations){
+        resp2 <- .reg$write_new_relations(data = edits_relations(),
                                         registration_id = current_reg_id())
+      }
+      
     } else { 
       
       resp <- .reg$edit_registration(old_data = data(), 
                                      new_data = edits(), 
                                      user_id = current_user, 
                                      current_reg_id=current_reg_id()) 
-      resp2 <- .reg$update_relations(edits_relations(),
+      
+      if(use_relations){
+        resp2 <- .reg$update_relations(edits_relations(),
                                      registration_id = current_reg_id())
+      }
     }
-    
+
+    if(!use_relations){
+      resp2 <- TRUE
+    }    
 
     if(resp & resp2){
       shinytoastr::toastr_success(message_success)

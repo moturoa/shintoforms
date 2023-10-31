@@ -18,15 +18,17 @@ formModule(
   data = reactive(NULL),
   bucket_data = reactive(NULL),
   write_method = reactive("new"),
+  use_relations = TRUE,
+  use_confirmation_modal = TRUE,
   registration_description_function = function(data) NULL,
   confirm = reactive(NULL),
   cancel = reactive(NULL),
   disabled = reactive(FALSE),
+  datetime_format = "\%d/\%m/\%Y \%H:\%M",
   callback_confirm = function() {
  },
   callback_cancel = function() {
  },
-  datetime_format = "\%m/\%d/\%Y \%H:\%M",
   message_success = "Registratie opgeslagen",
   message_error = "Er is een fout opgetreden",
   message_deleted = "Registratie verwijderd"
