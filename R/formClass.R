@@ -115,9 +115,6 @@ formClass <- R6::R6Class(
                        db_connection = db_connection,
                        connect_on_init = connect_on_init)
 
-      # 'schema' string for query building
-      self$schema_str <- ifelse(is.null(self$schema), "", paste0(self$schema,"."))
-      
       
       self$def_table <- def_table
       self$def <- def_columns
@@ -157,6 +154,10 @@ formClass <- R6::R6Class(
         
       }
       
+      # 'schema' string for query building
+     self$store_schema_str()
+      
+      
 
     },
     
@@ -167,6 +168,12 @@ formClass <- R6::R6Class(
       futile.logger::flog.info(...)
     },
     
+    
+    store_schema_str = function(){
+      
+      self$schema_str <- ifelse(is.null(self$schema), "", paste0(self$schema,"."))
+      
+    },
     
     #----- Generic database methods
     
@@ -392,9 +399,14 @@ formClass <- R6::R6Class(
     #' @description Get all non-deleted form input fields
     get_input_fields = function(zichtbaarheid = TRUE){
       
-      out <- self$read_table(self$def_table, lazy = TRUE) %>%
-        dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid) %>%
-        collect
+      out <- self$read_table(self$def_table, lazy = TRUE)
+      
+      if(!is.null(self$def[["visible"]])){
+        out <- out %>%
+          dplyr::filter(!!sym(self$def[["visible"]]) == !!zichtbaarheid)
+      }
+      
+      out <- collect(out)
       
       self$rename_definition_table(out)
       
@@ -456,6 +468,7 @@ formClass <- R6::R6Class(
         column_name <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
       }
       
+      
       if(!self$check_uniqueness_column_name(column_name))return(-1)
       if(!is.null(column_2_name) && !self$check_uniqueness_column_name(column_2_name))return(-1)
         
@@ -506,10 +519,11 @@ formClass <- R6::R6Class(
                  tooltip = tooltip)
       }
       
-      data <- dplyr::rename_with(data, 
-                                 .fn = function(x){
-                                   unname(unlist(self$def[x]))
-                                 })
+      # ugly rename because robust
+      m_i <- match(names(data), names(unlist(self$def)))
+      data <- data[,!is.na(m_i)]
+      m_i <- m_i[!is.na(m_i)]
+      names(data) <- unname(unlist(self$def))[m_i]
       
 
       self$append_data(self$def_table, data)
@@ -527,7 +541,7 @@ formClass <- R6::R6Class(
     #' @description Check if a column name can be used (returns TRUE if the column does not exist in the definition table)
     #' @param column Name of the column
     check_uniqueness_column_name =  function(column){
-      
+    
       qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$column_field} = '{column}'")
       
       res <- DBI::dbGetQuery(self$con, qu)

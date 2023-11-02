@@ -240,6 +240,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   form_invul_data <- reactive({
     db_ping()
     reload_ping()
+    
     req(.reg$has_connection())
     
     .reg$get_input_fields(TRUE) %>%
