@@ -16,6 +16,7 @@ R6 Class voor Registratie formulier
 \itemize{
 \item \href{#method-NA-new}{\code{formClass$new()}}
 \item \href{#method-NA-log}{\code{formClass$log()}}
+\item \href{#method-NA-store_schema_str}{\code{formClass$store_schema_str()}}
 \item \href{#method-NA-replace_value_where_multi}{\code{formClass$replace_value_where_multi()}}
 \item \href{#method-NA-get_by_id}{\code{formClass$get_by_id()}}
 \item \href{#method-NA-column_name_from_id}{\code{formClass$column_name_from_id()}}
@@ -205,10 +206,20 @@ Log something
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-store_schema_str"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-store_schema_str}{}}}
+\subsection{Method \code{store_schema_str()}}{
+(Re-)write schema_str
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$store_schema_str()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-replace_value_where_multi"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-replace_value_where_multi}{}}}
 \subsection{Method \code{replace_value_where_multi()}}{
-Multi-replace value where
+Multi-replace value where (sql update wrapper)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$replace_value_where_multi(
   table,
@@ -221,6 +232,25 @@ Multi-replace value where
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{table}}{Table name (no schema)}
+
+\item{\code{replace_list}}{Named list of values to replace; name of list element is column name}
+
+\item{\code{col_compare}}{Which column to compare (e.g. 'id')}
+
+\item{\code{val_compare}}{Value to compare (e.g. 101, then id = 101 will be updated according to replace_list)}
+
+\item{\code{query_only}}{If TRUE, returns only the qyuery}
+
+\item{\code{quiet}}{If TRUE, prints nothing}
+
+\item{\code{username}}{If passed; updates 'username' in table for audit purposes}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_by_id"></a>}}
@@ -231,6 +261,13 @@ Get a row from the form definition by the form id.
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_by_id(id_form)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{Id of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-column_name_from_id"></a>}}
@@ -241,6 +278,13 @@ Get column name for a form field by ID
 \if{html}{\out{<div class="r">}}\preformatted{formClass$column_name_from_id(id_form)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{Id of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_fields_by_type"></a>}}
@@ -251,6 +295,13 @@ Get all fields of a certain type
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_fields_by_type(field_type)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{field_type}}{Type of field, e.g. 'singleselect'}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_field_choices"></a>}}
@@ -261,6 +312,13 @@ Get (recoded) choices for a select field
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_field_choices(column_field)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{column_field}}{Name of field (i.e. column name)}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_field_choices_in_order"></a>}}
@@ -271,6 +329,13 @@ Get order of the choices for a field
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_field_choices_in_order(column_field)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{column_field}}{Name of field (i.e. column name)}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Details}{
 Safe implementation; if the order length does not match the options,
 or it is otherwise corrupted, a simple vector of length(n choices) is returned.
@@ -286,6 +351,13 @@ Get the label for a field
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_label_field(column_field)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{column_field}}{Name of field (i.e. column name)}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-make_choices"></a>}}
@@ -301,6 +373,19 @@ Make choices (for selectInput) based on values and names
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{values_from}}{Name of column to take values from}
+
+\item{\code{names_from}}{Name of column to take names from}
+
+\item{\code{data}}{Dataframe}
+
+\item{\code{sort}}{If TRUE, sorts choices alphabetically}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-choices_from_json"></a>}}
@@ -311,6 +396,13 @@ Unpack a JSON field to make a named vector
 \if{html}{\out{<div class="r">}}\preformatted{formClass$choices_from_json(x)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{A JSON string}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-distinct_registration_field"></a>}}
@@ -321,6 +413,13 @@ Get distinct values of a column in the registrations table
 \if{html}{\out{<div class="r">}}\preformatted{formClass$distinct_registration_field(column_name)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{column_name}}{Name of column in data_table}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-rename_definition_table"></a>}}
@@ -331,6 +430,13 @@ Rename database table to correct internal column names
 \if{html}{\out{<div class="r">}}\preformatted{formClass$rename_definition_table(data)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Dataframe}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-filter_by_visibility"></a>}}
@@ -344,6 +450,8 @@ Filter fields by visibility (or not)
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{data}}{Dataframe}
+
 \item{\code{visibility}}{TRUE or FALSE. When NULL, returns all data.}
 }
 \if{html}{\out{</div>}}
@@ -358,6 +466,13 @@ Get all non-deleted form input fields
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_input_fields(zichtbaarheid = TRUE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{zichtbaarheid}}{Visibility}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_form_fields"></a>}}
@@ -368,6 +483,13 @@ Get form fields for left or right column of the form
 \if{html}{\out{<div class="r">}}\preformatted{formClass$get_form_fields(form_section)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{form_section}}{Either 1 (left) or 2 (right)}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_next_formorder_number"></a>}}
@@ -381,7 +503,7 @@ Get next available form order number
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{form_section}}{Either 1 or 2}
+\item{\code{form_section}}{Either 1 (left) or 2 (right)}
 }
 \if{html}{\out{</div>}}
 }
@@ -410,7 +532,15 @@ Adds an input field to a form
 
 \item{\code{type_field}}{Type of field (options : TODO)}
 
-\item{\code{form_section}}{Left or right}
+\item{\code{form_section}}{Either 1 (left) or 2 (right)}
+
+\item{\code{filterable}}{Whether it is a filterable field (not used)}
+
+\item{\code{tooltip}}{For filter, the tooltip text (not used)}
+
+\item{\code{column_name}}{Optional; name of column in output data (otherwise made from label_field)}
+
+\item{\code{column_2_name}}{Only used for nested select}
 }
 \if{html}{\out{</div>}}
 }
@@ -441,6 +571,15 @@ Edit the label for an input field
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_label_field(id_form, new_label)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+
+\item{\code{new_label}}{New label text}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-edit_field_type"></a>}}
@@ -451,16 +590,36 @@ Change the field type for a form field
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_field_type(id_form, new_type)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+
+\item{\code{new_type}}{New type}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-edit_filterable_column"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-edit_filterable_column}{}}}
 \subsection{Method \code{edit_filterable_column()}}{
-Edit a filterable field
+Edit a filterable field. Not used anymore.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_filterable_column(id_form, new_filter_boolean, new_tooltip)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+
+\item{\code{new_filter_boolean}}{New value}
+
+\item{\code{new_tooltip}}{New tooltip}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-from_json"></a>}}
@@ -471,6 +630,15 @@ from_json wrapper
 \if{html}{\out{<div class="r">}}\preformatted{formClass$from_json(x, ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{Text}
+
+\item{\code{...}}{Other args to \code{\link[shintocatman:json]{shintocatman::from_json()}}}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-to_json"></a>}}
@@ -481,6 +649,15 @@ to_json wrapper
 \if{html}{\out{<div class="r">}}\preformatted{formClass$to_json(x, ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{Text}
+
+\item{\code{...}}{Other args to \code{\link[shintocatman:json]{shintocatman::to_json()}}}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-edit_options_field"></a>}}
@@ -501,6 +678,13 @@ Label for nested column is kept in options list
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_nested_column_label(id_form, opts, new_label)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-is_color"></a>}}
@@ -521,6 +705,13 @@ Edit colors for a form field
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_options_colors(id_form, new_colors)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-amend_options_colors"></a>}}
@@ -531,6 +722,13 @@ If new options added, make sure the color vector is amended
 \if{html}{\out{<div class="r">}}\preformatted{formClass$amend_options_colors(id_form, options)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-set_options_order"></a>}}
@@ -541,6 +739,13 @@ Set the order for a single/multi select field
 \if{html}{\out{<div class="r">}}\preformatted{formClass$set_options_order(id_form, new_order)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-prepare_nested_choice_column"></a>}}
@@ -551,6 +756,13 @@ Prepare a nested choice column
 \if{html}{\out{<div class="r">}}\preformatted{formClass$prepare_nested_choice_column(id_form, name, options)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-amend_options_order"></a>}}
@@ -561,6 +773,13 @@ If new categories added, make sure the order vector is amended
 \if{html}{\out{<div class="r">}}\preformatted{formClass$amend_options_order(id_form, options)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-edit_formulier_setup"></a>}}
@@ -581,6 +800,13 @@ Change the visibility
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_zichtbaarheid_invoerveld(id_formfield, new_zichtbaarheid)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_formfield}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-edit_verwijder_datum"></a>}}
@@ -591,6 +817,13 @@ Change the removal date
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_verwijder_datum(id_formfield, new_date)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_formfield}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-amend_formfield_order"></a>}}
@@ -611,6 +844,13 @@ Reset the form field order
 \if{html}{\out{<div class="r">}}\preformatted{formClass$reset_volgorde_invoerveld(id_formfield, new_volgorde_nummer)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_formfield}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-really_delete_formfield"></a>}}
@@ -621,6 +861,13 @@ Actually really delete a field
 \if{html}{\out{<div class="r">}}\preformatted{formClass$really_delete_formfield(id)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-column_type_from_field_type"></a>}}
@@ -631,6 +878,13 @@ Database column type based on field input type
 \if{html}{\out{<div class="r">}}\preformatted{formClass$column_type_from_field_type(type)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{type}}{One of 'text', 'numeric', 'boolean', 'singleselect', 'multiselect', 'date', 'singlecheck'}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-prepare_data_table"></a>}}
@@ -652,6 +906,13 @@ internal column names as defined in \code{data_columns} argument
 \if{html}{\out{<div class="r">}}\preformatted{formClass$rename_registrations_intern(data)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Dataframe}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-write_new_registration"></a>}}
@@ -690,6 +951,19 @@ Edits an existing registration
 \if{html}{\out{<div class="r">}}\preformatted{formClass$edit_registration(old_data, new_data, user_id, current_reg_id)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{old_data}}{Dataframe with previous entry of registration}
+
+\item{\code{new_data}}{Dataframe with new data}
+
+\item{\code{user_id}}{User ID, for audit logging}
+
+\item{\code{current_reg_id}}{Registration ID}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-delete_registration"></a>}}
@@ -731,6 +1005,10 @@ Read registrations, recode select values where needed.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{recode}}{If TRUE (default), replaces codes with labels (for select fields)}
+
+\item{\code{include_deleted}}{If TRUE, include deleted registrations}
+
+\item{\code{lazy}}{If TRUE, returns a lazy tbl}
 }
 \if{html}{\out{</div>}}
 }

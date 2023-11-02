@@ -1,4 +1,5 @@
 
+#' @importFrom htmltools htmlDependency
 shintoforms_dependencies <- function() {
   
   list(

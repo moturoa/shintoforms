@@ -1,6 +1,7 @@
 
 #---> naar shintocatman
 
+#' @importFrom shinyWidgets virtualSelectInput
 subChoiceEditorRowUI <- function(id, label = NULL, values = NULL){
   
   ns <- NS(id)
@@ -11,7 +12,7 @@ subChoiceEditorRowUI <- function(id, label = NULL, values = NULL){
     softui::fluid_row(
       column(5,
              
-             textInput(ns("txt_label"), label = NULL, value = label)
+             shiny::textInput(ns("txt_label"), label = NULL, value = label)
              
       ),
       column(7,
@@ -37,7 +38,7 @@ subChoiceEditorRowUI <- function(id, label = NULL, values = NULL){
 
 subChoiceEditorRow <- function(input, output, session){
   
-  reactive(list(
+  shiny::reactive(list(
     key = input$txt_label,
     value = input$sel_value))
   
@@ -46,16 +47,16 @@ subChoiceEditorRow <- function(input, output, session){
 
 
 subChoiceEditorUI <- function(id){
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
-  tagList(
-    tags$div(id = ns("div_placeholder")),
+  shiny::tagList(
+    shiny::tags$div(id = ns("div_placeholder")),
     
     softui::fluid_row(
-      column(6,
+      shiny::column(6,
              softui::action_button(ns("btn_add_row"), "Toevoegen", icon = bsicon("plus-lg"), status = "info"),
              ),
-      column(6,
+      shiny::column(6,
              softui::action_button(ns("btn_remove_row"), "Laatste verwijderen", icon = bsicon("dash-lg"), status = "warning")
              )
     )
@@ -67,14 +68,14 @@ subChoiceEditorUI <- function(id){
   
 }
 
-subChoiceEditor <- function(input, output, session, data = reactive(NULL), json = TRUE){
+subChoiceEditor <- function(input, output, session, data = shiny::reactive(NULL), json = TRUE){
   
   
   clear_reactivevalues <- function(x){
     
     stopifnot(is.reactivevalues(x))
     
-    nms <- isolate(names(x))
+    nms <- shiny::isolate(names(x))
     for(nm in nms){
       x[[nm]] <- NULL
     }
@@ -83,7 +84,7 @@ subChoiceEditor <- function(input, output, session, data = reactive(NULL), json 
   } 
   
 
-  data_input <- reactive({
+  data_input <- shiny::reactive({
     out <- data()
     if(json)out <- jsonlite::fromJSON(out)
     out

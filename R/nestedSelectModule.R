@@ -32,7 +32,7 @@ nestedSelectModuleUI <- function(id, label, data, columns, value, options, width
 }
 
 
-
+#' @importFrom jsonlite fromJSON toJSON
 nestedSelectModule <- function(input, output, session, cfg, 
                                data = reactive(NULL),
                                trigger = reactive(NULL)){

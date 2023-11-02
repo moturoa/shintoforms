@@ -2,7 +2,6 @@
 # audit functies, apart gezet
 # komen uit WBM.
 # Ooit moet hele audit systeem onder de loep worden gelegd mbt performance....
-#' @param x A vector of any type
 get_column_mutations <- function(x){
   
   n_r <- length(x)
@@ -30,17 +29,16 @@ get_column_mutations <- function(x){
   
 }
 
-#' @description Partial mutations for a single ID (dataframe)
 create_partial_mutations_id <- function(data, 
                                         ignore_cols = c("user_id","auditstamp")){
   
   # nodig?
-  data$auditstamp <- as.POSIXct(data$auditstamp, tz = "UTC" ) 
+  data$auditstamp <- as.POSIXct(data[["auditstamp"]], tz = "UTC" ) 
   
-  data <- arrange(data, auditstamp)
+  data <- dplyr::arrange(data, auditstamp)
   
-  event_out <- slice(data, 1) %>%
-    transmute(id, type = "Aanmaak", name = naam,
+  event_out <- dplyr::slice(data, 1) %>%
+    dplyr::transmute(id, type = "Aanmaak", name = naam,
               variable = NA_character_, old_val = NA_character_,
               new_val = NA_character_, username, auditstamp)
   
@@ -48,26 +46,26 @@ create_partial_mutations_id <- function(data,
     
     # find mutations for each column
     # except columns we ignore
-    events <- lapply(select(data,-any_of(ignore_cols)), 
+    events <- lapply(dplyr::select(data, -dplyr::any_of(ignore_cols)), 
                      get_column_mutations)
     
     for(i in seq_along(events)){
       if(is.null(events[[i]]))next
-      events[[i]]$variable <- names(events)[i]
+      events[[i]][["variable"]] <- names(events)[i]
     }
     
-    events <- bind_rows(events)
+    events <- dplyr::bind_rows(events)
     
     if(nrow(events) > 0){
       
       # add other columns
       events <- cbind(events, 
-                      slice(select(data, id, name = naam, username, auditstamp), events$index))
+                      dplyr::slice(dplyr::select(data, id, name = naam, username, auditstamp), events[["index"]]))
       
       # type
-      events$type <- ifelse(events$variable == "verwijderd", "Verwijderd", "Wijziging")
+      events$type <- ifelse(events[["variable"]] == "verwijderd", "Verwijderd", "Wijziging")
       
-      event_out <- bind_rows(event_out, select(events, -index))
+      event_out <- dplyr::bind_rows(event_out, dplyr::select(events, -any_of("index")))
       
     }
     
@@ -106,26 +104,26 @@ create_partial_mutations_new <- function(data,
   
   # truc om zo weinig mogelijk te veranderen in de functies hierboven, de komen uit WBM
   data <- data %>% 
-    mutate(auditstamp = !!sym(auditstamp_column),
-           id = !!sym(id_column),
-           naam = !!sym(name_column),
-           username = !!sym(username_column) )
+    dplyr::mutate(auditstamp = !!dplyr::sym(auditstamp_column),
+           id = !!dplyr::sym(id_column),
+           naam = !!dplyr::sym(name_column),
+           username = !!dplyr::sym(username_column) )
   
   data_in_range <- data %>%
-    dplyr::filter(between(as.Date(auditstamp), lowerdate, upperdate))
+    dplyr::filter(dplyr::between(as.Date(auditstamp), lowerdate, upperdate))
   
   last_before_range <- data %>%
     dplyr::filter(as.Date(auditstamp) < lowerdate, 
                   id %in% !!data_in_range$id) %>%
-    group_by(id) %>%
-    filter(auditstamp == max(auditstamp)) %>%
-    ungroup
+    dplyr::group_by(id) %>%
+    dplyr::filter(auditstamp == max(auditstamp)) %>%
+    dplyr::ungroup
   
   data_mut <- rbind(last_before_range, data_in_range)
   
   total_changes <- split(data_mut, data_mut$id) %>% 
     lapply(create_partial_mutations_id) %>% 
-    bind_rows  
+    dplyr::bind_rows  
   
   if(nrow(total_changes) > 0){
     out <- total_changes %>% 

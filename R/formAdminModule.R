@@ -12,6 +12,13 @@
 #' @param header_ui UI to add at the top of the panel with settings
 #' @export
 #' @importFrom shinytoastr toastr_error toastr_success
+#' @importFrom shintocatman htmlInput jsonEditModuleUI jsonEditModule
+#' @importFrom shintocatman colorVectorPickModule colorVectorPickModuleUI jsonOrderModule jsonOrderModuleUI
+#' @importFrom shintocatman from_json to_json useHtmlInput
+#' @importFrom shinyjs hidden toggleElement disabled
+#' @importFrom dplyr filter arrange sym transmute slice any_of select bind_rows mutate between group_by ungroup
+#' @importFrom DT dataTableOutput renderDataTable
+#' @importFrom stringr str_trim
 #' @rdname formAdminModule
 formAdminUI <- function(id, 
                         title = "Formulieropstelling",
@@ -48,13 +55,13 @@ formAdminUI <- function(id,
                         
                         header_ui = NULL){
   
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
   softui::tab_box(
     
     softui::tab_panel(
       title = title, 
-      icon = bsicon("pencil-square"),
+      icon = softui::bsicon("pencil-square"),
       
       header_ui,
       
@@ -67,7 +74,7 @@ formAdminUI <- function(id,
                },
                
                if(option_layout){
-                 tags$span(id = ns("span_edit_formorder"),
+                 shiny::tags$span(id = ns("span_edit_formorder"),
                            jsonFormSetupUI(ns("edit_formorder"), 
                                            icon = bsicon("columns"),
                                            label = btn_layout_text,
@@ -76,7 +83,7 @@ formAdminUI <- function(id,
                },
                
                shinyjs::hidden(
-                 tags$span(id = ns("span_edit_formfield"),
+                 shiny::tags$span(id = ns("span_edit_formfield"),
                            softui::action_button(ns("btn_edit_formfield"), 
                                                  btn_edit_text, 
                                                  status = btn_edit_status,
@@ -85,12 +92,12 @@ formAdminUI <- function(id,
                ),
 
                shinyjs::hidden(
-                 tags$span(id = ns("span_edit_nested_options"),
+                 shiny::tags$span(id = ns("span_edit_nested_options"),
                            
                            softui::modal_action_button(ns("btn_edit_nested_options"),
                                                        ns("modal_nested_options"),
                                                        label = btn_nested_text, 
-                                                       icon = bsicon("pencil-square"), 
+                                                       icon = softui::bsicon("pencil-square"), 
                                                        status = btn_nested_status),
                            
                            softui::ui_modal(
@@ -107,12 +114,12 @@ formAdminUI <- function(id,
                ),
                
                shinyjs::hidden(
-                 tags$span(id = ns("span_edit_options"),
+                 shiny::tags$span(id = ns("span_edit_options"),
                            
                            softui::modal_action_button(ns("btn_edit_options"),
                                                        ns("modal_edit_options"),
                                                  label = btn_select_text, 
-                                                 icon = bsicon("pencil-square"), 
+                                                 icon = softui::bsicon("pencil-square"), 
                                                  status = btn_select_status),
                            
                            softui::ui_modal(id = ns("modal_edit_options"), ns = ns,
@@ -127,31 +134,31 @@ formAdminUI <- function(id,
                            
                ),
                shinyjs::hidden(
-                 tags$span(id = ns("span_edit_order_options"),
+                 shiny::tags$span(id = ns("span_edit_order_options"),
                            
                            softui::action_button(ns("btn_edit_order_options"),
                                                  label = btn_optionsorder_text, 
-                                                 icon = bsicon("pencil-square"), 
+                                                 icon = softui::bsicon("pencil-square"), 
                                                  status = btn_optionsorder_status)
                            
                  )
                ),
                shinyjs::hidden(
-                 tags$span(id = ns("span_edit_colors"),
+                 shiny::tags$span(id = ns("span_edit_colors"),
                            
                            softui::action_button(ns("btn_edit_colors"),
                                                  label = btn_colors_text, 
-                                                 icon = bsicon("palette-fill"), 
+                                                 icon = softui::bsicon("palette-fill"), 
                                                  status = btn_colors_status)
                  )
                ),
                
                if(option_delete_field){
                  shinyjs::hidden(
-                   tags$span(id = ns("span_delete_formfield"),
+                   shiny::tags$span(id = ns("span_delete_formfield"),
                              softui::action_button(ns("btn_delete_formfield"), btn_delete_text, 
                                                    status = btn_delete_status,
-                                                   icon = bsicon("trash3"))
+                                                   icon = softui::bsicon("trash3"))
                    )
                  )  
                }
@@ -160,7 +167,7 @@ formAdminUI <- function(id,
         )
       ),
       softui::fluid_row(
-        column(12,
+        shiny::column(12,
                DT::dataTableOutput(ns("dt_form_invoervelden"))
         )
       )
@@ -244,7 +251,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     req(.reg$has_connection())
     
     .reg$get_input_fields(TRUE) %>%
-      arrange(column_field)
+      dplyr::arrange(column_field)
   })
   
   observeEvent(form_invul_data(), {
@@ -330,14 +337,14 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     
 
     data %>%
-      select(any_of(show_fields)) %>% 
+      dplyr::select(dplyr::any_of(show_fields)) %>% 
       softui::datatafel(selection = "single", dom = "tp", 
                         pageLength = 30, scrollX = TRUE, 
                         extensions = list())
     
   })
   
-  selected_row <- reactive({
+  selected_row <- shiny::reactive({
     ii <- input$dt_form_invoervelden_rows_selected
     if(is.null(ii)){
       return(NULL)
@@ -346,13 +353,13 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     form_invul_data() %>% slice(ii)
   })
   
-  selected_id <- reactive({
+  selected_id <- shiny::reactive({
     req(selected_row())
     selected_row()$id_form
   })
   
   observeEvent(input$btn_add_formfield, {
-    showModal(
+    shiny::showModal(
       softui::modal(
         title = "Invoerveld toevoegen aan formulier",
         id_confirm = "btn_confirm_add_formfield",
@@ -386,17 +393,17 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   })
   
   
-  output$ui_nested_select_options <- renderUI({
+  output$ui_nested_select_options <- shiny::renderUI({
     
     req(isTRUE(input$rad_type_formfield == "nestedselect"))
     
-    textInput(session$ns("txt_secondary_column_name"), "Naam gekoppeld invoerveld")
+    shiny::textInput(session$ns("txt_secondary_column_name"), "Naam gekoppeld invoerveld")
     
     
   })
   
   
-  observeEvent(input$btn_confirm_add_formfield, {
+  shiny::observeEvent(input$btn_confirm_add_formfield, {
     
     if(.reg$filterable){
       make_filter <- input$rad_make_filter
@@ -426,26 +433,26 @@ formAdminModule <- function(input, output, session, .reg = NULL,
       shinytoastr::toastr_error("Deze kolom naam bestaat al, kies een andere naam.")
     } else {
       db_ping(runif(1))
-      removeModal()  
+      shiny::removeModal()  
     }
     
   })
   
-  form_setup <- callModule(jsonFormSetupModule, "edit_formorder", 
+  form_setup <- shiny::callModule(jsonFormSetupModule, "edit_formorder", 
                            data = form_invul_data,
                            .reg = .reg,
-                           side_column = reactive("form_section"),
-                           order_column = reactive("order_field"),
-                           id_column = reactive("id_form"),
-                           label_column = reactive("label_field")
+                           side_column = shiny::reactive("form_section"),
+                           order_column = shiny::reactive("order_field"),
+                           id_column = shiny::reactive("id_form"),
+                           label_column = shiny::reactive("label_field")
   )
   
-  observeEvent(form_setup(), {
+  shiny::observeEvent(form_setup(), {
     .reg$edit_formulier_setup(form_setup())
     db_ping(runif(1))
   })
   
-  observeEvent(selected_row(), ignoreNULL = FALSE, {
+  shiny::observeEvent(selected_row(), ignoreNULL = FALSE, {
     sel <- selected_row()
     type <- sel$type_field
     
@@ -463,7 +470,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   })
   
 
-  cur_column_2_label <- reactive({
+  cur_column_2_label <- shiny::reactive({
     row <- selected_row()
     if(row$type_field == "nestedselect"){
       opts <- .reg$from_json(row$options)
@@ -472,12 +479,12 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   })
 
 
-  observeEvent(input$btn_edit_formfield, {
+  shiny::observeEvent(input$btn_edit_formfield, {
 
     row <- selected_row()
     req(row)
 
-    showModal(
+    shiny::showModal(
       softui::modal(
         title = glue("Kolom label: {selected_row()$column_field}"),
         remove_modal_on_confirm = FALSE,
@@ -502,7 +509,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   })
   
   
-  observeEvent(input$btn_confirm_edit_label, {
+  shiny::observeEvent(input$btn_confirm_edit_label, {
 
     row <- selected_row()
     req(row)
@@ -531,7 +538,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
       }
 
       db_ping(runif(1))
-      removeModal()
+      shiny::removeModal()
     } else {
       shinytoastr::toastr_error("Vul een label in")
     }
@@ -540,7 +547,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   
 
   # Reactive maken die de add/delete argument reactively doorgeeft gebaseerd op het type
-  edit_options <- reactive({
+  edit_options <- shiny::reactive({
     req(selected_row())
     type <- selected_row()$type_field
 
@@ -573,7 +580,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   #----- Nested select choices
 
   # setting the main column  (level 1 choices)
-  observeEvent(input$btn_confirm_set_nested_key_column, {
+  shiny::observeEvent(input$btn_confirm_set_nested_key_column, {
 
     col_sel <- input$sel_nested_column
     .reg$prepare_nested_choice_column(selected_id(),
@@ -585,46 +592,46 @@ formAdminModule <- function(input, output, session, .reg = NULL,
 
 
   # setting level 2 choices
-  nested_options <- reactive({
+  nested_options <- shiny::reactive({
     if(is.null(selected_row()) || nrow(selected_row()) == 0){
       return(NULL)
     }
     .reg$from_json(selected_row()$options)
   })
 
-  nested_choices_out <- callModule(subChoiceEditor, "mod_edit_nested_options", data = nested_options, json = FALSE)
+  nested_choices_out <- shiny::callModule(subChoiceEditor, "mod_edit_nested_options", data = nested_options, json = FALSE)
 
 
-  observeEvent(input$btn_confirm_nested_options, {
+  shiny::observeEvent(input$btn_confirm_nested_options, {
 
     .reg$edit_options_field(selected_id(), nested_choices_out())
 
     db_ping(runif(1))
   })
 
-  current_colors <- reactive({
+  current_colors <- shiny::reactive({
     .reg$from_json(selected_row()$colors)
   })
 
-  colors <- softui::modalize(trigger_open = reactive(input$btn_edit_colors),
+  colors <- softui::modalize(trigger_open = shiny::reactive(input$btn_edit_colors),
                              ui_module = shintocatman::colorVectorPickModuleUI,
                              server_module = shintocatman::colorVectorPickModule,
                              title = "Kies kleuren",
                              server_pars = list(
-                               n_colors = reactive(length(current_colors())),
+                               n_colors = shiny::reactive(length(current_colors())),
                                current_colors = current_colors,
-                               labels = reactive(.reg$from_json(selected_row()$options)),
-                               show_order = reactive(.reg$from_json(selected_row()$order_options))
+                               labels = shiny::reactive(.reg$from_json(selected_row()$options)),
+                               show_order = shiny::reactive(.reg$from_json(selected_row()$order_options))
                              ))
 
 
-  observeEvent(colors(), {
+  shiny::observeEvent(colors(), {
     .reg$edit_options_colors(selected_id(), colors())
     db_ping(runif(1))
   })
 
 
-  ordering_opties <- softui::modalize(trigger_open = reactive(input$btn_edit_order_options),
+  ordering_opties <- softui::modalize(trigger_open = shiny::reactive(input$btn_edit_order_options),
                                       header_ui = tags$p("Pas hier de volgorde van de keuzelijst aan voor dit formulierveld"),
                                       ui_module = shintocatman::jsonOrderModuleUI,
                                       server_module = shintocatman::jsonOrderModule,
@@ -635,14 +642,14 @@ formAdminModule <- function(input, output, session, .reg = NULL,
                                         order_column = reactive("order_options")
                                       ))
 
-  observeEvent(ordering_opties(), {
+  shiny::observeEvent(ordering_opties(), {
     .reg$set_options_order(selected_id(), ordering_opties())
     db_ping(runif(1))
   })
 
-  observeEvent(input$btn_delete_formfield, {
+  shiny::observeEvent(input$btn_delete_formfield, {
 
-    showModal(
+    shiny::showModal(
       softui::modal(
         title = glue("'{selected_row()$label_field}' verwijderen?"),
 
@@ -654,7 +661,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     )
   })
 
-  observeEvent(input$btn_confirm_delete_field, {
+  shiny::observeEvent(input$btn_confirm_delete_field, {
 
     .reg$edit_zichtbaarheid_invoerveld(selected_id(), FALSE)
     .reg$edit_verwijder_datum(selected_id(), today())
@@ -663,7 +670,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
 
   })
 
-  form_deleted_data <- reactive({
+  form_deleted_data <- shiny::reactive({
     db_ping()
     req(.reg$has_connection())
     .reg$get_input_fields(FALSE)
@@ -672,13 +679,13 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   output$dt_deleted_invoervelden <- DT::renderDataTable({
 
     form_deleted_data() %>%
-      select(any_of(show_fields_deleted)) %>%
+      dplyr::select(dplyr::any_of(show_fields_deleted)) %>%
       softui::datatafel(selection = "single", dom = "tp",
                         pageLength = 30, scrollX = TRUE, extensions = list())
 
   })
 
-  selected_row_deleted <- reactive({
+  selected_row_deleted <- shiny::reactive({
     ii <- input$dt_deleted_invoervelden_rows_selected
     if(is.null(ii)){
       return(NULL)
@@ -686,16 +693,16 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     form_deleted_data() %>% slice(ii)
   })
 
-  selected_id_deleted <- reactive({
+  selected_id_deleted <- shiny::reactive({
     selected_row_deleted()$id_form
   })
 
-  observe({
+  shiny::observe({
     sel <- selected_row_deleted()
     shinyjs::toggleElement("span_restore_formfield", condition = !is.null(sel))
   })
 
-  observeEvent(input$btn_restore_formfield, {
+  shiny::observeEvent(input$btn_restore_formfield, {
 
     req(selected_row_deleted())
 
@@ -706,7 +713,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   })
 
 
-  observeEvent(input$btn_reallydelete_formfield, {
+  shiny::observeEvent(input$btn_reallydelete_formfield, {
     id <- selected_id_deleted()
     req(id)
     .reg$really_delete_formfield(id)

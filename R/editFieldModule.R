@@ -41,7 +41,7 @@ editFieldModuleUI <- function(id, column, data,
                               input_padding = getOption("shintoforms_input_padding_px", "30px")
                               ){
   
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   
   # doen we niet omdat dan bij een onbekende setting de boel crasht;
   # beter om gewoon door te gaan en NULL in te vullen
@@ -70,18 +70,18 @@ editFieldModuleUI <- function(id, column, data,
   
   if(type == "numeric"){
     
-    if(!isTruthy(value))value <- 0
+    if(!shiny::isTruthy(value))value <- 0
     
-    ui <- numericInput(ns("value"), label, value = value, width = input_width)
+    ui <- shiny::numericInput(ns("value"), label, value = value, width = input_width)
     
     
   } else if(type == "freetext"){
     
-    ui <- textInput(ns("value"), label, value = value, width = input_width)
+    ui <- shiny::textInput(ns("value"), label, value = value, width = input_width)
     
   } else if(type == "boolean"){
     
-    ui <- radioButtons(ns("value"), label, inline = TRUE, 
+    ui <- shiny::radioButtons(ns("value"), label, inline = TRUE, 
                  choices = setNames(c(TRUE,FALSE),names(options)),
                  selected = as.character(value))
     
@@ -92,7 +92,7 @@ editFieldModuleUI <- function(id, column, data,
         value 
       })
         
-    ui <- selectizeInput(ns("value"), label, choices = c("", options), 
+    ui <- shiny::selectizeInput(ns("value"), label, choices = c("", options), 
                      selected = outval, 
                      multiple = FALSE,
                      width = input_width)
@@ -101,7 +101,7 @@ editFieldModuleUI <- function(id, column, data,
     
       sels <- options[match(value,names(options))]
     
-      ui <- selectizeInput(ns("value"), label, choices = c("", options),
+      ui <- shiny::selectizeInput(ns("value"), label, choices = c("", options),
                      selected = sels, 
                      multiple = TRUE, 
                      width = input_width,
@@ -119,7 +119,7 @@ editFieldModuleUI <- function(id, column, data,
       value <- Sys.Date()
     }
     
-    ui <- dateInput(ns("value"), label, language = "nl", 
+    ui <- shiny::dateInput(ns("value"), label, language = "nl", 
                     weekstart = 1,  # start on monday; should be configurable at some point
                     width = input_width,
                     value = value, format = "dd-mm-yyyy")
@@ -128,7 +128,7 @@ editFieldModuleUI <- function(id, column, data,
     if(length(value) == 0 || as.character(value) == ""){
       value <- FALSE
     }
-    ui <- checkboxInput(ns("value"), label, value = value)
+    ui <- shiny::checkboxInput(ns("value"), label, value = value)
     
   } else if(type == "html"){
 
@@ -166,7 +166,8 @@ ui
 
 
 editFieldModule <- function(input, output, session, .reg, type, cfg = NULL, 
-                            data = reactive(NULL), trigger = reactive(NULL)){
+                            data = shiny::reactive(NULL), 
+                            trigger = shiny::reactive(NULL)){
   
   # #---- Input validator
   # val_i <- shinyvalidate::InputValidator$new()
@@ -179,10 +180,10 @@ editFieldModule <- function(input, output, session, .reg, type, cfg = NULL,
   
   
   #--- Output reactive
-  value <- reactive({
+  value <- shiny::reactive({
     
     if(type == "nestedselect"){
-      out <- callModule(nestedSelectModule, "value", cfg = cfg, data = data, trigger = trigger)
+      out <- shiny::callModule(nestedSelectModule, "value", cfg = cfg, data = data, trigger = trigger)
     } else {
       out <- input$value  
     }
@@ -204,7 +205,7 @@ editFieldModule <- function(input, output, session, .reg, type, cfg = NULL,
     
   })
   
-  observeEvent(value(), {
+  shiny::observeEvent(value(), {
 
     invisible()
   })
@@ -214,35 +215,6 @@ editFieldModule <- function(input, output, session, .reg, type, cfg = NULL,
 }
 
 
-
-# editFieldModuleUI("one", "this_thing", data = NULL,
-#                   type = "boolean", default = TRUE, options = NULL, label = "hello")
-
-
-test_editFieldModule <- function(){
-  
-  devtools::load_all()
-  
-  ui <- softui::simple_page(
-    softui::box(
-      uiOutput("uiout")
-    )
-  )
-  
-  server <- function(input, output, session) {
-    
-    output$uiout <- renderUI({
-      # editFieldModuleUI("one", "this_thing", data = NULL,
-      #                   type = "html", default = TRUE, options = NULL, 
-      #                   label = "hello")
-      shintocatman::htmlInput("test", value = "some text")
-    })
-    
-  }
-  
-  shinyApp(ui, server)
-  
-}
 
 
 

@@ -32,7 +32,7 @@ jsonFormSetupModule <- function(input, output, session,
     
     data() %>%
       filter(!!sym(side_column()) == 1) %>%
-      arrange(!!sym(order_column()))
+      dplyr::arrange(!!sym(order_column()))
   })
   
   labels_left <- reactive({
@@ -47,8 +47,8 @@ jsonFormSetupModule <- function(input, output, session,
   data_ordered_right <- reactive({
     
     data() %>%
-      filter(!!sym(side_column()) == 2) %>%
-      arrange(!!sym(order_column()))
+      dplyr::filter(!!dplyr::sym(side_column()) == 2) %>%
+      dplyr::arrange(!!dplyr::sym(order_column()))
   })
   
   labels_right <- reactive({

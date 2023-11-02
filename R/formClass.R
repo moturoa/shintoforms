@@ -3,6 +3,10 @@
 #' @importFrom shintodb connect
 #' @importFrom shintodb databaseClass
 #' @importFrom DBI dbGetQuery
+#' @importFrom janitor make_clean_names
+#' @importFrom glue glue
+#' @importFrom cli cli_alert_success cli_alert_danger
+#' @importFrom uuid UUIDgenerate
 #' @export
 formClass <- R6::R6Class(
   inherit = shintodb::databaseClass,
@@ -168,7 +172,7 @@ formClass <- R6::R6Class(
       futile.logger::flog.info(...)
     },
     
-    
+    #' @description (Re-)write schema_str 
     store_schema_str = function(){
       
       self$schema_str <- ifelse(is.null(self$schema), "", paste0(self$schema,"."))
@@ -177,7 +181,14 @@ formClass <- R6::R6Class(
     
     #----- Generic database methods
     
-    #' @description Multi-replace value where
+    #' @description Multi-replace value where (sql update wrapper)
+    #' @param table Table name (no schema)
+    #' @param replace_list Named list of values to replace; name of list element is column name
+    #' @param col_compare Which column to compare (e.g. 'id')
+    #' @param val_compare Value to compare (e.g. 101, then id = 101 will be updated according to replace_list)
+    #' @param query_only If TRUE, returns only the qyuery
+    #' @param quiet If TRUE, prints nothing
+    #' @param username If passed; updates 'username' in table for audit purposes
     replace_value_where_multi = function(table, replace_list, col_compare, val_compare,
                                          query_only = FALSE, quiet = FALSE,  username=""){
       
@@ -240,6 +251,7 @@ formClass <- R6::R6Class(
     
     #----- Form registration methods
     #' @description Get a row from the form definition by the form id.
+    #' @param id_form Id of form field
     get_by_id = function(id_form){
       
       self$read_table(self$def_table, lazy = TRUE) %>%
@@ -249,12 +261,14 @@ formClass <- R6::R6Class(
     },
     
     #' @description Get column name for a form field by ID
+    #' @param id_form Id of form field
     column_name_from_id = function(id_form){
       row <- self$get_by_id(id_form)
       row[[self$def[["column_field"]]]]
     },
     
     #' @description Get all fields of a certain type
+    #' @param field_type Type of field, e.g. 'singleselect'
     get_fields_by_type = function(field_type){
       
       self$read_table(self$def_table, lazy = TRUE) %>%
@@ -266,6 +280,7 @@ formClass <- R6::R6Class(
     
     
     #' @description Get (recoded) choices for a select field
+    #' @param column_field Name of field (i.e. column name)
     get_field_choices = function(column_field){
       
       self$read_definition(lazy = TRUE) %>%
@@ -278,6 +293,7 @@ formClass <- R6::R6Class(
     #' @description Get order of the choices for a field
     #' @details Safe implementation; if the order length does not match the options,
     #' or it is otherwise corrupted, a simple vector of length(n choices) is returned.
+    #' @param column_field Name of field (i.e. column name)
     get_field_choices_in_order = function(column_field){
       
       data <- self$read_definition(lazy = TRUE) %>%
@@ -299,6 +315,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Get the label for a field
+    #' @param column_field Name of field (i.e. column name)
     get_label_field = function(column_field){
       self$read_definition(lazy = TRUE) %>%
         filter(!!sym(self$def$column_field) == !!column_field) %>%
@@ -308,6 +325,10 @@ formClass <- R6::R6Class(
     },
     
     #' @description Make choices (for selectInput) based on values and names
+    #' @param values_from Name of column to take values from
+    #' @param names_from Name of column to take names from
+    #' @param data Dataframe
+    #' @param sort If TRUE, sorts choices alphabetically
     make_choices = function(values_from, names_from = values_from, data = NULL, sort = TRUE){
       
       data <- data %>%
@@ -326,6 +347,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Unpack a JSON field to make a named vector
+    #' @param x A JSON string
     choices_from_json = function(x){
       
       val <- self$from_json(x)
@@ -348,6 +370,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Get distinct values of a column in the registrations table
+    #' @param column_name Name of column in data_table
     distinct_registration_field = function(column_name){
       
       self$read_table(self$data_table, lazy = TRUE) %>%
@@ -360,6 +383,7 @@ formClass <- R6::R6Class(
     
     
     #'@description Rename database table to correct internal column names
+    #'@param data Dataframe
     rename_definition_table = function(data){
       
       # Rename to standard colnames
@@ -381,6 +405,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Filter fields by visibility (or not)
+    #' @param data Dataframe
     #' @param visibility TRUE or FALSE. When NULL, returns all data.
     filter_by_visibility = function(data, visibility = TRUE){
       
@@ -397,6 +422,7 @@ formClass <- R6::R6Class(
     
     
     #' @description Get all non-deleted form input fields
+    #' @param zichtbaarheid Visibility
     get_input_fields = function(zichtbaarheid = TRUE){
       
       out <- self$read_table(self$def_table, lazy = TRUE)
@@ -413,6 +439,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Get form fields for left or right column of the form
+    #' @param form_section Either 1 (left) or 2 (right)
     get_form_fields = function(form_section){
       
       qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
@@ -426,7 +453,7 @@ formClass <- R6::R6Class(
     
     # Alleen zichtbare velden hoeven een volgorde nummer te hebben en moeten worden meegenomen.
     #' @description Get next available form order number
-    #' @param form_section Either 1 or 2
+    #' @param form_section Either 1 (left) or 2 (right)
     get_next_formorder_number = function(form_section){
       
       qu <- glue::glue("SELECT COUNT(DISTINCT {self$def$id_form}) FROM {self$schema_str}{self$def_table} WHERE {self$def$form_section} = {form_section} AND {self$def$visible} = TRUE")
@@ -439,7 +466,11 @@ formClass <- R6::R6Class(
     #' @description Adds an input field to a form
     #' @param label_field Label for the field
     #' @param type_field Type of field (options : TODO)
-    #' @param form_section Left or right
+    #' @param form_section Either 1 (left) or 2 (right)
+    #' @param filterable Whether it is a filterable field (not used)
+    #' @param tooltip For filter, the tooltip text (not used)
+    #' @param column_name Optional; name of column in output data (otherwise made from label_field)
+    #' @param column_2_name Only used for nested select
     add_input_field_to_form = function(label_field, 
                                        type_field, 
                                        form_section = NULL, 
@@ -551,6 +582,8 @@ formClass <- R6::R6Class(
     
     
     #' @description Edit the label for an input field
+    #' @param id_form ID of form field
+    #' @param new_label New label text
     edit_label_field = function(id_form, new_label){
       
       self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
@@ -559,6 +592,8 @@ formClass <- R6::R6Class(
     },
     
     #' @description Change the field type for a form field
+    #' @param id_form ID of form field
+    #' @param new_type New type
     edit_field_type = function(id_form, new_type){
       
       self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
@@ -567,7 +602,10 @@ formClass <- R6::R6Class(
       
     },
     
-    #' @description Edit a filterable field
+    #' @description Edit a filterable field. Not used anymore.
+    #' @param id_form ID of form field
+    #' @param new_filter_boolean New value
+    #' @param new_tooltip New tooltip
     edit_filterable_column = function(id_form, new_filter_boolean, new_tooltip){
       self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
                                col_replace = self$def$make_filter, 
@@ -579,6 +617,8 @@ formClass <- R6::R6Class(
     },
     
     #' @description from_json wrapper
+    #' @param x Text
+    #' @param ... Other args to [shintocatman::from_json()]
     from_json = function(x, ...){
       
       shintocatman::from_json(x, ...)
@@ -586,6 +626,8 @@ formClass <- R6::R6Class(
     },
     
     #' @description to_json wrapper
+    #' @param x Text
+    #' @param ... Other args to [shintocatman::to_json()]
     to_json = function(x, ...){
       
       shintocatman::to_json(x, ...)
@@ -613,6 +655,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Label for nested column is kept in options list
+    #' @param id_form ID of form field
     edit_nested_column_label = function(id_form, opts, new_label){
       
       opts <- self$from_json(opts)
@@ -638,6 +681,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Edit colors for a form field
+    #' @param id_form ID of form field
     edit_options_colors = function(id_form, new_colors){
       
       if(any(!self$is_color(new_colors))){
@@ -655,6 +699,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description If new options added, make sure the color vector is amended
+    #' @param id_form ID of form field
     amend_options_colors = function(id_form, options){
       
       cur_color <- self$get_by_id(id_form) %>%
@@ -684,6 +729,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Set the order for a single/multi select field
+    #' @param id_form ID of form field
     set_options_order = function(id_form, new_order){
       
       if(!is.null(names(new_order))){
@@ -705,6 +751,7 @@ formClass <- R6::R6Class(
     
     
     #' @description Prepare a nested choice column
+    #' @param id_form ID of form field
     prepare_nested_choice_column = function(id_form, name, options){
       
       key <- setNames(list(options),name)
@@ -719,6 +766,7 @@ formClass <- R6::R6Class(
 
     
     #' @description If new categories added, make sure the order vector is amended
+    #' @param id_form ID of form field
     amend_options_order = function(id_form, options){
       
       cur_order <- self$get_by_id(id_form) %>%
@@ -757,6 +805,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Change the visibility
+    #' @param id_formfield ID of form field
     edit_zichtbaarheid_invoerveld = function(id_formfield, new_zichtbaarheid){
       
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET {self$def$visible} = {new_zichtbaarheid} WHERE {self$def$id_form} = '{id_formfield}'")
@@ -766,6 +815,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Change the removal date
+    #' @param id_formfield ID of form field
     edit_verwijder_datum = function(id_formfield, new_date){
       
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET {self$def$date_deleted} = '{new_date}' WHERE {self$def$id_form} = '{id_formfield}'")
@@ -785,6 +835,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Reset the form field order
+    #' @param id_formfield ID of form field
     reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
 
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
@@ -794,6 +845,7 @@ formClass <- R6::R6Class(
     },
     
     #' @description Actually really delete a field
+    #' @param id ID of form field
     really_delete_formfield = function(id){
       
       tab <- glue::glue("{self$schema_str}{self$def_table}")
@@ -804,6 +856,7 @@ formClass <- R6::R6Class(
     
     
     #' @description Database column type based on field input type
+    #' @param type One of 'text', 'numeric', 'boolean', 'singleselect', 'multiselect', 'date', 'singlecheck'
     column_type_from_field_type = function(type){
       
       db <- self$dbtype
@@ -887,6 +940,7 @@ formClass <- R6::R6Class(
     
     #' @description Rename registrations data (as read with $read_registrations) to 
     #' internal column names as defined in `data_columns` argument
+    #' @param data Dataframe
     rename_registrations_intern = function(data){
       
       cols <- self$data_columns
@@ -955,6 +1009,10 @@ formClass <- R6::R6Class(
     },
     
     #' @description Edits an existing registration
+    #' @param old_data Dataframe with previous entry of registration
+    #' @param new_data Dataframe with new data
+    #' @param user_id User ID, for audit logging
+    #' @param current_reg_id Registration ID
     edit_registration = function(old_data, new_data, user_id, current_reg_id){
       
       # prepare output columns
@@ -1054,6 +1112,8 @@ formClass <- R6::R6Class(
 
     #' @description Read registrations, recode select values where needed.
     #' @param recode If TRUE (default), replaces codes with labels (for select fields)
+    #' @param include_deleted If TRUE, include deleted registrations
+    #' @param lazy If TRUE, returns a lazy tbl
     read_registrations = function(recode = TRUE, 
                                   include_deleted = TRUE,
                                   deleted_only = FALSE,
