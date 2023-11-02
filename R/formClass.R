@@ -114,12 +114,7 @@ formClass <- R6::R6Class(
                        pool = pool, sqlite = sqlite, 
                        db_connection = db_connection,
                        connect_on_init = connect_on_init)
-      
-      # check if audit table is present 
-      if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
-        stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
-      }
-      
+
       # 'schema' string for query building
       self$schema_str <- ifelse(is.null(self$schema), "", paste0(self$schema,"."))
       
