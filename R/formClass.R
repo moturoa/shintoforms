@@ -384,7 +384,7 @@ formClass <- R6::R6Class(
     
     #'@description Rename database table to correct internal column names
     #'@param data Dataframe
-    rename_definition_table = function(data){
+    rename_definition_table = function(data, from_where = ""){
       
       # Rename to standard colnames
       key <- data.frame(
@@ -392,8 +392,11 @@ formClass <- R6::R6Class(
         new = names(self$def)
       )
       
-      if(!all(names(data) %in% key$old)){
-        message("Not all definition table names configured : check def_columns argument)")
+      nm_not_def <- setdiff(names(data), key$old)
+      
+      if(length(nm_not_def) > 0){
+        msg <- glue::glue("shintoforms (from ${from_where}): names in data not in definition list: {paste(nm_not_def, collapse=', ')}")
+        cli::cli_alert_warning(msg)
       }
       
       dplyr::rename_with(data, .fn = function(x){
@@ -434,7 +437,7 @@ formClass <- R6::R6Class(
       
       out <- collect(out)
       
-      self$rename_definition_table(out)
+      self$rename_definition_table(out, from_where = "get_input_fields")
       
     },
     
@@ -447,7 +450,7 @@ formClass <- R6::R6Class(
       out <- DBI::dbGetQuery(self$con, qu)
       out <- out[order(out[[self$def$order_field]]),]
       
-      self$rename_definition_table(out)
+      self$rename_definition_table(out, from_where = "get_form_fields")
       
     },
     

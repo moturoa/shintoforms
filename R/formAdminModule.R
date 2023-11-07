@@ -358,7 +358,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     selected_row()$id_form
   })
   
-  observeEvent(input$btn_add_formfield, {
+  shiny::observeEvent(input$btn_add_formfield, {
     shiny::showModal(
       softui::modal(
         title = "Invoerveld toevoegen aan formulier",
@@ -366,14 +366,14 @@ formAdminModule <- function(input, output, session, .reg = NULL,
         close_txt = "Annuleren",
         remove_modal_on_confirm = FALSE,
         
-        textInput(session$ns("txt_column_name"), "Naam invoerveld"),
-        radioButtons(session$ns("rad_type_formfield"), "Type invoerveld",
+        shiny::textInput(session$ns("txt_column_name"), "Naam invoerveld"),
+        shiny::radioButtons(session$ns("rad_type_formfield"), "Type invoerveld",
                      choices = configured_field_types),
         
-        uiOutput(session$ns("ui_nested_select_options")),
+        shiny::uiOutput(session$ns("ui_nested_select_options")),
         
         if(option_layout){
-          radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
+          shiny::radioButtons(session$ns("rad_side_formfield"), "Links of rechts op het formulier?",
                        choices = c("Links" = 1,
                                    "Rechts" = 2))  
         }
