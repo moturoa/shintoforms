@@ -427,7 +427,7 @@ Get distinct values of a column in the registrations table
 \subsection{Method \code{rename_definition_table()}}{
 Rename database table to correct internal column names
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$rename_definition_table(data)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{formClass$rename_definition_table(data, from_where = "")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

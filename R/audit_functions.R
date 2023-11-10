@@ -117,13 +117,13 @@ create_partial_mutations_new <- function(data,
                   id %in% !!data_in_range$id) %>%
     dplyr::group_by(id) %>%
     dplyr::filter(auditstamp == max(auditstamp)) %>%
-    dplyr::ungroup
+    dplyr::ungroup()
   
   data_mut <- rbind(last_before_range, data_in_range)
   
   total_changes <- split(data_mut, data_mut$id) %>% 
     lapply(create_partial_mutations_id) %>% 
-    dplyr::bind_rows  
+    dplyr::bind_rows()
   
   if(nrow(total_changes) > 0){
     out <- total_changes %>% 

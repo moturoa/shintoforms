@@ -2,10 +2,15 @@
 % Please edit documentation in R/disable_inputs.R
 \name{disable_inputs}
 \alias{disable_inputs}
-\title{Disable all inputs in a container}
+\title{Disable all inputs in a container. Not used anymore (?)}
 \usage{
 disable_inputs(id, session = shiny::getDefaultReactiveDomain())
 }
+\arguments{
+\item{id}{Id of the HTML container}
+
+\item{session}{Shiny session object, leave alone}
+}
 \description{
-Disable all inputs in a container
+Disable all inputs in a container. Not used anymore (?)
 }
