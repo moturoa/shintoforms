@@ -145,6 +145,7 @@ Make new form object
   pool = TRUE,
   sqlite = NULL,
   connect_on_init = TRUE,
+  shintousers_object = NULL,
   default_color = "#3333cc"
 )}\if{html}{\out{</div>}}
 }
@@ -189,6 +190,8 @@ Make new form object
 \item{\code{sqlite}}{If path to an SQLite file, uses SQLite.}
 
 \item{\code{connect_on_init}}{If TRUE (default), connects to DB on initialization. Otherwise, call \verb{$connect_to_database} at a later stage.}
+
+\item{\code{shintousers_object}}{Optional, an instance of shintoUser (".user") passed during init.}
 
 \item{\code{default_color}}{Default color}
 }

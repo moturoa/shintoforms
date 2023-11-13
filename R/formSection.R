@@ -7,7 +7,8 @@
 
 formSectionModuleUI <- function(id, cfg, data = NULL, .reg, 
                                 inject = list(),
-                                disabled = FALSE){
+                                disabled = FALSE,
+                                shintousers_object = NULL){
   
   ns <- NS(id)
   
@@ -49,7 +50,8 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
                       #type_options = el$type_options,  # --> moet ook naar db
                       default = if(el$type_field == "boolean")TRUE else "", 
                       data = data, 
-                      disabled = disabled)
+                      disabled = disabled,
+                      shintousers_object = shintousers_object)
   })  
   
   

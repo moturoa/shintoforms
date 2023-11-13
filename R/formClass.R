@@ -34,6 +34,7 @@ formClass <- R6::R6Class(
     #' @param pool If TRUE, connects with dbPool
     #' @param connect_on_init If TRUE (default), connects to DB on initialization. Otherwise, call `$connect_to_database` at a later stage.
     #' @param sqlite If path to an SQLite file, uses SQLite.
+    #' @param shintousers_object Optional, an instance of shintoUser (".user") passed during init.
     #' @param default_color Default color
     initialize = function(config_file = "conf/config.yml", 
                           what, 
@@ -91,6 +92,9 @@ formClass <- R6::R6Class(
                           pool = TRUE,
                           sqlite = NULL,
                           connect_on_init = TRUE,
+                          
+                          shintousers_object = NULL,
+                          
                           default_color = "#3333cc"){
       
       self$class_type <- class_type

@@ -95,7 +95,9 @@ formModule <- function(input, output, session, .reg = NULL,
                        
                        message_success = "Registratie opgeslagen",
                        message_error = "Er is een fout opgetreden",
-                       message_deleted = "Registratie verwijderd"
+                       message_deleted = "Registratie verwijderd",
+                       
+                       shintousers_object = NULL
                        ) {
   
   ns <- session$ns
@@ -201,7 +203,8 @@ formModule <- function(input, output, session, .reg = NULL,
     trigger()
     formSectionModuleUI(session$ns("form_left"), cfg = cfg_left(), .reg = .reg,
                         data = data(), disabled = disabled(),
-                        inject = inject_left())
+                        inject = inject_left(),
+                        shintousers_object = shintousers_object)
     
   })
   
@@ -211,7 +214,8 @@ formModule <- function(input, output, session, .reg = NULL,
     trigger()
     formSectionModuleUI(session$ns("form_right"), cfg = cfg_right(), .reg = .reg,
                         data = data(), disabled = disabled(),
-                        inject = inject_right())
+                        inject = inject_right(),
+                        shintousers_object = shintousers_object)
     
   })
   
@@ -222,7 +226,8 @@ formModule <- function(input, output, session, .reg = NULL,
     trigger()
     formSectionModuleUI(session$ns("form_bottom"), cfg = cfg_bottom(), .reg = .reg,
                         data = data(), disabled = disabled(),
-                        inject = inject_bottom())
+                        inject = inject_bottom(),
+                        shintousers_object = shintousers_object)
     
   })
   

@@ -8,7 +8,10 @@ configured_field_types <- c("Tekstinvoer" = "freetext",
                             "Keuzemenu (gekoppelde opties)" = "nestedselect",
                             "Datum" = "date",
                             "Checkbox" = "singlecheck",
-                            "Tekst met opmaak" = "html")
+                            "Tekst met opmaak" = "html",
+                            "Gebruiker lijst (enkele optie)" = "single_user",
+                            "Gebruiker lijst (meerdere opties)" = "multi_user"
+                            )
 
 assert_input_field_type <- function(type){
   if(!type %in% configured_field_types){
@@ -17,17 +20,16 @@ assert_input_field_type <- function(type){
 }
 
 
+amend_type_inputfield <- function(type){
+  if(type == "single_user")type <- "singleselect"
+  if(type == "multi_user")type <- "multiselect"
+  type
+}
+
 
 
 #---- editFieldmodule: module voor een enkele input (bv numeric, text, oid)
 
-# TODO type / subtype:
-# select: single, multiple
-# check: single, multiple
-# boolean: radio, switch
-# text: short, long, html
-# numeric: single, range
-# date: single, range
 
 
 editFieldModuleUI <- function(id, column, data, 
@@ -38,7 +40,8 @@ editFieldModuleUI <- function(id, column, data,
                               label = NULL,
                               disabled = FALSE,
                               input_width = getOption("shintoforms_input_width_percent", "80%"),
-                              input_padding = getOption("shintoforms_input_padding_px", "30px")
+                              input_padding = getOption("shintoforms_input_padding_px", "30px"),
+                              shintousers_object = NULL
                               ){
   
   ns <- shiny::NS(id)
@@ -46,7 +49,31 @@ editFieldModuleUI <- function(id, column, data,
   # doen we niet omdat dan bij een onbekende setting de boel crasht;
   # beter om gewoon door te gaan en NULL in te vullen
   #assert_input_field_type(type)
+
+  # If a shintouser list, make it here
+  if(type %in% c("single_user","multi_user")){
+    if(is.null(shintousers_object) || !isTRUE(shintousers_object$has_connection())){
+      options <- "Gebruiker lijst sync fout"
+    } else {
+      # hier kun je ook als nog op group filteren
+      user_table <- shintousers_object$list_application_users(active_only = TRUE)  
+      options <- sort(user_table[["username"]])
+    }
+    
+    # multiselect verwacht een array met names (voor singleselect either way)
+    names(options) <- options
+  }
   
+  
+  # shintouser <--> shintoforms
+  # intern is dit gewoon een singleselect/multiselect,
+  # enige verschil is dat deze velden bij init gesyncd worden met shintousers
+  # single_user --> singleselect
+  # multi_user --> multiselect
+  type <- amend_type_inputfield(type)
+  
+
+  # Make selected value based on default, data, settings
   value <- make_default_value(column, data, 
                               default = default,
                               array = type == "multiselect")
@@ -156,12 +183,11 @@ editFieldModuleUI <- function(id, column, data,
     ui <- shinyjs::disabled(ui)
   }
   
-  ui <- tags$div(
-    style = glue::glue("padding-left: {input_padding}; padding-right: {input_padding};"),
-    ui
-  )
+tags$div(
+  style = glue::glue("padding-left: {input_padding}; padding-right: {input_padding};"),
+  ui
+)
   
-ui
 }
 
 
@@ -177,6 +203,11 @@ editFieldModule <- function(input, output, session, .reg, type, cfg = NULL,
   # }
   # 
   # val_i$enable()
+  
+  # shintouser <--> shintoforms
+  # intern is dit gewoon een singleselect/multiselect,
+  # enige verschil is dat deze velden bij init gesyncd worden met shintousers
+  type <- amend_type_inputfield(type)
   
   
   #--- Output reactive
