@@ -32,11 +32,10 @@ formModule(
   message_success = "Registratie opgeslagen",
   message_error = "Er is een fout opgetreden",
   message_deleted = "Registratie verwijderd",
-  shintousers_object = NULL
+  shintousers_object = NULL,
+  shintousers_groups = NULL,
+  shintousers_ignore_groups = NULL
 )
-}
-\arguments{
-\item{shintousers_object}{.user (instance shintoUsers, ge-init met username, appname)}
 }
 \description{
 Nieuwe registratie Shiny module

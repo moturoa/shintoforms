@@ -8,7 +8,9 @@
 formSectionModuleUI <- function(id, cfg, data = NULL, .reg, 
                                 inject = list(),
                                 disabled = FALSE,
-                                shintousers_object = NULL){
+                                shintousers_object = NULL,
+                                shintousers_groups = NULL,
+                                shintousers_ignore_groups = NULL){
   
   ns <- NS(id)
   
@@ -51,7 +53,9 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
                       default = if(el$type_field == "boolean")TRUE else "", 
                       data = data, 
                       disabled = disabled,
-                      shintousers_object = shintousers_object)
+                      shintousers_object = shintousers_object,
+                      shintousers_groups = shintousers_groups,
+                      shintousers_ignore_groups = shintousers_ignore_groups)
   })  
   
   

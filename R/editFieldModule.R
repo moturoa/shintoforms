@@ -41,7 +41,9 @@ editFieldModuleUI <- function(id, column, data,
                               disabled = FALSE,
                               input_width = getOption("shintoforms_input_width_percent", "80%"),
                               input_padding = getOption("shintoforms_input_padding_px", "30px"),
-                              shintousers_object = NULL
+                              shintousers_object = NULL,
+                              shintousers_groups = NULL,
+                              shintousers_ignore_groups = NULL
                               ){
   
   ns <- shiny::NS(id)
@@ -56,7 +58,9 @@ editFieldModuleUI <- function(id, column, data,
       options <- "Gebruiker lijst sync fout"
     } else {
       # hier kun je ook als nog op group filteren
-      user_table <- shintousers_object$list_application_users(active_only = TRUE)  
+      user_table <- shintousers_object$list_application_users(active_only = TRUE,
+                                                              groups = shintousers_groups,
+                                                              ignore_groups = shintousers_ignore_groups)  
       options <- sort(user_table[["username"]])
     }
     
