@@ -20,6 +20,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-replace_value_where_multi}{\code{formClass$replace_value_where_multi()}}
 \item \href{#method-NA-get_by_id}{\code{formClass$get_by_id()}}
 \item \href{#method-NA-column_name_from_id}{\code{formClass$column_name_from_id()}}
+\item \href{#method-NA-id_from_column_name}{\code{formClass$id_from_column_name()}}
 \item \href{#method-NA-get_fields_by_type}{\code{formClass$get_fields_by_type()}}
 \item \href{#method-NA-get_field_choices}{\code{formClass$get_field_choices()}}
 \item \href{#method-NA-form_has_field}{\code{formClass$form_has_field()}}
@@ -287,6 +288,23 @@ Get column name for a form field by ID
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{id_form}}{Id of form field}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-id_from_column_name"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-id_from_column_name}{}}}
+\subsection{Method \code{id_from_column_name()}}{
+Get form field ID for a column name
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$id_from_column_name(formfield_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{formfield_name}}{Formfield name}
 }
 \if{html}{\out{</div>}}
 }

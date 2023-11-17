@@ -271,6 +271,16 @@ formClass <- R6::R6Class(
       row[[self$def[["column_field"]]]]
     },
     
+    #' @description Get form field ID for a column name
+    #' @param formfield_name Formfield name
+    id_from_column_name = function(formfield_name){
+      out <- self$read_table(self$def_table, lazy = TRUE) %>%
+        dplyr::filter(!!sym(self$def[["column_field"]]) == !!formfield_name) %>%
+        collect
+      
+      out[[self$def[["id_form"]]]]
+    },
+    
     #' @description Get all fields of a certain type
     #' @param field_type Type of field, e.g. 'singleselect'
     get_fields_by_type = function(field_type){
@@ -655,6 +665,11 @@ formClass <- R6::R6Class(
     
     #' @description Edit options (choices) for a form field
     edit_options_field = function(id_form, new_options){
+      
+      if(length(id_form) == 0){
+        cli::cli_alert_danger("$edit_options_field called with empty or null ID - aborting!")
+        return(invisible(NULL))
+      }
       
       if(!is.character(new_options)){
         new_options <- self$to_json(new_options)  
