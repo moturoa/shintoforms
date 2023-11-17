@@ -22,6 +22,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-column_name_from_id}{\code{formClass$column_name_from_id()}}
 \item \href{#method-NA-get_fields_by_type}{\code{formClass$get_fields_by_type()}}
 \item \href{#method-NA-get_field_choices}{\code{formClass$get_field_choices()}}
+\item \href{#method-NA-form_has_field}{\code{formClass$form_has_field()}}
 \item \href{#method-NA-get_field_choices_in_order}{\code{formClass$get_field_choices_in_order()}}
 \item \href{#method-NA-get_label_field}{\code{formClass$get_label_field()}}
 \item \href{#method-NA-make_choices}{\code{formClass$make_choices()}}
@@ -47,6 +48,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-set_options_order}{\code{formClass$set_options_order()}}
 \item \href{#method-NA-prepare_nested_choice_column}{\code{formClass$prepare_nested_choice_column()}}
 \item \href{#method-NA-amend_options_order}{\code{formClass$amend_options_order()}}
+\item \href{#method-NA-fix_options_order}{\code{formClass$fix_options_order()}}
 \item \href{#method-NA-edit_formulier_setup}{\code{formClass$edit_formulier_setup()}}
 \item \href{#method-NA-edit_zichtbaarheid_invoerveld}{\code{formClass$edit_zichtbaarheid_invoerveld()}}
 \item \href{#method-NA-edit_verwijder_datum}{\code{formClass$edit_verwijder_datum()}}
@@ -322,6 +324,16 @@ Get (recoded) choices for a select field
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-form_has_field"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-form_has_field}{}}}
+\subsection{Method \code{form_has_field()}}{
+Check if we have a field with a name
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$form_has_field(column_field)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-get_field_choices_in_order"></a>}}
@@ -771,7 +783,7 @@ Prepare a nested choice column
 \if{html}{\out{<a id="method-NA-amend_options_order"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-amend_options_order}{}}}
 \subsection{Method \code{amend_options_order()}}{
-If new categories added, make sure the order vector is amended
+If new categories added or removed, make sure the order vector is amended
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{formClass$amend_options_order(id_form, options)}\if{html}{\out{</div>}}
 }
@@ -783,6 +795,16 @@ If new categories added, make sure the order vector is amended
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-fix_options_order"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-fix_options_order}{}}}
+\subsection{Method \code{fix_options_order()}}{
+Like amend_options_order but takes field name
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$fix_options_order(column_field)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-edit_formulier_setup"></a>}}

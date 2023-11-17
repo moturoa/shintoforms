@@ -294,6 +294,18 @@ formClass <- R6::R6Class(
       
     },
     
+    
+    #' @description Check if we have a field with a name
+    form_has_field = function(column_field){
+      
+      out <- self$read_definition(lazy = TRUE) %>%
+        filter(!!sym(self$def$column_field) == !!column_field) %>%
+        collect
+      
+      nrow(out) > 0
+      
+    },
+    
     #' @description Get order of the choices for a field
     #' @details Safe implementation; if the order length does not match the options,
     #' or it is otherwise corrupted, a simple vector of length(n choices) is returned.
@@ -772,7 +784,7 @@ formClass <- R6::R6Class(
     },
 
     
-    #' @description If new categories added, make sure the order vector is amended
+    #' @description If new categories added or removed, make sure the order vector is amended
     #' @param id_form ID of form field
     amend_options_order = function(id_form, options){
       
@@ -781,13 +793,14 @@ formClass <- R6::R6Class(
       
       cur_order <- self$from_json(cur_order)
       options <- self$from_json(options)
+      new_order <- cur_order
       
       if(length(options) < length(cur_order)){
         
         new_order <- cur_order[1:length(options)]  
         self$set_options_order(id_form, new_order)
         
-      } else if(length(options) < length(cur_order)){
+      } else if(length(options) > length(cur_order)){
         
         nc <- length(cur_order)
         n <- length(options) - nc
@@ -797,6 +810,24 @@ formClass <- R6::R6Class(
         
       }
       
+      return(invisible(new_order))
+    },
+    
+    
+    #' @description Like amend_options_order but takes field name
+    fix_options_order = function(column_field){
+      
+        id_form <- self$read_definition(lazy = TRUE) %>%
+          filter(!!sym(self$def$column_field) == !!column_field) %>%
+          select(all_of(c(self$def[["id_form"]],self$def[["options"]]))) %>%
+          collect
+        
+        id <- id_form[[1]]
+        opts <- id_form[[2]]
+        
+        ord <- self$amend_options_order(id, opts)
+        
+        return(ord)
     },
     
     #' @description Edit the form layout
