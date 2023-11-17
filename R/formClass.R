@@ -782,7 +782,12 @@ formClass <- R6::R6Class(
       cur_order <- self$from_json(cur_order)
       options <- self$from_json(options)
       
-      if(length(cur_order) != length(options)){
+      if(length(options) < length(cur_order)){
+        
+        new_order <- cur_order[1:length(options)]  
+        self$set_options_order(id_form, new_order)
+        
+      } else if(length(options) < length(cur_order)){
         
         nc <- length(cur_order)
         n <- length(options) - nc
