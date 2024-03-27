@@ -2,7 +2,7 @@
 #' Nieuwe registratie Shiny module
 #' @rdname registratie
 #' @export
-formUI <- function(id, buttons = TRUE, deletable = FALSE){
+formUI <- function(id, buttons = TRUE, deletable = FALSE, buttons_top=FALSE){
   
   ns <- shiny::NS(id)
   
@@ -12,7 +12,34 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
     softui::fluid_row(
       shiny::uiOutput(ns("ui_registration_description"))
     ),
-    
+    if(buttons_top){
+      
+      softui::fluid_row(class = "justify-content-end",
+                        
+                        shiny::tags$hr(),
+                        
+                        shiny::column(3,
+                                      if(deletable){
+                                        uiOutput(ns("ui_delete_reg"))
+                                      }
+                        ),
+                        shiny::column(5),
+                        shiny::column(2,
+                                      softui::action_button(ns("btn_cancel"), 
+                                                            "Annuleren", 
+                                                            icon = bsicon("x-lg"), 
+                                                            status = "warning")
+                        ),
+                        shiny::column(2,
+                                      softui::action_button(ns("btn_register_new_signal"), 
+                                                            "Opslaan", 
+                                                            icon = bsicon("cloud-arrow-up"), 
+                                                            status = "success")
+                        )
+      )
+      
+      
+    },
     softui::fluid_row(id = ns("form_container"),
         shiny::column(6,
             shiny::uiOutput(ns("ui_input_left"))
