@@ -394,7 +394,7 @@ formModule <- function(input, output, session, .reg = NULL,
   out_ping <- reactiveVal()
   
   observeEvent(input$btn_cancel, {
-    out_ping(list(ping = runif(1), action = "cancel"))
+    out_ping(list(ping = runif(1), action = "cancel", reg_id = current_reg_id()))
     callback_cancel()
   })
   
@@ -439,7 +439,7 @@ formModule <- function(input, output, session, .reg = NULL,
       shinytoastr::toastr_error(message_error)
     }
 
-    out_ping(list(ping = runif(1), action = "save"))
+    out_ping(list(ping = runif(1), action = "save", reg_id = current_reg_id()))
     
     callback_confirm()
   })
@@ -476,7 +476,7 @@ formModule <- function(input, output, session, .reg = NULL,
     
     shinytoastr::toastr_success(message_deleted)
     
-    out_ping(list(ping = runif(1), action = "delete"))
+    out_ping(list(ping = runif(1), action = "delete", reg_id = current_reg_id()))
     callback_confirm()
   })
   
