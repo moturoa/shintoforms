@@ -378,16 +378,6 @@ formAdminModule <- function(input, output, session, .reg = NULL,
                                    "Rechts" = 2))  
         }
         
-        # if(.reg$filterable){
-        #   radioButtons(session$ns("rad_make_filter"), "Wilt u op deze eigenschap kunnen filteren?",
-        #                choices = c("Ja" = TRUE,
-        #                            "Nee" = FALSE))
-        # },
-        # if(.reg$filterable){
-        #   textInput(session$ns("txt_tooltip"), "Tooltip")
-        # }
-        # ,
-        
       )
     )
   })
@@ -405,14 +395,6 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   
   shiny::observeEvent(input$btn_confirm_add_formfield, {
     
-    if(.reg$filterable){
-      make_filter <- input$rad_make_filter
-      tooltip <- input$txt_tooltip
-    } else {
-      make_filter <- NULL
-      tooltip <- NULL
-    }
-    
     colname <- stringr::str_trim(input$txt_column_name, side = "both")
     
     if(colname == ""){
@@ -425,8 +407,6 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     resp <- .reg$add_input_field_to_form(label_field = input$txt_column_name, 
                                          type_field = input$rad_type_formfield, 
                                          form_section = as.integer(input$rad_side_formfield),
-                                         filterable = make_filter, 
-                                         tooltip = tooltip,
                                          column_2_name = input$txt_secondary_column_name)
     
     if(resp < 0){
@@ -521,10 +501,6 @@ formAdminModule <- function(input, output, session, .reg = NULL,
       if(row$type_field == "nestedselect"){
         .reg$edit_nested_column_label(selected_id(), row$options, input$txt_edit_column_2_label)
       }
-
-      # if(.reg$filterable){
-      #   .reg$edit_filterable_column(selected_id(), input$rad_edit_make_filter, input$txt_edit_tooltip)
-      # }
 
       sel_new <- input$sel_new_formfield_type
       if(!is.null(sel_new) && sel_new != ""){

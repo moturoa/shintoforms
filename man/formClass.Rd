@@ -38,7 +38,6 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-check_uniqueness_column_name}{\code{formClass$check_uniqueness_column_name()}}
 \item \href{#method-NA-edit_label_field}{\code{formClass$edit_label_field()}}
 \item \href{#method-NA-edit_field_type}{\code{formClass$edit_field_type()}}
-\item \href{#method-NA-edit_filterable_column}{\code{formClass$edit_filterable_column()}}
 \item \href{#method-NA-from_json}{\code{formClass$from_json()}}
 \item \href{#method-NA-to_json}{\code{formClass$to_json()}}
 \item \href{#method-NA-edit_options_field}{\code{formClass$edit_options_field()}}
@@ -124,7 +123,6 @@ Make new form object
   schema = NULL,
   class_type = "",
   db_connection = NULL,
-  filterable = FALSE,
   audit = FALSE,
   audit_table = "registrations_audit",
   def_table = "formulier_velden",
@@ -132,12 +130,11 @@ Make new form object
     label_field = "label_veld", type_field = "type_veld", order_field = "volgorde_veld",
     form_section = "formulier_sectie", visible = "zichtbaar", date_deleted =
     "datum_uitgeschakeld", options = "opties", order_options = "volgorde_opties", colors
-    = "kleuren", removable = "kan_worden_verwijderd", make_filter = "make_filter",
-    tooltip = "tooltip"),
+    = "kleuren", removable = "kan_worden_verwijderd", ),
   data_table = NULL,
-  data_columns = list(id = "id_registratie", name = "naam_registratie", time_created =
-    "invoerdatum", time_modified = "wijzigdatum", user = "user_id", status = "status",
-    priority = "priority", deleted = "deleted"),
+  data_columns = list(id = "id_registratie", serial_id = "serial_id", name =
+    "naam_registratie", time_created = "invoerdatum", time_modified = "wijzigdatum", user
+    = "user_id", deleted = "deleted", status = "status", priority = "priority"),
   relation_table = NULL,
   relation_columns = list(id = "id", collector_id = "collector_id", collector_type =
     "collector_type", object_id = "object_id", object_type = "object_type", relation_id =
@@ -165,8 +162,6 @@ Make new form object
 \item{\code{class_type}}{Name for the class of the objects to be managed with shintoforms}
 
 \item{\code{db_connection}}{Optional, an existing DB connection}
-
-\item{\code{filterable}}{Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.}
 
 \item{\code{audit}}{If TRUE, writes edits to audit log}
 
@@ -551,8 +546,6 @@ Adds an input field to a form
   label_field,
   type_field,
   form_section = NULL,
-  filterable = NULL,
-  tooltip = NULL,
   column_name = NULL,
   column_2_name = NULL
 )}\if{html}{\out{</div>}}
@@ -566,10 +559,6 @@ Adds an input field to a form
 \item{\code{type_field}}{Type of field (options : TODO)}
 
 \item{\code{form_section}}{Either 1 (left) or 2 (right)}
-
-\item{\code{filterable}}{Whether it is a filterable field (not used)}
-
-\item{\code{tooltip}}{For filter, the tooltip text (not used)}
 
 \item{\code{column_name}}{Optional; name of column in output data (otherwise made from label_field)}
 
@@ -629,27 +618,6 @@ Change the field type for a form field
 \item{\code{id_form}}{ID of form field}
 
 \item{\code{new_type}}{New type}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-NA-edit_filterable_column"></a>}}
-\if{latex}{\out{\hypertarget{method-NA-edit_filterable_column}{}}}
-\subsection{Method \code{edit_filterable_column()}}{
-Edit a filterable field. Not used anymore.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_filterable_column(id_form, new_filter_boolean, new_tooltip)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id_form}}{ID of form field}
-
-\item{\code{new_filter_boolean}}{New value}
-
-\item{\code{new_tooltip}}{New tooltip}
 }
 \if{html}{\out{</div>}}
 }

@@ -14,17 +14,17 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
     ),
     
     softui::fluid_row(id = ns("form_container"),
-        shiny::column(6,
-            shiny::uiOutput(ns("ui_input_left"))
-        ),
-        shiny::column(6,
-            shiny::uiOutput(ns("ui_input_right"))
-        )
+                      shiny::column(6,
+                                    shiny::uiOutput(ns("ui_input_left"))
+                      ),
+                      shiny::column(6,
+                                    shiny::uiOutput(ns("ui_input_right"))
+                      )
     ),
     softui::fluid_row(id = ns("form_container_btm"),
-        shiny::column(12,
-            shiny::uiOutput(ns("ui_input_bottom"))
-        )
+                      shiny::column(12,
+                                    shiny::uiOutput(ns("ui_input_bottom"))
+                      )
     ),
     
     # tags$div(style = "display: none;",
@@ -39,28 +39,28 @@ formUI <- function(id, buttons = TRUE, deletable = FALSE){
                         shiny::tags$hr(),
                         
                         shiny::column(3,
-                          if(deletable){
-                            uiOutput(ns("ui_delete_reg"))
-                          }
+                                      if(deletable){
+                                        uiOutput(ns("ui_delete_reg"))
+                                      }
                         ),
                         shiny::column(5),
                         shiny::column(2,
-                               softui::action_button(ns("btn_cancel"), 
-                                                     "Annuleren", 
-                                                     icon = bsicon("x-lg"), 
-                                                     status = "warning")
+                                      softui::action_button(ns("btn_cancel"), 
+                                                            "Annuleren", 
+                                                            icon = bsicon("x-lg"), 
+                                                            status = "warning")
                         ),
                         shiny::column(2,
-                               softui::action_button(ns("btn_register_new_signal"), 
-                                                     "Opslaan", 
-                                                     icon = bsicon("cloud-arrow-up"), 
-                                                     status = "success")
+                                      softui::action_button(ns("btn_register_new_signal"), 
+                                                            "Opslaan", 
+                                                            icon = bsicon("cloud-arrow-up"), 
+                                                            status = "success")
                         )
       )
       
       
     }
-
+    
     
   )
   
@@ -109,16 +109,15 @@ formModule <- function(input, output, session, .reg = NULL,
     req(write_method())
     req(write_method() != "new")
     
-      softui::action_button(ns("btn_delete_registratie"), 
-                            "Verwijderen ...", 
-                            icon = bsicon("trash"), 
-                            status = "danger")
+    softui::action_button(ns("btn_delete_registratie"), 
+                          "Verwijderen ...", 
+                          icon = bsicon("trash"), 
+                          status = "danger")
     
   })
   
   
   current_reg_id <- reactive({ 
-    
     req(trigger())
     
     if(write_method() == "new"){ 
@@ -134,10 +133,10 @@ formModule <- function(input, output, session, .reg = NULL,
     registration_description_function(data())
     
   })
-
+  
   # reactive maken zodat ie update als er iets wordt veranderd in admin, zie admin scherm hoe dat moet.
   cfg_left <- reactive({
-      ping_update()
+    ping_update()
     .reg$get_form_fields(1)
   })
   
@@ -172,7 +171,7 @@ formModule <- function(input, output, session, .reg = NULL,
   })
   
   
- 
+  
   inject_left <- reactive({
     
     obj <- inject_prep()
@@ -290,14 +289,12 @@ formModule <- function(input, output, session, .reg = NULL,
     
   })
   observe({
-     
     extra <- inject_prep()
     req(extra)
     req(ui_ping())
     
     withmod <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
                        sapply(sapply(extra, "[[", "relation"), is.null))
- 
     
     if(length(withmod)){
       
@@ -318,13 +315,12 @@ formModule <- function(input, output, session, .reg = NULL,
     
     # for all relations
     withmod_rel <- which(!sapply(sapply(extra, "[[", "ui_module"), is.null) & 
-                     !sapply(sapply(extra, "[[", "relation"), is.null))
+                           !sapply(sapply(extra, "[[", "relation"), is.null))
     
     if(length(withmod_rel)){
       
       relation_values <- lapply(seq_along(withmod_rel), function(i){
         j <- withmod_rel[i]
-        
         lis_call <- c(list(
           module = extra[[j]]$server_module,
           id = extra[[j]]$id,
@@ -339,7 +335,7 @@ formModule <- function(input, output, session, .reg = NULL,
       
       modules_relations(relation_values)
     }
-     
+    
   })
   
   edits <- reactive({
@@ -363,16 +359,14 @@ formModule <- function(input, output, session, .reg = NULL,
   
   edits_relations <- reactive({
     req(length(modules_relations()))  
-    
     rel <- lapply(modules_relations(), function(x)x())  
     
     dplyr::bind_rows(rel) %>% 
-      mutate(username = current_user)
+      mutate(!!sym(.reg$relation_columns$username) := current_user)
     
   })
   
   observeEvent(input$btn_register_new_signal, {
-    
     if(use_confirmation_modal){
       showModal(
         softui::modal(
@@ -400,12 +394,17 @@ formModule <- function(input, output, session, .reg = NULL,
   
   
   confirm_new_reg <- reactiveVal()
-  observeEvent(confirm(), confirm_new_reg(runif(1)))
-  observeEvent(input$btn_confirm_new_registration, confirm_new_reg(runif(1)))
+  
+  observeEvent(confirm(), {
+    confirm_new_reg(runif(1))
+  })
+  
+  observeEvent(input$btn_confirm_new_registration,{
+    confirm_new_reg(runif(1))
+  })
   
   
   observeEvent(confirm_new_reg(), {
- 
     if(write_method() == "new"){ 
       resp <- .reg$write_new_registration(edits(), 
                                           user_id = current_user, 
@@ -413,7 +412,7 @@ formModule <- function(input, output, session, .reg = NULL,
       
       if(use_relations){
         resp2 <- .reg$write_new_relations(data = edits_relations(),
-                                        registration_id = current_reg_id())
+                                          registration_id = current_reg_id())
       }
       
     } else { 
@@ -425,20 +424,20 @@ formModule <- function(input, output, session, .reg = NULL,
       
       if(use_relations){
         resp2 <- .reg$update_relations(edits_relations(),
-                                     registration_id = current_reg_id())
+                                       registration_id = current_reg_id())
       }
     }
-
+    
     if(!use_relations){
       resp2 <- TRUE
     }    
-
+    
     if(resp & resp2){
       shinytoastr::toastr_success(message_success)
     } else {
       shinytoastr::toastr_error(message_error)
     }
-
+    
     out_ping(list(ping = runif(1), action = "save", reg_id = current_reg_id()))
     
     callback_confirm()
@@ -460,7 +459,7 @@ formModule <- function(input, output, session, .reg = NULL,
       )
     )
   })
-
+  
   observeEvent(input$btn_confirm_delete_registration, {
     
     .reg$delete_registration(data()[[.reg$data_columns$id]],
@@ -469,7 +468,7 @@ formModule <- function(input, output, session, .reg = NULL,
     if(!is.null(.reg$event_data)){
       .reg$delete_event(data()[[.reg$data_columns$id]])
     }
-
+    
     # delete relation data
     # current_relations = .reg$get_objects_for_collector(collector_id = current_reg_id())
     # .reg$soft_delete_relations(current_relations$id) 

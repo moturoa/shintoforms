@@ -20,7 +20,6 @@ formClass <- R6::R6Class(
     #' @param schema DB schema
     #' @param class_type Name for the class of the objects to be managed with shintoforms
     #' @param db_connection Optional, an existing DB connection
-    #' @param filterable Boolean, TRUE if the user wants to control which registrations to filter. Requires make_filter and tooltip in the def_columns list.
     #' @param audit If TRUE, writes edits to audit log
     #' @param audit_table Name of the table for the audit logs
     #' @param def_table Table in DB (in schema) that holds form config
@@ -41,7 +40,6 @@ formClass <- R6::R6Class(
                           schema = NULL,
                           class_type="",
                           db_connection = NULL,
-                          filterable = FALSE,
                           audit = FALSE,
                           audit_table = "registrations_audit",
                           def_table = "formulier_velden",
@@ -58,19 +56,19 @@ formClass <- R6::R6Class(
                             order_options = "volgorde_opties",
                             colors = "kleuren",
                             removable = "kan_worden_verwijderd",
-                            make_filter = "make_filter",
-                            tooltip = "tooltip"
                           ),
                           data_table = NULL,
                           data_columns = list(
                             id = "id_registratie",
+                            serial_id = "serial_id",
                             name = "naam_registratie",
+                            casenr = "zaak_nummer",
                             time_created = "invoerdatum",
                             time_modified = "wijzigdatum",
                             user = "user_id",
+                            deleted = "deleted",
                             status = "status",
-                            priority = "priority",
-                            deleted = "deleted"
+                            priority = "priority"
                           ),  
                           relation_table = NULL,
                           relation_columns = list(
@@ -102,7 +100,6 @@ formClass <- R6::R6Class(
       self$audit <- audit
       self$audit_table <- audit_table
       
-      self$filterable <- filterable
       self$inject <- inject
       
       
@@ -117,7 +114,6 @@ formClass <- R6::R6Class(
       self$relation_columns <- relation_columns
       self$relation_audit_table <- relation_audit_table
       
-      
       super$initialize(what = what, config_file = config_file, schema = schema,
                        pool = pool, sqlite = sqlite, 
                        db_connection = db_connection,
@@ -129,13 +125,21 @@ formClass <- R6::R6Class(
       self$data_table <- data_table
       self$data_columns <- data_columns
       
+      
       # Integrity checks if connected to DB
       if(connect_on_init){
-        
         # check if audit table is present 
-        if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, schema=self$schema)){ 
-          stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
+        if(is.null(self$schema)){
+          if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table)){ 
+            stop(glue::glue("Audit feature is on but there is no table named {self$audit_table}")) 
+          }
+        } else {
+          if(self$audit & !DBI::dbExistsTable(self$con, DBI::Id(schema = self$schema, table = self$audit_table))){
+          #if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, self$schema)){ 
+            stop(glue::glue("Audit feature is on but there is no table named {self$audit_table} in schema {self$schema}")) 
+          }
         }
+        
         
         if(!is.null(self$data_table)){
           
@@ -164,8 +168,6 @@ formClass <- R6::R6Class(
       
       # 'schema' string for query building
      self$store_schema_str()
-      
-      
 
     },
     
@@ -257,7 +259,6 @@ formClass <- R6::R6Class(
     #' @description Get a row from the form definition by the form id.
     #' @param id_form Id of form field
     get_by_id = function(id_form){
-      
       self$read_table(self$def_table, lazy = TRUE) %>%
         dplyr::filter(!!sym(self$def[["id_form"]]) == !!id_form) %>%
         collect
@@ -411,7 +412,6 @@ formClass <- R6::R6Class(
     #'@description Rename database table to correct internal column names
     #'@param data Dataframe
     rename_definition_table = function(data, from_where = ""){
-      
       # Rename to standard colnames
       key <- data.frame(
         old = unname(unlist(self$def)),
@@ -496,15 +496,11 @@ formClass <- R6::R6Class(
     #' @param label_field Label for the field
     #' @param type_field Type of field (options : TODO)
     #' @param form_section Either 1 (left) or 2 (right)
-    #' @param filterable Whether it is a filterable field (not used)
-    #' @param tooltip For filter, the tooltip text (not used)
     #' @param column_name Optional; name of column in output data (otherwise made from label_field)
     #' @param column_2_name Only used for nested select
     add_input_field_to_form = function(label_field, 
                                        type_field, 
-                                       form_section = NULL, 
-                                       filterable = NULL, 
-                                       tooltip = NULL, 
+                                       form_section = NULL,
                                        column_name = NULL, 
                                        column_2_name = NULL
                                        ){
@@ -573,12 +569,6 @@ formClass <- R6::R6Class(
         data$id_form <- id
       }
       
-      if(self$filterable){
-        data <- data %>%
-          mutate(make_filter = filterable,
-                 tooltip = tooltip)
-      }
-      
       # ugly rename because robust
       m_i <- match(names(data), names(unlist(self$def)))
       data <- data[,!is.na(m_i)]
@@ -629,20 +619,6 @@ formClass <- R6::R6Class(
                                col_replace = self$def$type_field, 
                                val_replace = new_type)
       
-    },
-    
-    #' @description Edit a filterable field. Not used anymore.
-    #' @param id_form ID of form field
-    #' @param new_filter_boolean New value
-    #' @param new_tooltip New tooltip
-    edit_filterable_column = function(id_form, new_filter_boolean, new_tooltip){
-      self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
-                               col_replace = self$def$make_filter, 
-                               val_replace = new_filter_boolean)
-      
-      self$replace_value_where(self$def_table, col_compare = self$def$id_form, val_compare = id_form,
-                               col_replace = self$def$tooltip, 
-                               val_replace = new_tooltip)
     },
     
     #' @description from_json wrapper
@@ -1017,7 +993,6 @@ formClass <- R6::R6Class(
     #' @param current_reg_id ID for the registration
     #' @param data_only Return only the dataset before appending to an actual table (for testing)
     write_new_registration = function(data, user_id, current_reg_id, data_only = FALSE){ 
-      
       # add missing columns to output etc.
       self$prepare_data_table()
       
@@ -1040,7 +1015,6 @@ formClass <- R6::R6Class(
       
       data <- as.data.frame(
         lapply(data, function(x){
-          
           # jsonify arrays
           if(length(x) > 1){
             x <- as.character(self$to_json(x))
@@ -1581,14 +1555,13 @@ formClass <- R6::R6Class(
   #' @param data Data to append 
   #' @param registration_id ID for the registration
   write_new_relations = function(data, registration_id){ 
-    
     postgres_time <- self$postgres_now()
 
     # Voor postgres GEBRUIK now()::timestamp
     data <- data %>%
-      mutate(collector_id = registration_id,
-             timestamp = format(postgres_time),
-             collector_type = ifelse(is.na(collector_type), self$class_type, collector_type))
+      mutate(!!sym(self$relation_columns$collector_id) := registration_id,
+             !!sym(self$relation_columns$timestamp) := format(postgres_time),
+                   !!sym(self$relation_columns$collector_type) := ifelse(is.na(!!sym(self$relation_columns$collector_type)), self$class_type, !!sym(self$relation_columns$collector_type)))
 
 
     self$append_data(self$relation_table,
@@ -1600,7 +1573,6 @@ formClass <- R6::R6Class(
   #' @param new_relations The current state that should end up in the relations table 
   #' @param registration_id ID for the registration
   update_relations = function(new_relations, registration_id){ 
- 
     old_relations <- self$filter(self$relation_table, !!sym(self$relation_columns$collector_id) == !!registration_id)
      
     if(nrow(new_relations) == 0 & nrow(old_relations) == 0) return(TRUE)
@@ -1620,18 +1592,18 @@ formClass <- R6::R6Class(
     
     # get all (old) relations that are ALTERED or DELETED
     altered_or_deleted <- old_relations %>% 
-      left_join(new_relations, by='id', suffix=c("", "_new"))  %>% 
-      filter((comment_new != comment & status_new != status) | is.na(collector_id_new)) %>%
-      mutate(verwijderd = ifelse(is.na(collector_id_new), TRUE, verwijderd)) %>%
+      left_join(new_relations, by=self$relation_columns$id, suffix=c("", "_new"))  %>% 
+      filter((!!sym(glue("{self$relation_columns$comment}_new")) != !!sym(self$relation_columns$comment) & !!sym(glue("{self$relation_columns$status}_new")) != !!sym(self$relation_columns$status)) | is.na(!!sym(glue("{self$relation_columns$collector_id}_new")))) %>%
+      mutate(!!sym(self$relation_columns$verwijderd) := ifelse(is.na(!!sym(glue("{self$relation_columns$collector_id}_new"))), TRUE, !!sym(self$relation_columns$verwijderd))) %>%
       select(!ends_with('_new'))
  
     # archive all relations that are ALTERED or DELETED   
-    self$soft_delete_relations(altered_or_deleted$id) 
+    self$soft_delete_relations(altered_or_deleted[[self$relation_columns$id]]) 
     
     # append all relations that are NEW or ALTERED
     new  <- new_relations %>% 
-      left_join(old_relations, by='id', suffix=c("", "_old"))%>% 
-      filter(is.na(status_old)) %>%
+      left_join(old_relations, by=self$relation_columns$id, suffix=c("", "_old"))%>% 
+      filter(is.na(!!sym(glue("{self$relation_columns$status}_old")))) %>%
       select(!ends_with('_old'))
  
     new_data <- dplyr::bind_rows(new, altered_or_deleted)

@@ -4,10 +4,10 @@
 
 
 Configurable forms, shinto style.
-See usage in `wbm3.0`, `apollo-ondermijning`
+See usage in `apollo-ondermijning` (and `wbm3.0`)
 
 
 
 ## Contact
 
-Remko Duursma
+Wesley Brants
