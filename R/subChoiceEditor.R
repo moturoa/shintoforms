@@ -57,7 +57,7 @@ subChoiceEditorUI <- function(id){
              softui::action_button(ns("btn_add_row"), "Toevoegen", icon = bsicon("plus-lg"), status = "info"),
              ),
       shiny::column(6,
-             softui::action_button(ns("btn_remove_row"), "Laatste verwijderen", icon = bsicon("dash-lg"), status = "warning")
+             # softui::action_button(ns("btn_remove_row"), "Laatste verwijderen", icon = bsicon("dash-lg"), status = "warning")
              )
     )
     
@@ -122,16 +122,16 @@ subChoiceEditor <- function(input, output, session, data = shiny::reactive(NULL)
     
   })
   
-  observeEvent(input$btn_remove_row, {
-    ids <- cur_ids()
-    last_id <- ids[length(ids)]
-    data_current[[last_id]] <- NULL
-    cur_ids(setdiff(cur_ids(),last_id))
-    
-    box_id <- paste0("#", session$ns(last_id))
-    
-    removeUI(box_id, immediate = TRUE)
-  })
+  # observeEvent(input$btn_remove_row, {
+  #   ids <- cur_ids()
+  #   last_id <- ids[length(ids)]
+  #   data_current[[last_id]] <- NULL
+  #   cur_ids(setdiff(cur_ids(),last_id))
+  #   
+  #   box_id <- paste0("#", session$ns(last_id))
+  #   
+  #   removeUI(box_id, immediate = TRUE)
+  # })
   
   observeEvent(input$btn_add_row, {
     

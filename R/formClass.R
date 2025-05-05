@@ -519,11 +519,10 @@ formClass <- R6::R6Class(
         id <- uuid::UUIDgenerate()  
       }
 
-      # Sanitize column name
+      # Sanitize column names
       if(is.null(column_name)){
         column_name <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
       }
-      
       
       if(!self$check_uniqueness_column_name(column_name))return(-1)
       if(!is.null(column_2_name) && !self$check_uniqueness_column_name(column_2_name))return(-1)
@@ -547,8 +546,9 @@ formClass <- R6::R6Class(
           message("column_2_name must be provided for type field: nestedselect")
           return(-1)
         }
+        
         choice_values <- list(key = setNames(list(NULL),column_name),
-                              value = setNames(list(NULL),column_2_name)) %>% 
+                              value = setNames(list(NULL),janitor::make_clean_names(tolower(column_2_name), parsing_option = 1))) %>% 
           self$to_json()
       }
       
@@ -933,10 +933,10 @@ formClass <- R6::R6Class(
       for(i in seq_len(nrow(tab))){
         
         if(tab$type_field[i] == "nestedselect"){
-          
           column_2 <- names(self$from_json(tab$options[i])$value)
+          column_2 <- janitor::make_clean_names(tolower(column_2), parsing_option = 1)
           
-          if(!column_2 %in% cols_output){
+          if(!tolower(column_2) %in% cols_output){
             self$make_column(self$data_table, column_2, "text")
             
             # wanneer audit -> kolom ook aan audit table toevoegen
@@ -1046,7 +1046,6 @@ formClass <- R6::R6Class(
     #' @param user_id User ID, for audit logging
     #' @param current_reg_id Registration ID
     edit_registration = function(old_data, new_data, user_id, current_reg_id){
-      
       # prepare output columns
       self$prepare_data_table()
       
