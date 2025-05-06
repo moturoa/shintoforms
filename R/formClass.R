@@ -69,7 +69,8 @@ formClass <- R6::R6Class(
                             deleted = "deleted",
                             status = "status",
                             priority = "priority"
-                          ),  
+                          ), 
+                          casenr_code = NULL,
                           relation_table = NULL,
                           relation_columns = list(
                             id = "id",
@@ -124,6 +125,8 @@ formClass <- R6::R6Class(
       self$def <- def_columns
       self$data_table <- data_table
       self$data_columns <- data_columns
+      
+      self$casenr_code <- casenr_code
       
       
       # Integrity checks if connected to DB
@@ -1035,6 +1038,19 @@ formClass <- R6::R6Class(
       
       # Append to db table
       res <- self$append_data(self$data_table, data_all)
+      
+      # If no error, create casenr based on serial_id and possible casenr-code
+      if(!inherits(res, "try-error")){
+        new_serial <- self$get_registration_by_id(current_reg_id)[[self$data_columns$serial_id]]
+        
+        if(is.null(self$casenr_code)){
+          self$replace_value_where(self$data_table, col_replace = self$data_columns$casenr, val_replace = new_serial, col_compare = self$data_columns$id, val_compare = current_reg_id)
+        } else {
+          new_serial_code <- glue::glue("{self$casenr_code}-{new_serial}")
+          self$replace_value_where(self$data_table, col_replace = self$data_columns$casenr, val_replace = new_serial_code, col_compare = self$data_columns$id, val_compare = current_reg_id)
+        }
+      }
+      
       
       # TRUE if success (append_data has a try()) 
       return(!inherits(res, "try-error"))
