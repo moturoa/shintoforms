@@ -572,6 +572,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
     if(is.null(selected_row()) || nrow(selected_row()) == 0){
       return(NULL)
     }
+    
     .reg$from_json(selected_row()$options)
   })
 
@@ -579,8 +580,14 @@ formAdminModule <- function(input, output, session, .reg = NULL,
 
 
   shiny::observeEvent(input$btn_confirm_nested_options, {
+    
+    subchoice_label <- nested_options()$label
+    
+    nested_choices_out <- nested_choices_out()
+    
+    nested_choices_out$label <- subchoice_label
 
-    .reg$edit_options_field(selected_id(), nested_choices_out())
+    .reg$edit_options_field(selected_id(), nested_choices_out)
 
     db_ping(runif(1))
   })

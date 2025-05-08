@@ -551,7 +551,8 @@ formClass <- R6::R6Class(
         }
         
         choice_values <- list(key = setNames(list(NULL),column_name),
-                              value = setNames(list(NULL),janitor::make_clean_names(tolower(column_2_name), parsing_option = 1))) %>% 
+                              value = setNames(list(NULL),janitor::make_clean_names(tolower(column_2_name), parsing_option = 1)),
+                              label = column_2_name) %>% 
           self$to_json()
       }
       
