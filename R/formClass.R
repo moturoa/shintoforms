@@ -119,7 +119,7 @@ formClass <- R6::R6Class(
                        pool = pool, sqlite = sqlite, 
                        db_connection = db_connection,
                        connect_on_init = connect_on_init)
-
+      
       
       self$def_table <- def_table
       self$def <- def_columns
@@ -138,7 +138,7 @@ formClass <- R6::R6Class(
           }
         } else {
           if(self$audit & !DBI::dbExistsTable(self$con, DBI::Id(schema = self$schema, table = self$audit_table))){
-          #if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, self$schema)){ 
+            #if(self$audit & !DBI::dbExistsTable(self$con, self$audit_table, self$schema)){ 
             stop(glue::glue("Audit feature is on but there is no table named {self$audit_table} in schema {self$schema}")) 
           }
         }
@@ -157,7 +157,7 @@ formClass <- R6::R6Class(
           
           if(!self$data_columns$deleted %in% datacols){
             stop(paste("Must have 'deleted' column in registrations data (`alter table <<table>> add column deleted integer default 0`),",
-                 " or set data_columns$deleted to the name of the boolean 'deleted' flag column"))
+                       " or set data_columns$deleted to the name of the boolean 'deleted' flag column"))
           }  
         }
         # Check
@@ -170,8 +170,8 @@ formClass <- R6::R6Class(
       }
       
       # 'schema' string for query building
-     self$store_schema_str()
-
+      self$store_schema_str()
+      
     },
     
     
@@ -384,7 +384,7 @@ formClass <- R6::R6Class(
       nms <- unlist(unname(val))
       
       out <- setNames(names(val), nms)
-
+      
       out2 <- suppressWarnings({
         setNames(as.integer(out), nms)
       })
@@ -506,7 +506,7 @@ formClass <- R6::R6Class(
                                        form_section = NULL,
                                        column_name = NULL, 
                                        column_2_name = NULL
-                                       ){
+    ){
       
       
       # Make an ID for the field. Integer or UUID depending on column type.
@@ -521,7 +521,7 @@ formClass <- R6::R6Class(
         add_id <- TRUE
         id <- uuid::UUIDgenerate()  
       }
-
+      
       # Sanitize column names
       if(is.null(column_name)){
         column_name <- janitor::make_clean_names(tolower(label_field), parsing_option = 1)
@@ -529,7 +529,7 @@ formClass <- R6::R6Class(
       
       if(!self$check_uniqueness_column_name(column_name))return(-1)
       if(!is.null(column_2_name) && !self$check_uniqueness_column_name(column_2_name))return(-1)
-        
+      
       if(!is.null(form_section) && length(form_section) > 0){
         field_order_nr <- self$get_next_formorder_number(form_section)
       } else {
@@ -579,7 +579,7 @@ formClass <- R6::R6Class(
       m_i <- m_i[!is.na(m_i)]
       names(data) <- unname(unlist(self$def))[m_i]
       
-
+      
       self$append_data(self$def_table, data)
       
       if(type_field == "boolean"){
@@ -588,14 +588,14 @@ formClass <- R6::R6Class(
       }
       
       return(0)
-        
+      
       
     },
     
     #' @description Check if a column name can be used (returns TRUE if the column does not exist in the definition table)
     #' @param column Name of the column
     check_uniqueness_column_name =  function(column){
-    
+      
       qu <- glue::glue("SELECT * FROM {self$schema_str}{self$def_table} WHERE {self$def$column_field} = '{column}'")
       
       res <- DBI::dbGetQuery(self$con, qu)
@@ -654,7 +654,7 @@ formClass <- R6::R6Class(
       if(!is.character(new_options)){
         new_options <- self$to_json(new_options)  
       }
-    
+      
       
       if(is.null(names(self$from_json(new_options)))){
         stop("JSON new_options MUST have names (1:n) (edit_options_field)")
@@ -777,7 +777,7 @@ formClass <- R6::R6Class(
       
       self$edit_options_field(id_form, lis)
     },
-
+    
     
     #' @description If new categories added or removed, make sure the order vector is amended
     #' @param id_form ID of form field
@@ -812,17 +812,17 @@ formClass <- R6::R6Class(
     #' @description Like amend_options_order but takes field name
     fix_options_order = function(column_field){
       
-        id_form <- self$read_definition(lazy = TRUE) %>%
-          filter(!!sym(self$def$column_field) == !!column_field) %>%
-          select(all_of(c(self$def[["id_form"]],self$def[["options"]]))) %>%
-          collect
-        
-        id <- id_form[[1]]
-        opts <- id_form[[2]]
-        
-        ord <- self$amend_options_order(id, opts)
-        
-        return(ord)
+      id_form <- self$read_definition(lazy = TRUE) %>%
+        filter(!!sym(self$def$column_field) == !!column_field) %>%
+        select(all_of(c(self$def[["id_form"]],self$def[["options"]]))) %>%
+        collect
+      
+      id <- id_form[[1]]
+      opts <- id_form[[2]]
+      
+      ord <- self$amend_options_order(id, opts)
+      
+      return(ord)
     },
     
     #' @description Edit the form layout
@@ -875,9 +875,9 @@ formClass <- R6::R6Class(
     #' @description Reset the form field order
     #' @param id_formfield ID of form field
     reset_volgorde_invoerveld = function(id_formfield, new_volgorde_nummer){
-
+      
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
-
+      
       self$execute_query(qu)
       
     },
@@ -974,7 +974,7 @@ formClass <- R6::R6Class(
       }
       
     },
-     
+    
     
     #' @description Rename registrations data (as read with $read_registrations) to 
     #' internal column names as defined in `data_columns` argument
@@ -1103,9 +1103,9 @@ formClass <- R6::R6Class(
                                      query_only = FALSE, 
                                      quiet = FALSE,  
                                      username=user_id)
-       
-    
-        
+      
+      
+      
       return(TRUE)
     },
     
@@ -1130,12 +1130,12 @@ formClass <- R6::R6Class(
         self$append_data(self$audit_table, data_row)
         
       }
-
-
+      
+      
       # time_modified
       tabl <- ifelse(is.null(self$schema),self$data_table,glue("{self$schema}.{self$data_table}"))
       mod_query <- glue("update {tabl} set {self$data_columns$time_modified} = NOW()::timestamp where ",
-                    "{self$data_columns$id} = '{registration_id}'") %>% as.character() 
+                        "{self$data_columns$id} = '{registration_id}'") %>% as.character() 
       
       if(!is.null(mod_query)){
         self$execute_query(mod_query)
@@ -1157,7 +1157,7 @@ formClass <- R6::R6Class(
       
     },
     
-
+    
     #' @description Read registrations, recode select values where needed.
     #' @param recode If TRUE (default), replaces codes with labels (for select fields)
     #' @param include_deleted If TRUE, include deleted registrations
@@ -1166,7 +1166,7 @@ formClass <- R6::R6Class(
                                   include_deleted = TRUE,
                                   deleted_only = FALSE,
                                   lazy = FALSE
-                                  ){
+    ){
       
       data <- self$read_table(self$data_table, lazy = TRUE)
       
@@ -1248,7 +1248,7 @@ formClass <- R6::R6Class(
       
       
       for(i in seq_len(nrow(def_multi))){
-      
+        
         opt <- def_multi[[self$def$options]][i]
         key <- self$from_json(opt)
         col <- def_multi[[self$def$column_field]][i]
@@ -1263,10 +1263,10 @@ formClass <- R6::R6Class(
           
           data[[col]] <- unlist(val)
         }
-      
+        
       }
       
-    data
+      data
     },
     
     #' @description Get a registration with a uuid
@@ -1310,25 +1310,25 @@ formClass <- R6::R6Class(
       
     },
     
-
+    
     get_occurences = function(table, column, record){
-
+      
       qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column} = '{record}'")
-
+      
       res <- DBI::dbGetQuery(self$con, qu)
-
+      
       return(res)
-
+      
     },
     
     get_registration_by_json = function(table, column, record){
-
+      
       qu <- glue::glue("SELECT * FROM {self$schema_str}{table} WHERE {column}::jsonb ? '{record}'")
-
+      
       res <- DBI::dbGetQuery(self$con, qu)
-
+      
       return(res)
-
+      
     },
     
     
@@ -1344,294 +1344,294 @@ formClass <- R6::R6Class(
     #timeseries <- .reg$create_timeseries(columns=NULL,table=signal_data()) 
     
     #' @description Creates a timeseries for the audit
-  create_timeseries = function(columns = NULL, date_range = NULL){
-    
-    selected_columns <- unique(c(columns,
-                                 self$data_columns$id,  
-                                 self$data_columns$name, 
-                                 self$data_columns$user, 
-                                 self$data_columns$time_modified))
-    
-    
-    data_current <- self$read_table(self$data_table, lazy=TRUE) %>%
-      select(any_of(selected_columns))
-    
-    data_history <- self$read_table(self$audit_table, lazy=TRUE) %>%
-      select(any_of(selected_columns))
-    
-    if(!is.null(date_range)){
+    create_timeseries = function(columns = NULL, date_range = NULL){
       
-      if(length(date_range) != 2 || sum(is.na(date_range)) > 0){
-        message("Malformed date_range passed to $create_timeseries (shintoforms), ignoring!")
-      } else {
-        data_current <- dplyr::filter(data_current, between(time_modified, !!date_range[1], !!date_range[2]))
-        data_history <- dplyr::filter(data_history, between(time_modified, !!date_range[1], !!date_range[2]))
-      }
+      selected_columns <- unique(c(columns,
+                                   self$data_columns$id,  
+                                   self$data_columns$name, 
+                                   self$data_columns$user, 
+                                   self$data_columns$time_modified))
       
-    }
-    
-    data_current <- collect(data_current)
-    data_history <- collect(data_history)
-    
-  return(dplyr::bind_rows(data_current, data_history))
-  },
-
-  # functie om een audit table om te zetten in een event log
-  # creation only filterd alleen de aanmaak events en dus geen updates
-  #' @description Creates 'events' based on the timeseries
-  create_events = function(timeseries, date_range = NULL, creation_only=NULL){
-    
-    if(!is.null(creation_only))message("argument creation_only to $create_events is ignored")
-    
-    create_partial_mutations_new(timeseries, 
-                                 lowerdate = date_range[1],
-                                 upperdate = date_range[2],
-                                 auditstamp_column = self$data_columns$time_modified,
-                                 id_column = self$data_columns$id,
-                                 name_column = self$data_columns$name,
-                                 username_column = self$data_columns$user)
-    
-  }, 
-  
-  ## Relations
-  #' @description Reads the relation table
-  get_all_relations = function(){
-
-    if(is.null(self$relation_table)){
-      stop("Set 'relation_table' in shintoforms formcall (has no default value anymore)")
-    }
-    
-    qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
-
-    self$query(qu)
-    
-  },
-   
-  #' @description get_objects_for_collector 
-  #' @param collector_type Type of collector
-  #' @param collector_id ID of collector
-  #' @param relation_type Description of collector -> object relation
-  #' @param relation_id ID of relation (often session ID of module)
-  #' @param filter_verwijderd when status is zero
-  # examples: 
-  # get_objects_for_collector('signaal')
-  # get_objects_for_collector('signaal', collector_id="12")
-  # get_objects_for_collector('signaal', relation_type="hoofdadres") 
-  get_objects_for_collector = function(collector_type=NA,
-                                       collector_id=NA,
-                                       relation_type=NA,
-                                       relation_id=NA,
-                                       object_type=NA, 
-                                       filter_verwijderd=TRUE){
-    
-    collector_type = ifelse(is.na(collector_type), self$class_type, collector_type) 
-    
-    # Build query parts
-    V <- ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
-    A <- ifelse(is.na(collector_id), "", glue(" AND {self$relation_columns$collector_id} = '{collector_id}'"))
-    B <- ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
-    C <- ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
-    D <- ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
-
-    qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C}{D};")
-
-    self$query(qu)
-    
-  },  
-
-  #' @description get_collector_for_object 
-  #' @param collector_type Type of collector
-  #' @param collector_id ID of collector
-  #' @param relation_type Description of collector -> object relation
-  #' @param relation_id ID of relation (often session ID of module)
-  #' @param filter_verwijderd when status is zero
-  # examples: 
-  # get_objects_for_collector('signaal')
-  # get_objects_for_collector('signaal', collector_id="12")
-  # get_objects_for_collector('signaal', relation_type="hoofdadres") 
-  get_collector_for_object = function( object_id,
-                                       collector_type=NA,
-                                       object_type=NA,
-                                       relation_type=NA,
-                                       relation_id=NA,
-                                       filter_verwijderd=T){
-    
-    # Removed this statement so we are not limited to only one collector_type. 
-    # This collector_type has been added as arguments to function-calls which were already made in apollo_ondermijning.
-    #collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
-
-    # Build query parts
-    V <- ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
-    A <- ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
-    B <- ifelse(is.na(collector_type), "", glue(" AND {self$relation_columns$collector_type} = '{collector_type}'"))
-    C <- ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
-    D <- ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
-    
-    qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C}{D};")
-
-    self$query(qu)
-    
-  },
-  
-  #' @description Adds a relation to the relation table
-  add_relation = function(id = uuid::UUIDgenerate(),
-                          collector_id,
-                          collector_type, 
-                          object_id,
-                          object_type,
-                          relation_id,
-                          relation_type,
-                          comment=NA,
-                          status="1",
-                          verwijderd=FALSE,
-                          username,
-                          timestamp){ 
-    
-    data <- data.frame(id,
-                       collector_id,
-                       collector_type, 
-                       object_id,
-                       object_type,
-                       relation_id,
-                       relation_type,
-                       comment,
-                       status,
-                       username,
-                       timestamp)
-    
-    names(data) <- self$relation_columns
-    
-    self$append_data(self$relation_table, data) 
-    
-  },
-
-  #' @description timestamp in postgres timezone 
-  postgres_now = function(){
-    
-    # overwrites shintodb::databaseClass / postgres_now because it fails on sqlite,
-    # so we need a fallback here
-    
-    tm <- try({
-      self$query("select now()", quiet = TRUE)$now  
-    }, silent = TRUE)
-    
-    if(inherits(tm, "try-error")){
-      return(Sys.time())
-    }
-    
-    tm
-    
-  },
-
-  #' @description Select rows in registration audit table since some timestamp
-  #' @param time_since POSIXct timestamp
-  get_rows_since_auditstamp = function(time_since){  
-    
-    time_since <- format(time_since)  
-    
-    modcol <- self$data_columns$time_modified
-    #creacol <- self$data_columns$time_created
-    
-    collect_cols <- c(self$data_columns$id, modcol)#, creacol)
-    
-    modif <- self$read_table(self$data_table, lazy = TRUE) %>%
-      filter(!!sym(modcol) > !!time_since) %>%
-      select(all_of(collect_cols)) %>%
-      collect
-    
-    #creat <- self$read_table(self$data_table, lazy = TRUE) %>%
-    #  filter(!!sym(creacol) > !!time_since) %>%
-    #  select(all_of(collect_cols)) %>%
-    #  collect 
-    dplyr::distinct(modif) #rbind(modif, creat))
-    
-  },
-
-
-  #' @description Soft delete relations
-  #' @param ids ID of rows to delete
-  soft_delete_relations = function(ids){
-    
-    if(length(ids) > 0){
       
-      if(self$audit) {
+      data_current <- self$read_table(self$data_table, lazy=TRUE) %>%
+        select(any_of(selected_columns))
+      
+      data_history <- self$read_table(self$audit_table, lazy=TRUE) %>%
+        select(any_of(selected_columns))
+      
+      if(!is.null(date_range)){
         
-        data_row <- self$filter(self$relation_table, !!sym(self$relation_columns$id) %in% ids)
-        self$append_data(self$relation_audit_table, data_row)
+        if(length(date_range) != 2 || sum(is.na(date_range)) > 0){
+          message("Malformed date_range passed to $create_timeseries (shintoforms), ignoring!")
+        } else {
+          data_current <- dplyr::filter(data_current, between(time_modified, !!date_range[1], !!date_range[2]))
+          data_history <- dplyr::filter(data_history, between(time_modified, !!date_range[1], !!date_range[2]))
+        }
+        
       }
       
-      # delete all relations that are ALTERED or DELETED
-      qu_delete <- glue::glue("DELETE FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');")
-
-      self$execute_query(qu_delete)
-    }
-  },  
-
-  #' @description Append relations
-  #' @param data Data to append 
-  #' @param registration_id ID for the registration
-  write_new_relations = function(data, registration_id){ 
-    postgres_time <- self$postgres_now()
-
-    # Voor postgres GEBRUIK now()::timestamp
-    data <- data %>%
-      mutate(!!sym(self$relation_columns$collector_id) := registration_id,
-             !!sym(self$relation_columns$timestamp) := format(postgres_time),
-                   !!sym(self$relation_columns$collector_type) := ifelse(is.na(!!sym(self$relation_columns$collector_type)), self$class_type, !!sym(self$relation_columns$collector_type)))
-
-
-    self$append_data(self$relation_table,
-                     data)
+      data_current <- collect(data_current)
+      data_history <- collect(data_history)
+      
+      return(dplyr::bind_rows(data_current, data_history))
+    },
     
-  },
-  
-  #' @description update current relation table for registration ID
-  #' @param new_relations The current state that should end up in the relations table 
-  #' @param registration_id ID for the registration
-  update_relations = function(new_relations, registration_id){ 
-    old_relations <- self$filter(self$relation_table, !!sym(self$relation_columns$collector_id) == !!registration_id)
-     
-    if(nrow(new_relations) == 0 & nrow(old_relations) == 0) return(TRUE)
+    # functie om een audit table om te zetten in een event log
+    # creation only filterd alleen de aanmaak events en dus geen updates
+    #' @description Creates 'events' based on the timeseries
+    create_events = function(timeseries, date_range = NULL, creation_only=NULL){
+      
+      if(!is.null(creation_only))message("argument creation_only to $create_events is ignored")
+      
+      create_partial_mutations_new(timeseries, 
+                                   lowerdate = date_range[1],
+                                   upperdate = date_range[2],
+                                   auditstamp_column = self$data_columns$time_modified,
+                                   id_column = self$data_columns$id,
+                                   name_column = self$data_columns$name,
+                                   username_column = self$data_columns$user)
+      
+    }, 
     
-    # Explanation:
-    # There are four groups of data:
-    # DELETED rows   (in old_relations,     not in new_relations)
-    # NEW rows       (not in old_relations, in new_relations)
-    # UNALTERED rows (in old_relations,     in new_relations, no differences)
-    # ALTERED rows   (in old_relations,     in new_relations, with differences) 
-    #
-    # actions:
-    # DELETED rows are archived, deleted, then the new version is added
-    # ALTERED rows are archived, deleted, then the new version is added
-    # NEW rows are added
-    # UNALTERED rows are left as they are
+    ## Relations
+    #' @description Reads the relation table
+    get_all_relations = function(){
+      
+      if(is.null(self$relation_table)){
+        stop("Set 'relation_table' in shintoforms formcall (has no default value anymore)")
+      }
+      
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
+      
+      self$query(qu)
+      
+    },
     
-    # get all (old) relations that are ALTERED or DELETED
-    altered_or_deleted <- old_relations %>% 
-      left_join(new_relations, by=self$relation_columns$id, suffix=c("", "_new"))  %>% 
-      filter((!!sym(glue("{self$relation_columns$comment}_new")) != !!sym(self$relation_columns$comment) & !!sym(glue("{self$relation_columns$status}_new")) != !!sym(self$relation_columns$status)) | is.na(!!sym(glue("{self$relation_columns$collector_id}_new")))) %>%
-      mutate(!!sym(self$relation_columns$verwijderd) := ifelse(is.na(!!sym(glue("{self$relation_columns$collector_id}_new"))), TRUE, !!sym(self$relation_columns$verwijderd))) %>%
-      select(!ends_with('_new'))
- 
-    # archive all relations that are ALTERED or DELETED   
-    self$soft_delete_relations(altered_or_deleted[[self$relation_columns$id]]) 
+    #' @description get_objects_for_collector 
+    #' @param collector_type Type of collector
+    #' @param collector_id ID of collector
+    #' @param relation_type Description of collector -> object relation
+    #' @param relation_id ID of relation (often session ID of module)
+    #' @param filter_verwijderd when status is zero
+    # examples: 
+    # get_objects_for_collector('signaal')
+    # get_objects_for_collector('signaal', collector_id="12")
+    # get_objects_for_collector('signaal', relation_type="hoofdadres") 
+    get_objects_for_collector = function(collector_type=NA,
+                                         collector_id=NA,
+                                         relation_type=NA,
+                                         relation_id=NA,
+                                         object_type=NA, 
+                                         filter_verwijderd=TRUE){
+      
+      collector_type = ifelse(is.na(collector_type), self$class_type, collector_type) 
+      
+      # Build query parts
+      V <- ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
+      A <- ifelse(is.na(collector_id), "", glue(" AND {self$relation_columns$collector_id} = '{collector_id}'"))
+      B <- ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
+      C <- ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
+      D <- ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
+      
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$collector_type} = '{collector_type}'{V}{A}{B}{C}{D};")
+      
+      self$query(qu)
+      
+    },  
     
-    # append all relations that are NEW or ALTERED
-    new  <- new_relations %>% 
-      left_join(old_relations, by=self$relation_columns$id, suffix=c("", "_old"))%>% 
-      filter(is.na(!!sym(glue("{self$relation_columns$status}_old")))) %>%
-      select(!ends_with('_old'))
- 
-    new_data <- dplyr::bind_rows(new, altered_or_deleted)
-    if(nrow(new_data) > 0){
-      self$write_new_relations(new_data, registration_id = registration_id)
-    }
-     
-    return(TRUE)
-  
-  } 
+    #' @description get_collector_for_object 
+    #' @param collector_type Type of collector
+    #' @param collector_id ID of collector
+    #' @param relation_type Description of collector -> object relation
+    #' @param relation_id ID of relation (often session ID of module)
+    #' @param filter_verwijderd when status is zero
+    # examples: 
+    # get_objects_for_collector('signaal')
+    # get_objects_for_collector('signaal', collector_id="12")
+    # get_objects_for_collector('signaal', relation_type="hoofdadres") 
+    get_collector_for_object = function( object_id,
+                                         collector_type=NA,
+                                         object_type=NA,
+                                         relation_type=NA,
+                                         relation_id=NA,
+                                         filter_verwijderd=T){
+      
+      # Removed this statement so we are not limited to only one collector_type. 
+      # This collector_type has been added as arguments to function-calls which were already made in apollo_ondermijning.
+      #collector_type = ifelse(is.na(collector_type), self$class_type, collector_type)
+      
+      # Build query parts
+      V <- ifelse(filter_verwijderd, glue(" AND {self$relation_columns$verwijderd} = false"), "")
+      A <- ifelse(is.na(object_type), "", glue(" AND {self$relation_columns$object_type} = '{object_type}'"))
+      B <- ifelse(is.na(collector_type), "", glue(" AND {self$relation_columns$collector_type} = '{collector_type}'"))
+      C <- ifelse(is.na(relation_id),"", glue(" AND {self$relation_columns$relation_id} = '{relation_id}'"))
+      D <- ifelse(is.na(relation_type), "", glue(" AND {self$relation_columns$relation_type} = '{relation_type}'"))
+      
+      qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$object_id} = '{object_id}'{V}{A}{B}{C}{D};")
+      
+      self$query(qu)
+      
+    },
+    
+    #' @description Adds a relation to the relation table
+    add_relation = function(id = uuid::UUIDgenerate(),
+                            collector_id,
+                            collector_type, 
+                            object_id,
+                            object_type,
+                            relation_id,
+                            relation_type,
+                            comment=NA,
+                            status="1",
+                            verwijderd=FALSE,
+                            username,
+                            timestamp){ 
+      
+      data <- data.frame(id,
+                         collector_id,
+                         collector_type, 
+                         object_id,
+                         object_type,
+                         relation_id,
+                         relation_type,
+                         comment,
+                         status,
+                         username,
+                         timestamp)
+      
+      names(data) <- self$relation_columns
+      
+      self$append_data(self$relation_table, data) 
+      
+    },
+    
+    #' @description timestamp in postgres timezone 
+    postgres_now = function(){
+      
+      # overwrites shintodb::databaseClass / postgres_now because it fails on sqlite,
+      # so we need a fallback here
+      
+      tm <- try({
+        self$query("select now()", quiet = TRUE)$now  
+      }, silent = TRUE)
+      
+      if(inherits(tm, "try-error")){
+        return(Sys.time())
+      }
+      
+      tm
+      
+    },
+    
+    #' @description Select rows in registration audit table since some timestamp
+    #' @param time_since POSIXct timestamp
+    get_rows_since_auditstamp = function(time_since){  
+      
+      time_since <- format(time_since)  
+      
+      modcol <- self$data_columns$time_modified
+      #creacol <- self$data_columns$time_created
+      
+      collect_cols <- c(self$data_columns$id, modcol)#, creacol)
+      
+      modif <- self$read_table(self$data_table, lazy = TRUE) %>%
+        filter(!!sym(modcol) > !!time_since) %>%
+        select(all_of(collect_cols)) %>%
+        collect
+      
+      #creat <- self$read_table(self$data_table, lazy = TRUE) %>%
+      #  filter(!!sym(creacol) > !!time_since) %>%
+      #  select(all_of(collect_cols)) %>%
+      #  collect 
+      dplyr::distinct(modif) #rbind(modif, creat))
+      
+    },
+    
+    
+    #' @description Soft delete relations
+    #' @param ids ID of rows to delete
+    soft_delete_relations = function(ids){
+      
+      if(length(ids) > 0){
+        
+        if(self$audit) {
+          
+          data_row <- self$filter(self$relation_table, !!sym(self$relation_columns$id) %in% ids)
+          self$append_data(self$relation_audit_table, data_row)
+        }
+        
+        # delete all relations that are ALTERED or DELETED
+        qu_delete <- glue::glue("DELETE FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$id} in ('{paste(ids, collapse=\"','\")}');")
+        
+        self$execute_query(qu_delete)
+      }
+    },  
+    
+    #' @description Append relations
+    #' @param data Data to append 
+    #' @param registration_id ID for the registration
+    write_new_relations = function(data, registration_id){ 
+      postgres_time <- self$postgres_now()
+      
+      # Voor postgres GEBRUIK now()::timestamp
+      data <- data %>%
+        mutate(!!sym(self$relation_columns$collector_id) := registration_id,
+               !!sym(self$relation_columns$timestamp) := format(postgres_time),
+               !!sym(self$relation_columns$collector_type) := ifelse(is.na(!!sym(self$relation_columns$collector_type)), self$class_type, !!sym(self$relation_columns$collector_type)))
+      
+      
+      self$append_data(self$relation_table,
+                       data)
+      
+    },
+    
+    #' @description update current relation table for registration ID
+    #' @param new_relations The current state that should end up in the relations table 
+    #' @param registration_id ID for the registration
+    update_relations = function(new_relations, registration_id){ 
+      old_relations <- self$filter(self$relation_table, !!sym(self$relation_columns$collector_id) == !!registration_id)
+      
+      if(nrow(new_relations) == 0 & nrow(old_relations) == 0) return(TRUE)
+      
+      # Explanation:
+      # There are four groups of data:
+      # DELETED rows   (in old_relations,     not in new_relations)
+      # NEW rows       (not in old_relations, in new_relations)
+      # UNALTERED rows (in old_relations,     in new_relations, no differences)
+      # ALTERED rows   (in old_relations,     in new_relations, with differences) 
+      #
+      # actions:
+      # DELETED rows are archived, deleted, then the new version is added
+      # ALTERED rows are archived, deleted, then the new version is added
+      # NEW rows are added
+      # UNALTERED rows are left as they are
+      
+      # get all (old) relations that are ALTERED or DELETED
+      altered_or_deleted <- old_relations %>% 
+        left_join(new_relations, by=self$relation_columns$id, suffix=c("", "_new"))  %>% 
+        filter((!!sym(glue("{self$relation_columns$comment}_new")) != !!sym(self$relation_columns$comment) & !!sym(glue("{self$relation_columns$status}_new")) != !!sym(self$relation_columns$status)) | is.na(!!sym(glue("{self$relation_columns$collector_id}_new")))) %>%
+        mutate(!!sym(self$relation_columns$verwijderd) := ifelse(is.na(!!sym(glue("{self$relation_columns$collector_id}_new"))), TRUE, !!sym(self$relation_columns$verwijderd))) %>%
+        select(!ends_with('_new'))
+      
+      # archive all relations that are ALTERED or DELETED   
+      self$soft_delete_relations(altered_or_deleted[[self$relation_columns$id]]) 
+      
+      # append all relations that are NEW or ALTERED
+      new  <- new_relations %>% 
+        left_join(old_relations, by=self$relation_columns$id, suffix=c("", "_old"))%>% 
+        filter(is.na(!!sym(glue("{self$relation_columns$status}_old")))) %>%
+        select(!ends_with('_old'))
+      
+      new_data <- dplyr::bind_rows(new, altered_or_deleted)
+      if(nrow(new_data) > 0){
+        self$write_new_relations(new_data, registration_id = registration_id)
+      }
+      
+      return(TRUE)
+      
+    } 
   )
-   
+  
   
 )
- 
+
