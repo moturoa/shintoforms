@@ -21,7 +21,6 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
   els <- els[order(cfg$order_field)]
   
   ui <- lapply(els, function(el){
-    
     if(el$type_field == "nestedselect"){
       chc <- jsonlite::fromJSON(el$options)
     } else {
@@ -40,6 +39,24 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
         cli::cli_alert_danger("Wrong order variable for column {el$column_field}, not using ordering of input field")
       } else {
         chc <- chc[c_ord]  
+      }
+      
+    }
+    
+    # remove the inactive options
+    if(is.null(el$option_active)){
+      option_statuses <- jsonlite::fromJSON('[]')
+    } else {
+      option_statuses <- jsonlite::fromJSON(el$option_active)
+    }
+    
+    if(length(chc) > 1){
+      len_check <- length(option_statuses) == length(chc)
+      if(!len_check){
+        cli::cli_alert_info("Wrong status variable for column {el$column_field}, not using status activation of input field")
+      } else {
+        active_options <- names(option_statuses[option_statuses == TRUE])
+        chc <- chc[chc %in% active_options] 
       }
       
     }

@@ -221,6 +221,7 @@ formAdminModule <- function(input, output, session, .reg = NULL,
                               "Opties" = "options", 
                               "Volgorde opties" = "order_options", 
                               "Kleuren" = "colors", 
+                              "Status opties" = "option_active",
                               "Verwijderbaar" = "removable"
                             ),
                             
@@ -234,9 +235,10 @@ formAdminModule <- function(input, output, session, .reg = NULL,
                               "Opties" = "options",
                               "Volgorde opties" = "order_options",
                               "Kleuren" = "colors",
+                              "Status opties" = "option_active",
                               "Verwijderbaar" = "removable"),
                             
-                            allow_delete_option = FALSE,
+                            allow_toggle_option = FALSE,
                             reload_ping = reactive(NULL)){
   
   
@@ -526,9 +528,9 @@ formAdminModule <- function(input, output, session, .reg = NULL,
   edit_options <- shiny::reactive({
     req(selected_row())
     type <- selected_row()$type_field
-
-    if(type %in% c("singleselect","multiselect","nestedselect")){
-      if(allow_delete_option) c("add","delete") else "add"
+    
+    if(type %in% c("singleselect","multiselect")){ #"nestedselect" --> NestedSelect voor even nog niet ondersteund
+      if(allow_toggle_option) c("add","toggle_state") else "add"
     } else {
       NULL
     }
@@ -539,18 +541,32 @@ formAdminModule <- function(input, output, session, .reg = NULL,
                                options = edit_options,
                                edit = reactive("value"),
                                widths = c(2,10),
-                               value = reactive(selected_row()$options)
+                               value = reactive(selected_row()$options),
+                               states = reactive(selected_row()$option_active)
                                )
-
+  
   observeEvent(input$btn_confirm_edit_options, {
-
-    .reg$edit_options_field(selected_id(), edited_options())
+    
+    edited_options <- fromJSON(edited_options())
+    
+    edited_labels <- sapply(edited_options, function(x) x$label)
+    edited_states <- sapply(edited_options, function(x) x$active)
+    
+    # Convert back to JSON
+    labels_json <- toJSON(as.list(edited_labels), auto_unbox = TRUE)
+    states_json <- toJSON(as.list(edited_states), auto_unbox = TRUE)
+    
+    .reg$edit_options_field(selected_id(), labels_json)
+    .reg$edit_options_states(selected_id(), states_json)
     #.reg$amend_nested_options_key(selected_id(), edited_options())
-    .reg$amend_options_order(selected_id(), edited_options())
-    .reg$amend_options_colors(selected_id(), edited_options())
+    .reg$amend_options_order(selected_id(), labels_json)
+    .reg$amend_options_colors(selected_id(), labels_json)
+    
     db_ping(runif(1))
-
+    
   })
+    
+    
 
 
   #----- Nested select choices

@@ -55,6 +55,7 @@ formClass <- R6::R6Class(
                             options = "opties",
                             order_options = "volgorde_opties",
                             colors = "kleuren",
+                            option_active = "optie_actief",
                             removable = "kan_worden_verwijderd",
                           ),
                           data_table = NULL,
@@ -566,6 +567,7 @@ formClass <- R6::R6Class(
         options = as.character(choice_values),
         order_options = "[]",
         colors = '[]',
+        option_active = '[]',
         removable = TRUE
       )
       
@@ -645,7 +647,6 @@ formClass <- R6::R6Class(
     
     #' @description Edit options (choices) for a form field
     edit_options_field = function(id_form, new_options){
-      
       if(length(id_form) == 0){
         cli::cli_alert_danger("$edit_options_field called with empty or null ID - aborting!")
         return(invisible(NULL))
@@ -879,6 +880,37 @@ formClass <- R6::R6Class(
       qu <- glue::glue("UPDATE {self$schema_str}{self$def_table} SET \"{self$def$order_field}\" = '{new_volgorde_nummer}' WHERE {self$def$id_form} = '{id_formfield}'")
       
       self$execute_query(qu)
+      
+    },
+    
+    #' @description Edit states for options for a form field
+    #' @param id_form ID of form field
+    edit_options_states = function(id_form, new_states){
+      #Check if column exists
+      if(is.null(self$def$option_active)){
+        cli::cli_alert_warning(glue("No status column exists in {self$def_table} table"))
+      } else {
+        if(length(id_form) == 0){
+          cli::cli_alert_danger("$edit_options_field called with empty or null ID - aborting!")
+          return(invisible(NULL))
+        }
+        
+        if(!is.character(new_states)){
+          new_states <- self$to_json(new_states)  
+        }
+        
+        
+        if(is.null(names(self$from_json(new_states)))){
+          stop("JSON new_states MUST have names (1:n) (edit_options_field)")
+        }
+        
+        self$replace_value_where(self$def_table, 
+                                 col_compare = self$def$id_form, 
+                                 val_compare = id_form,
+                                 col_replace = self$def$option_active, 
+                                 val_replace = new_states)
+      }
+      
       
     },
     
@@ -1211,7 +1243,6 @@ formClass <- R6::R6Class(
     #' @description Recode select values in registrations data
     #' @param data Dataframe (registrations data)
     recode_registrations = function(data){
-      
       # Single select, can use a direct `dplyr::recode`
       def <- self$read_definition(lazy = TRUE) %>% 
         self$filter_by_visibility() %>%
@@ -1223,10 +1254,23 @@ formClass <- R6::R6Class(
       
       # for every select field, replace values
       for(i in seq_len(nrow(def))){
-        
         opt <- def[[self$def$options]][i]
-        
         key <- self$from_json(opt)
+        
+        if(is.null(self$def$option_active)){
+          active_key <- setNames(as.list(rep(TRUE, length(key))), names(key))
+        } else {
+          active <- def[[self$def$option_active]][i]
+          active_key <- self$from_json(active)
+        }
+        
+        if(length(key) == length(active_key)){
+          key <- mapply(function(str, flag) {
+            if (!flag) paste0(str, "*") else str
+          }, key, active_key, SIMPLIFY = FALSE)
+        } else {
+          flog.info(glue("Option statuses for field {self$def[['column_field']]} are not used!"))
+        }
         
         if(def[[self$def[["type_field"]]]][i] == "nestedselect"){
           key <- key$key[[1]]
@@ -1248,10 +1292,24 @@ formClass <- R6::R6Class(
       
       
       for(i in seq_len(nrow(def_multi))){
-        
         opt <- def_multi[[self$def$options]][i]
         key <- self$from_json(opt)
         col <- def_multi[[self$def$column_field]][i]
+        
+        if(is.null(self$def$option_active)){
+          active_key <- setNames(as.list(rep(TRUE, length(key))), names(key))
+        } else {
+          active <- def_multi[[self$def$option_active]][i]
+          active_key <- self$from_json(active)
+        }
+        
+        if(length(key) == length(active_key)){
+          key <- mapply(function(str, flag) {
+            if (!flag) paste0(str, "*") else str
+          }, key, active_key, SIMPLIFY = FALSE)
+        } else {
+          flog.info(glue("Option statuses for field {self$def[['column_field']]} are not used!"))
+        }
         
         if(length(key)){
           
