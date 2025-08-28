@@ -1344,6 +1344,16 @@ formClass <- R6::R6Class(
       
     },
     
+    #' @description Get rows with registrations by the the registration ids.
+    #' @param id_forms Ids of registrations
+    get_registrations_by_multiple_ids = function(id_forms){
+      
+      self$read_table(self$data_table, lazy = TRUE) %>%
+        dplyr::filter(!!sym(self$data_columns$id) %in% !!id_forms) %>%
+        collect
+      
+    },
+    
     #' @description Filter data by time_created
     #' @param data Read with `read_registrations`
     #' @param date_start Date start

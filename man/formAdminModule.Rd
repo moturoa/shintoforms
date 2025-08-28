@@ -40,12 +40,13 @@ formAdminModule(
   option_layout = TRUE,
   show_fields = c(Kolomnaam = "column_field", Label = "label_field", Type = "type_field",
     Kolom = "form_section", Volgorde = "order_field", Opties = "options",
-    `Volgorde opties` = "order_options", Kleuren = "colors", Verwijderbaar = "removable"),
+    `Volgorde opties` = "order_options", Kleuren = "colors", `Status opties` =
+    "option_active", Verwijderbaar = "removable"),
   show_fields_deleted = c(Kolomnaam = "column_field", Label = "label_field", Type =
     "type_field", Kolom = "form_section", `Verwijderd op` = "date_deleted", Volgorde =
     "order_field", Opties = "options", `Volgorde opties` = "order_options", Kleuren =
-    "colors", Verwijderbaar = "removable"),
-  allow_delete_option = FALSE,
+    "colors", `Status opties` = "option_active", Verwijderbaar = "removable"),
+  allow_toggle_option = FALSE,
   reload_ping = reactive(NULL)
 )
 }

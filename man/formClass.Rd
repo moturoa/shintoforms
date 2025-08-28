@@ -54,6 +54,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-edit_verwijder_datum}{\code{formClass$edit_verwijder_datum()}}
 \item \href{#method-NA-amend_formfield_order}{\code{formClass$amend_formfield_order()}}
 \item \href{#method-NA-reset_volgorde_invoerveld}{\code{formClass$reset_volgorde_invoerveld()}}
+\item \href{#method-NA-edit_options_states}{\code{formClass$edit_options_states()}}
 \item \href{#method-NA-really_delete_formfield}{\code{formClass$really_delete_formfield()}}
 \item \href{#method-NA-column_type_from_field_type}{\code{formClass$column_type_from_field_type()}}
 \item \href{#method-NA-prepare_data_table}{\code{formClass$prepare_data_table()}}
@@ -65,6 +66,7 @@ R6 Class voor Registratie formulier
 \item \href{#method-NA-label_registrations_columns}{\code{formClass$label_registrations_columns()}}
 \item \href{#method-NA-recode_registrations}{\code{formClass$recode_registrations()}}
 \item \href{#method-NA-get_registration_by_id}{\code{formClass$get_registration_by_id()}}
+\item \href{#method-NA-get_registrations_by_multiple_ids}{\code{formClass$get_registrations_by_multiple_ids()}}
 \item \href{#method-NA-filter_period}{\code{formClass$filter_period()}}
 \item \href{#method-NA-read_definition}{\code{formClass$read_definition()}}
 \item \href{#method-NA-get_occurences}{\code{formClass$get_occurences()}}
@@ -130,11 +132,13 @@ Make new form object
     label_field = "label_veld", type_field = "type_veld", order_field = "volgorde_veld",
     form_section = "formulier_sectie", visible = "zichtbaar", date_deleted =
     "datum_uitgeschakeld", options = "opties", order_options = "volgorde_opties", colors
-    = "kleuren", removable = "kan_worden_verwijderd", ),
+    = "kleuren", option_active = "optie_actief", removable = "kan_worden_verwijderd", ),
   data_table = NULL,
   data_columns = list(id = "id_registratie", serial_id = "serial_id", name =
-    "naam_registratie", time_created = "invoerdatum", time_modified = "wijzigdatum", user
-    = "user_id", deleted = "deleted", status = "status", priority = "priority"),
+    "naam_registratie", casenr = "zaak_nummer", time_created = "invoerdatum",
+    time_modified = "wijzigdatum", user = "user_id", deleted = "deleted", status =
+    "status", priority = "priority"),
+  casenr_code = NULL,
   relation_table = NULL,
   relation_columns = list(id = "id", collector_id = "collector_id", collector_type =
     "collector_type", object_id = "object_id", object_type = "object_type", relation_id =
@@ -864,6 +868,23 @@ Reset the form field order
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-edit_options_states"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-edit_options_states}{}}}
+\subsection{Method \code{edit_options_states()}}{
+Edit states for options for a form field
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$edit_options_states(id_form, new_states)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_form}}{ID of form field}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-really_delete_formfield"></a>}}
 \if{latex}{\out{\hypertarget{method-NA-really_delete_formfield}{}}}
 \subsection{Method \code{really_delete_formfield()}}{
@@ -1073,6 +1094,23 @@ Get a registration with a uuid
 \item{\code{id}}{ID of the registration (uuid)}
 
 \item{\code{recode}}{If TRUE, recodes integer values to their labels}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-get_registrations_by_multiple_ids"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-get_registrations_by_multiple_ids}{}}}
+\subsection{Method \code{get_registrations_by_multiple_ids()}}{
+Get rows with registrations by the the registration ids.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{formClass$get_registrations_by_multiple_ids(id_forms)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id_forms}}{Ids of registrations}
 }
 \if{html}{\out{</div>}}
 }
