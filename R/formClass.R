@@ -1269,7 +1269,7 @@ formClass <- R6::R6Class(
             if (!flag) paste0(str, "*") else str
           }, key, active_key, SIMPLIFY = FALSE)
         } else {
-          flog.info(glue("Option statuses for field {self$def[['column_field']]} are not used!"))
+          flog.info(glue("Option statuses for field {def[[self$def[['column_field']]]][i]} are not used!"))
         }
         
         if(def[[self$def[["type_field"]]]][i] == "nestedselect"){
