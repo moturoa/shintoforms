@@ -395,7 +395,7 @@ formClass <- R6::R6Class(
       }
       
       # remove empty choices
-      out <- out[val != ""]
+      out[val == ""] <- "-- Lege waarde --"
       
       out
     },
