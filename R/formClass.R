@@ -1463,15 +1463,23 @@ formClass <- R6::R6Class(
     
     ## Relations
     #' @description Reads the relation table
-    get_all_relations = function(){
+    get_all_relations = function(relation_type = NULL){
       
       if(is.null(self$relation_table)){
         stop("Set 'relation_table' in shintoforms formcall (has no default value anymore)")
       }
       
-      qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
+      if(is.null(relation_type)){
+        query <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$verwijderd} = false;")
+      } else {
+        qu <- glue::glue("SELECT * FROM {self$schema_str}{self$relation_table} WHERE {self$relation_columns$verwijderd} = false AND {self$relation_columns$object_type} = ?relation_type;")
+        
+        query <- DBI::sqlInterpolate(DBI::ANSI(),
+                                     qu,
+                                     relation_type = relation_type)
+      }
       
-      self$query(qu)
+      self$query(query)
       
     },
     
