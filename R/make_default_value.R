@@ -1,6 +1,6 @@
 #' Make a default value for an input, based on data and column name
 #' @export
-make_default_value <- function(x, data, default = character(0), array = FALSE){
+make_default_value <- function(x, data, default = character(0), encrypt = FALSE,  array = FALSE){
   
   val <- data[[x]]
   

@@ -57,6 +57,7 @@ formClass <- R6::R6Class(
                             colors = "kleuren",
                             option_active = "optie_actief",
                             removable = "kan_worden_verwijderd",
+                            encrypted = "kolom_encrypted_opgeslagen"
                           ),
                           data_table = NULL,
                           data_columns = list(
@@ -164,6 +165,17 @@ formClass <- R6::R6Class(
         # Check
         defcols <- self$table_columns(self$def_table)
         di1 <- unlist(self$def) %in% defcols
+        
+        # Deze checks zijn nodig als we encrypted fields gaan implementeren in de shintoforms package.
+        # Voor nu is 
+        # if(is.null(self$def$encrypted)){
+        #   stop("There is no encrypted in the definition")
+        # }
+        # 
+        # if(!(self$def$encrypted %in% defcols)){
+        #   stop(glue("There is no encrypted column in de table {self$def_table}"))
+        # }
+        
         if(any(!di1)){
           stop(paste("Columns in def_columns not found:", paste(defcols[!di1], collapse=",")))
         }
@@ -568,7 +580,8 @@ formClass <- R6::R6Class(
         order_options = "[]",
         colors = '[]',
         option_active = '[]',
-        removable = TRUE
+        removable = TRUE,
+        encrypted = FALSE
       )
       
       if(add_id){
@@ -1096,13 +1109,13 @@ formClass <- R6::R6Class(
     #' @param current_reg_id Registration ID
     edit_registration = function(old_data, new_data, user_id, current_reg_id){
       # prepare output columns
+      
       self$prepare_data_table()
       
       # id of the registration
       id <- current_reg_id 
       
       replace_list <- list()
-      
       
       # valideer of de kolom echt gewijzigd is
       for(col in names(new_data)){
@@ -1115,7 +1128,7 @@ formClass <- R6::R6Class(
         #   old_value <- NULL
         # }
         
-        data_has_changed <- try(!isTRUE(new_value == old_value) && !(is.na(old_value) & is.na(new_value)))
+        data_has_changed <- try(!isTRUE(new_value == old_value) && !((is.na(old_value) || is.null(old_value)) & is.na(new_value)))
         
         if(inherits(data_has_changed, "try-error")){
           warning(glue("Problem with column: {col}"))

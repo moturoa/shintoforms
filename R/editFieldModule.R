@@ -39,6 +39,7 @@ editFieldModuleUI <- function(id, column, data,
                               options = NULL,
                               label = NULL,
                               disabled = FALSE,
+                              encrypted_value = FALSE, 
                               input_width = getOption("shintoforms_input_width_percent", "80%"),
                               input_padding = getOption("shintoforms_input_padding_px", "30px"),
                               shintousers_object = NULL,
@@ -76,10 +77,10 @@ editFieldModuleUI <- function(id, column, data,
   # multi_user --> multiselect
   type <- amend_type_inputfield(type)
   
-  
   # Make selected value based on default, data, settings
   value <- make_default_value(column, data, 
                               default = default,
+                              encrypt = encrypted_value,
                               array = type == "multiselect")
   
   has_option <- function(what){

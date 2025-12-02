@@ -69,6 +69,7 @@ formSectionModuleUI <- function(id, cfg, data = NULL, .reg,
                       #type_options = el$type_options,  # --> moet ook naar db
                       default = if(el$type_field == "boolean")TRUE else "", 
                       data = data, 
+                      encrypted_value = FALSE, #el$encrypted --> Dit is er alvast ingezet als voorsortering op encryption/decryption van veldwaarden.
                       disabled = disabled,
                       shintousers_object = shintousers_object,
                       shintousers_groups = shintousers_groups,
